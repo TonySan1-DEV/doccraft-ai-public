@@ -1,0 +1,155 @@
+{
+  "name": "@doccraft/emotion-arc",
+  "version": "1.0.0",
+  "description": "AI-powered emotional analysis and optimization for narrative storytelling",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./services": {
+      "import": "./dist/services/index.esm.js",
+      "require": "./dist/services/index.js",
+      "types": "./dist/services/index.d.ts"
+    },
+    "./components": {
+      "import": "./dist/components/index.esm.js",
+      "require": "./dist/components/index.js",
+      "types": "./dist/components/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types/index.esm.js",
+      "require": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils/index.esm.js",
+      "require": "./dist/utils/index.js",
+      "types": "./dist/utils/index.d.ts"
+    },
+    "./constants": {
+      "import": "./dist/constants/index.esm.js",
+      "require": "./dist/constants/index.js",
+      "types": "./dist/constants/index.d.ts"
+    },
+    "./test-utils": {
+      "import": "./dist/test-utils/index.esm.js",
+      "require": "./dist/test-utils/index.js",
+      "types": "./dist/test-utils/index.d.ts"
+    },
+    "./stories": {
+      "import": "./dist/stories/index.esm.js",
+      "require": "./dist/stories/index.js",
+      "types": "./dist/stories/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "npm run build:typescript && npm run build:storybook",
+    "build:typescript": "rollup -c rollup.config.js",
+    "build:storybook": "npm run storybook:build",
+    "dev": "rollup -c rollup.config.js --watch",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src components --ext .ts,.tsx",
+    "lint:fix": "eslint src components --ext .ts,.tsx --fix",
+    "test": "jest --testPathPattern=modules/emotionArc",
+    "test:watch": "jest --testPathPattern=modules/emotionArc --watch",
+    "test:coverage": "jest --testPathPattern=modules/emotionArc --coverage",
+    "test:accessibility": "jest --testPathPattern=accessibility",
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build -o storybook-static",
+    "prepublishOnly": "npm run build && npm run test",
+    "clean": "rimraf dist storybook-static",
+    "verify": "npm run type-check && npm run lint && npm run test"
+  },
+  "keywords": [
+    "emotional-analysis",
+    "story-optimization",
+    "ai-writing",
+    "narrative-analysis",
+    "character-arcs",
+    "tension-curves",
+    "reader-engagement",
+    "writing-tools",
+    "react-components",
+    "typescript"
+  ],
+  "author": {
+    "name": "DocCraft AI Team",
+    "email": "team@doccraft-ai.com",
+    "url": "https://doccraft-ai.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/doccraft-ai.git",
+    "directory": "modules/emotionArc"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/doccraft-ai/issues"
+  },
+  "homepage": "https://doccraft-ai.com/docs/emotion-arc",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/jest": "^29.5.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/user-event": "^14.0.0",
+    "@storybook/react": "^7.0.0",
+    "@storybook/addon-essentials": "^7.0.0",
+    "@storybook/addon-interactions": "^7.0.0",
+    "@storybook/addon-a11y": "^7.0.0",
+    "@storybook/testing-library": "^0.2.0",
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "@rollup/plugin-terser": "^0.4.0",
+    "rollup": "^3.0.0",
+    "rollup-plugin-dts": "^5.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "jest-environment-jsdom": "^29.0.0",
+    "eslint": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint-plugin-react": "^7.0.0",
+    "eslint-plugin-react-hooks": "^4.0.0",
+    "eslint-plugin-jsx-a11y": "^6.0.0",
+    "prettier": "^3.0.0",
+    "rimraf": "^5.0.0",
+    "tailwindcss": "^3.0.0",
+    "autoprefixer": "^10.0.0",
+    "postcss": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
+} 

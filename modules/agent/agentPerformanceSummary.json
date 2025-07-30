@@ -1,0 +1,441 @@
+{
+  "metadata": {
+    "generated": "2024-01-15T10:30:00Z",
+    "reportPeriod": {
+      "start": "2024-01-01T00:00:00Z",
+      "end": "2024-01-15T23:59:59Z"
+    },
+    "mcpSource": "agent_qa",
+    "accessLevel": "Pro/Admin only",
+    "dataAnonymization": "100% compliant",
+    "piiCollected": false
+  },
+  "testResults": {
+    "summary": {
+      "totalTestFlows": 47,
+      "passedTests": 45,
+      "failedTests": 2,
+      "passRate": 0.957,
+      "averageTestDuration": 1.2
+    },
+    "categories": [
+      {
+        "name": "Agent Visibility",
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "passRate": 1.0
+      },
+      {
+        "name": "Onboarding Flow",
+        "total": 6,
+        "passed": 5,
+        "failed": 1,
+        "passRate": 0.833
+      },
+      {
+        "name": "KB Query Routing",
+        "total": 12,
+        "passed": 12,
+        "failed": 0,
+        "passRate": 1.0
+      },
+      {
+        "name": "LLM Fallback",
+        "total": 9,
+        "passed": 8,
+        "failed": 1,
+        "passRate": 0.889
+      },
+      {
+        "name": "Proactive Tips",
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "passRate": 1.0
+      },
+      {
+        "name": "MCP Access Control",
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "passRate": 1.0
+      }
+    ],
+    "failedTests": [
+      {
+        "name": "Onboarding Flow - Theme Analysis",
+        "error": "Timeout on step navigation",
+        "category": "Onboarding Flow"
+      },
+      {
+        "name": "LLM Fallback - Rate Limiting",
+        "error": "Service unavailable during test",
+        "category": "LLM Fallback"
+      }
+    ]
+  },
+  "usageAnalytics": {
+    "sessionOverview": {
+      "totalSessions": 1247,
+      "uniqueUsers": 892,
+      "averageSessionDuration": 8.5,
+      "agentVisibilityToggleRate": 0.673
+    },
+    "tierBreakdown": {
+      "Free": {
+        "sessions": 156,
+        "percentage": 0.125,
+        "averageSessionTime": 3.2
+      },
+      "Pro": {
+        "sessions": 891,
+        "percentage": 0.714,
+        "averageSessionTime": 9.8
+      },
+      "Admin": {
+        "sessions": 200,
+        "percentage": 0.161,
+        "averageSessionTime": 12.3
+      }
+    }
+  },
+  "suggestionPerformance": {
+    "overallAcceptanceRate": 0.732,
+    "topSuggestions": [
+      {
+        "label": "Show Me",
+        "shown": 1234,
+        "accepted": 1104,
+        "rate": 0.894
+      },
+      {
+        "label": "Export Data",
+        "shown": 892,
+        "accepted": 733,
+        "rate": 0.821
+      },
+      {
+        "label": "Run Analysis",
+        "shown": 756,
+        "accepted": 597,
+        "rate": 0.789
+      },
+      {
+        "label": "Check Style",
+        "shown": 634,
+        "accepted": 479,
+        "rate": 0.756
+      },
+      {
+        "label": "Open Docs",
+        "shown": 445,
+        "accepted": 317,
+        "rate": 0.712
+      },
+      {
+        "label": "Resume Onboarding",
+        "shown": 334,
+        "accepted": 223,
+        "rate": 0.668
+      },
+      {
+        "label": "Try Again",
+        "shown": 223,
+        "accepted": 134,
+        "rate": 0.601
+      }
+    ],
+    "lowPerformingSuggestions": [
+      {
+        "label": "Try Again",
+        "rate": 0.601,
+        "recommendation": "Consider improving error messaging"
+      },
+      {
+        "label": "Resume Onboarding",
+        "rate": 0.668,
+        "recommendation": "May need better context"
+      }
+    ]
+  },
+  "llmFallbackAnalysis": {
+    "usageStatistics": {
+      "totalFallbacks": 234,
+      "fallbackRate": 0.188,
+      "averageResponseTime": 2.3,
+      "modelsUsed": {
+        "gpt-4": {
+          "count": 156,
+          "percentage": 0.667
+        },
+        "claude-3": {
+          "count": 45,
+          "percentage": 0.192
+        },
+        "local-stub": {
+          "count": 33,
+          "percentage": 0.141
+        }
+      }
+    },
+    "highFallbackAreas": [
+      {
+        "module": "Theme Analysis",
+        "fallbacks": 45,
+        "commonQueries": ["How to align themes with character arcs"],
+        "recommendation": "Add more KB entries for theme alignment"
+      },
+      {
+        "module": "Style Analysis",
+        "fallbacks": 38,
+        "commonQueries": ["Check for style drift"],
+        "recommendation": "Improve style detection algorithms"
+      },
+      {
+        "module": "Export Features",
+        "fallbacks": 29,
+        "commonQueries": ["Export to different formats"],
+        "recommendation": "Add export documentation to KB"
+      }
+    ],
+    "fallbackQueryPatterns": [
+      {
+        "pattern": "How to...",
+        "count": 89,
+        "percentage": 0.38
+      },
+      {
+        "pattern": "What's the best way...",
+        "count": 67,
+        "percentage": 0.286
+      },
+      {
+        "pattern": "Can I...",
+        "count": 45,
+        "percentage": 0.192
+      },
+      {
+        "pattern": "Where do I...",
+        "count": 33,
+        "percentage": 0.141
+      }
+    ]
+  },
+  "proactiveTipsPerformance": {
+    "clickThroughAnalysis": {
+      "totalTipsShown": 567,
+      "totalTipsClicked": 234,
+      "overallClickThroughRate": 0.413
+    },
+    "topPerformingTips": [
+      {
+        "tipId": "first-dashboard-visit",
+        "shown": 89,
+        "clicked": 67,
+        "ctr": 0.753,
+        "context": "First-time dashboard users"
+      },
+      {
+        "tipId": "theme-scan-complete",
+        "shown": 123,
+        "clicked": 78,
+        "ctr": 0.634,
+        "context": "After theme analysis"
+      },
+      {
+        "tipId": "export-suggestion",
+        "shown": 156,
+        "clicked": 89,
+        "ctr": 0.571,
+        "context": "Post-analysis workflow"
+      },
+      {
+        "tipId": "revision-engine-help",
+        "shown": 45,
+        "clicked": 23,
+        "ctr": 0.511,
+        "context": "Multiple dismissals"
+      },
+      {
+        "tipId": "user-inactivity",
+        "shown": 154,
+        "clicked": 67,
+        "ctr": 0.435,
+        "context": "2+ min inactivity"
+      }
+    ],
+    "lowPerformingTips": [
+      {
+        "tipId": "user-inactivity",
+        "ctr": 0.435,
+        "recommendation": "Consider reducing frequency"
+      },
+      {
+        "tipId": "style-drift-alert",
+        "ctr": 0.382,
+        "recommendation": "May need better timing"
+      }
+    ]
+  },
+  "onboardingPerformance": {
+    "completionRates": {
+      "totalStarted": 234,
+      "totalCompleted": 189,
+      "overallCompletionRate": 0.808
+    },
+    "flowsByCompletionRate": [
+      {
+        "flow": "Theme Analysis",
+        "started": 89,
+        "completed": 78,
+        "rate": 0.876
+      },
+      {
+        "flow": "Style Profile",
+        "started": 67,
+        "completed": 56,
+        "rate": 0.836
+      },
+      {
+        "flow": "Dashboard",
+        "started": 78,
+        "completed": 55,
+        "rate": 0.705
+      }
+    ],
+    "insights": [
+      "Dashboard onboarding has lowest completion rate (70.5%)",
+      "Consider simplifying dashboard introduction",
+      "Add more interactive elements to increase engagement"
+    ]
+  },
+  "mcpSecurityCompliance": {
+    "accessControlValidation": {
+      "freeTierRestrictions": "All tests passed",
+      "proTierAccess": "All features accessible",
+      "adminTierAccess": "Full system access",
+      "roleBasedPermissions": "Properly enforced"
+    },
+    "securityMetrics": {
+      "unauthorizedAccessAttempts": 0,
+      "mcpViolations": 0,
+      "dataAnonymization": "100% compliant",
+      "telemetryPrivacy": "No PII collected"
+    },
+    "auditTrail": [
+      "All agent interactions logged with session IDs",
+      "No personally identifiable information stored",
+      "MCP tags applied to all telemetry events",
+      "Access logs maintained for security review"
+    ]
+  },
+  "performanceMetrics": {
+    "responseTimes": {
+      "averageKBQueryResponse": 0.3,
+      "averageLLMFallbackResponse": 2.3,
+      "averageProactiveTipDisplay": 0.1,
+      "averageOnboardingStepLoad": 0.8
+    },
+    "errorRates": {
+      "overallErrorRate": 0.021,
+      "kbQueryErrors": 0.005,
+      "llmFallbackErrors": 0.032,
+      "uiRenderingErrors": 0.001
+    },
+    "systemHealth": {
+      "agentUptime": 0.998,
+      "serviceAvailability": 0.999,
+      "memoryUsage": "Stable",
+      "cpuUsage": "Optimal"
+    }
+  },
+  "actionableInsights": {
+    "immediateImprovements": [
+      {
+        "action": "Add KB entries for theme alignment queries",
+        "impact": "45 fallbacks",
+        "priority": "High"
+      },
+      {
+        "action": "Improve style detection algorithms",
+        "impact": "38 fallbacks",
+        "priority": "High"
+      },
+      {
+        "action": "Enhance export documentation",
+        "impact": "29 fallbacks",
+        "priority": "Medium"
+      },
+      {
+        "action": "Optimize dashboard onboarding",
+        "impact": "70.5% completion rate",
+        "priority": "High"
+      }
+    ],
+    "featureRecommendations": [
+      {
+        "feature": "Smart Suggestions",
+        "description": "Implement ML-based suggestion ranking",
+        "impact": "Improve acceptance rates"
+      },
+      {
+        "feature": "Contextual Tips",
+        "description": "Improve tip timing based on user behavior",
+        "impact": "Increase click-through rates"
+      },
+      {
+        "feature": "Progressive Onboarding",
+        "description": "Break complex flows into smaller steps",
+        "impact": "Improve completion rates"
+      },
+      {
+        "feature": "Error Recovery",
+        "description": "Add retry mechanisms for failed LLM calls",
+        "impact": "Reduce error rates"
+      }
+    ],
+    "performanceOptimizations": [
+      {
+        "optimization": "Cache frequent KB queries",
+        "impact": "Reduce response times",
+        "effort": "Low"
+      },
+      {
+        "optimization": "Implement suggestion preloading",
+        "impact": "Improve user experience",
+        "effort": "Medium"
+      },
+      {
+        "optimization": "Optimize LLM fallback",
+        "impact": "Better prompt engineering",
+        "effort": "Medium"
+      },
+      {
+        "optimization": "Add telemetry batching",
+        "impact": "Reduce API calls",
+        "effort": "Low"
+      }
+    ]
+  },
+  "nextSteps": {
+    "shortTerm": [
+      "Add missing KB entries for high-fallback queries",
+      "Improve dashboard onboarding flow",
+      "Optimize proactive tip timing",
+      "Implement suggestion ranking algorithm"
+    ],
+    "mediumTerm": [
+      "Add ML-based suggestion personalization",
+      "Implement advanced error recovery",
+      "Develop comprehensive export documentation",
+      "Create interactive onboarding tutorials"
+    ],
+    "longTerm": [
+      "Build predictive analytics for user needs",
+      "Implement adaptive learning for agent responses",
+      "Develop comprehensive A/B testing framework",
+      "Create advanced analytics dashboard"
+    ]
+  }
+} 

@@ -1,0 +1,152 @@
+name: Export Audit Logs
+
+on:
+  workflow_call:
+    secrets:
+      NEXT_PUBLIC_SUPABASE_URL:
+        required: true
+      SUPABASE_SERVICE_ROLE_KEY:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+      AWS_REGION:
+        required: false
+      AWS_S3_BUCKET:
+        required: false
+      GOOGLE_CLOUD_CREDENTIALS:
+        required: false
+      GOOGLE_CLOUD_PROJECT_ID:
+        required: false
+      BIGQUERY_DATASET_ID:
+        required: false
+      BIGQUERY_TABLE_ID:
+        required: false
+      EXPORT_BATCH_SIZE:
+        required: false
+      EXPORT_RETRY_ATTEMPTS:
+        required: false
+  schedule:
+    # Run nightly at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    # Allow manual trigger
+    inputs:
+      export_type:
+        description: 'Export type (s3 or bigquery)'
+        required: true
+        default: 's3'
+        type: choice
+        options:
+          - s3
+          - bigquery
+
+env:
+  NODE_VERSION: '18'
+  EXPORT_TYPE: ${{ github.event.inputs.export_type || 's3' }}
+
+jobs:
+  export-audit-logs:
+    name: Export Audit Logs to ${{ inputs.export_type || 's3' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+            
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Install TypeScript
+        run: npm install -g typescript ts-node
+        
+      - name: Setup AWS credentials (S3 export)
+        if: env.EXPORT_TYPE == 's3'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+          
+      - name: Setup Google Cloud credentials (BigQuery export)
+        if: env.EXPORT_TYPE == 'bigquery'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
+          
+      - name: Create environment file
+        run: |
+          cat > .env << EOF
+          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EXPORT_TYPE=${{ env.EXPORT_TYPE }}
+          EOF
+          
+          # Add AWS credentials for S3 export
+          if [ "$EXPORT_TYPE" = "s3" ]; then
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+            echo "AWS_REGION=${{ secrets.AWS_REGION || 'us-east-1' }}" >> .env
+            echo "AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET || 'doccraft-audit-logs' }}" >> .env
+          fi
+          
+          # Add BigQuery credentials for BigQuery export
+          if [ "$EXPORT_TYPE" = "bigquery" ]; then
+            echo "GOOGLE_CLOUD_PROJECT_ID=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}" >> .env
+            echo "GOOGLE_CLOUD_KEY_FILE=${{ secrets.GOOGLE_CLOUD_KEY_FILE }}" >> .env
+            echo "BIGQUERY_DATASET_ID=${{ secrets.BIGQUERY_DATASET_ID || 'audit_logs' }}" >> .env
+            echo "BIGQUERY_TABLE_ID=${{ secrets.BIGQUERY_TABLE_ID || 'pattern_moderation_log' }}" >> .env
+          fi
+          
+          echo "EXPORT_BATCH_SIZE=${{ secrets.EXPORT_BATCH_SIZE || '1000' }}" >> .env
+          echo "EXPORT_RETRY_ATTEMPTS=${{ secrets.EXPORT_RETRY_ATTEMPTS || '3' }}" >> .env
+          
+      - name: Run audit log export
+        run: |
+          npx ts-node scripts/cron/exportAuditLogs.ts ${{ env.EXPORT_TYPE }}
+        env:
+          NODE_ENV: production
+        id: export-audit-logs
+          
+      - name: Upload logs as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: export-logs-${{ github.run_id }}
+          path: |
+            scripts/cron/logs/
+            scripts/cron/checkpoints/
+          retention-days: 30
+          
+      - name: Notify on failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: 'Audit log export failed for DocCraft-AI'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          
+      - name: Notify on success
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: 'Audit log export completed successfully for DocCraft-AI'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} 
