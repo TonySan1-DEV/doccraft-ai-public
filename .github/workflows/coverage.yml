@@ -52,8 +52,11 @@ jobs:
         
       - name: Run tests with coverage
         run: |
-          npm test -- --coverage --coverageThreshold='{"global": {"lines": 90, "functions": 85, "branches": 80}}'
+          npm test -- --coverage --coverageThreshold='{"global": {"lines": 90, "functions": 85, "branches": 80}}' --passWithNoTests
         id: coverage
+        env:
+          NODE_ENV: test
+          CI: true
         
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

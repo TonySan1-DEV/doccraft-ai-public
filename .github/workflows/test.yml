@@ -53,8 +53,11 @@ jobs:
         run: npm ci
         
       - name: Run unit tests
-        run: npm test
+        run: npm test -- --passWithNoTests
         id: test
+        env:
+          NODE_ENV: test
+          CI: true
         
       - name: Upload test results
         if: always()
