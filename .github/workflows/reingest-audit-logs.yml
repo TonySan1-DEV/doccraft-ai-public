@@ -2,6 +2,11 @@ name: Reingest Audit Logs
 
 on:
   workflow_call:
+    inputs:
+      run_audit:
+        required: true
+        type: boolean
+        description: 'Whether to run the audit reingest job'
     secrets:
       NEXT_PUBLIC_SUPABASE_URL:
         required: true
@@ -48,6 +53,7 @@ env:
 
 jobs:
   reingest-audit-logs:
+    if: ${{ inputs.run_audit }}
     name: Reingest Audit Logs from ${{ inputs.source_type || 's3' }}
     runs-on: ubuntu-latest
 
