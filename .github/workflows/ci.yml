@@ -30,13 +30,15 @@ jobs:
     uses: ./.github/workflows/export-audit-logs.yml
     secrets: inherit
     with:
-      run_audit: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
+      run_audit: ${{ secrets.AWS_ACCESS_KEY_ID != '' || secrets.GCP_SERVICE_ACCOUNT != '' }}
+      provider: ${{ secrets.AWS_ACCESS_KEY_ID != '' && 'aws' || secrets.GCP_SERVICE_ACCOUNT != '' && 'gcp' || '' }}
 
   audit-reingest:
     uses: ./.github/workflows/reingest-audit-logs.yml
     secrets: inherit
     with:
-      run_audit: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
+      run_audit: ${{ secrets.AWS_ACCESS_KEY_ID != '' || secrets.GCP_SERVICE_ACCOUNT != '' }}
+      provider: ${{ secrets.AWS_ACCESS_KEY_ID != '' && 'aws' || secrets.GCP_SERVICE_ACCOUNT != '' && 'gcp' || '' }}
 
   summary:
     runs-on: ubuntu-latest
