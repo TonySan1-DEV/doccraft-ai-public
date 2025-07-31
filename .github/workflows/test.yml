@@ -6,6 +6,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --experimental-vm-modules
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'test-secret' }}
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL || 'http://localhost:3000' }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'http://localhost:54321' }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || 'test-anon-key' }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'test-openai-key' }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -13,5 +20,7 @@ jobs:
           node-version: 18
           cache: npm
       - run: npm ci
+      - name: Load Test Env
+        run: cp config/.env.test .env.local
       - name: Run unit tests
-        run: npm test -- --passWithNoTests 
+        run: npm test -- --ci --coverage --passWithNoTests 
