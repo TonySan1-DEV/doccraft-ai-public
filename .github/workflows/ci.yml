@@ -27,10 +27,12 @@ jobs:
     uses: ./.github/workflows/emotionArc.yml
 
   audit-export:
+    if: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
     uses: ./.github/workflows/export-audit-logs.yml
     secrets: inherit
 
   audit-reingest:
+    if: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
     uses: ./.github/workflows/reingest-audit-logs.yml
     secrets: inherit
 
