@@ -30,13 +30,13 @@ jobs:
     uses: ./.github/workflows/export-audit-logs.yml
     secrets: inherit
     with:
-      run_audit: true
+      run_audit: ${{ secrets.AWS_ACCESS_KEY_ID != '' || secrets.GCP_SERVICE_ACCOUNT != '' }}
 
   audit-reingest:
     uses: ./.github/workflows/reingest-audit-logs.yml
     secrets: inherit
     with:
-      run_audit: true
+      run_audit: ${{ secrets.AWS_ACCESS_KEY_ID != '' || secrets.GCP_SERVICE_ACCOUNT != '' }}
 
   summary:
     runs-on: ubuntu-latest
@@ -47,31 +47,35 @@ jobs:
         run: |
           echo "Checking status of all modular workflows..."
           
-          # Check if all required jobs succeeded
-          if [[ "${{ needs.lint.result }}" == "success" && 
-                "${{ needs.typecheck.result }}" == "success" && 
-                "${{ needs.test.result }}" == "success" && 
-                "${{ needs.coverage.result }}" == "success" && 
-                "${{ needs.emotionArc.result }}" == "success" ]]; then
+          CORE_FAILURE=false
+          
+          if [[ "${{ needs.lint.result }}" != "success" ||
+                "${{ needs.typecheck.result }}" != "success" ||
+                "${{ needs.test.result }}" != "success" ||
+                "${{ needs.coverage.result }}" != "success" ||
+                "${{ needs.emotionArc.result }}" != "success" ]]; then
+            CORE_FAILURE=true
+          fi
+          
+          if [[ "$CORE_FAILURE" == "true" ]]; then
+            echo "❌ Some core CI checks failed:"
+            echo "❌ Lint: ${{ needs.lint.result }}"
+            echo "❌ Typecheck: ${{ needs.typecheck.result }}"
+            echo "❌ Test: ${{ needs.test.result }}"
+            echo "❌ Coverage: ${{ needs.coverage.result }}"
+            echo "❌ EmotionArc: ${{ needs.emotionArc.result }}"
+            exit 1
+          else
             echo "✅ All core CI checks passed successfully!"
             echo "✅ Lint: ${{ needs.lint.result }}"
             echo "✅ Typecheck: ${{ needs.typecheck.result }}"
             echo "✅ Test: ${{ needs.test.result }}"
             echo "✅ Coverage: ${{ needs.coverage.result }}"
             echo "✅ EmotionArc: ${{ needs.emotionArc.result }}"
-            echo "📊 Audit Export: ${{ needs.audit-export.result }}"
-            echo "📊 Audit Reingest: ${{ needs.audit-reingest.result }}"
-          else
-            echo "❌ Some CI checks failed:"
-            echo "❌ Lint: ${{ needs.lint.result }}"
-            echo "❌ Typecheck: ${{ needs.typecheck.result }}"
-            echo "❌ Test: ${{ needs.test.result }}"
-            echo "❌ Coverage: ${{ needs.coverage.result }}"
-            echo "❌ EmotionArc: ${{ needs.emotionArc.result }}"
-            echo "📊 Audit Export: ${{ needs.audit-export.result }}"
-            echo "📊 Audit Reingest: ${{ needs.audit-reingest.result }}"
-            exit 1
           fi
+          
+          echo "📊 Audit Export: ${{ needs.audit-export.result }}"
+          echo "📊 Audit Reingest: ${{ needs.audit-reingest.result }}"
 
       - name: Comment on PR with summary
         if: github.event_name == 'pull_request'

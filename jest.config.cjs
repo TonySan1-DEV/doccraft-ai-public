@@ -1,5 +1,5 @@
 module.exports = {
-  preset: 'ts-jest',
+  preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/src'],
   testMatch: [
@@ -12,9 +12,14 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
-      '<rootDir>/__mocks__/fileMock.js'
+      '<rootDir>/__mocks__/fileMock.js',
+    '^../useMCP$': '<rootDir>/src/__mocks__/useMCP.mock.ts',
+    '^../lib/supabase$': '<rootDir>/src/__mocks__/supabase.mock.ts',
+    '^../lib/collaboration/yjsProvider$': '<rootDir>/src/__mocks__/yjsProvider.mock.ts',
+    '^../services/imageFetcher$': '<rootDir>/src/__mocks__/imageFetcher.mock.ts',
+    '^../../services/CopilotEngine$': '<rootDir>/src/__mocks__/CopilotEngine.mock.ts'
   },
-  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/src/__tests__/jest.setup.ts', '<rootDir>/src/__tests__/setup.ts'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
@@ -26,16 +31,10 @@ module.exports = {
   coverageReporters: ['text', 'lcov', 'html'],
   testTimeout: 10000,
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      useESM: true,
-      tsconfig: 'tsconfig.json'
-    }]
+    '^.+\\.[tj]sx?$': ['ts-jest', { useESM: true }],
   },
   globals: {
-    'ts-jest': {
-      useESM: true,
-      tsconfig: 'tsconfig.json'
-    }
+    'ts-jest': { useESM: true },
   },
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
