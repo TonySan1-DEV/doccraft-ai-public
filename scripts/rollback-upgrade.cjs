@@ -11,7 +11,12 @@ const snapshot = JSON.parse(fs.readFileSync("upgrade-snapshot.json", "utf-8"));
 console.log("🔄 Rolling back to:", snapshot);
 
 try {
-  execSync(`npm install vite@${snapshot.vite} esbuild@${snapshot.esbuild}`, {
+  // Handle case where esbuild was not directly installed
+  const installCommand = snapshot.esbuild 
+    ? `npm install vite@${snapshot.vite} esbuild@${snapshot.esbuild}`
+    : `npm install vite@${snapshot.vite}`;
+  
+  execSync(installCommand, {
     stdio: "inherit"
   });
   console.log("✅ Rollback successful");
