@@ -20,6 +20,8 @@ jobs:
           node-version: 18
           cache: npm
       - run: npm ci
+      - name: Pre-upgrade snapshot (for audit safety)
+        run: npm run pre-upgrade
       - name: Load Test Env
         run: cp config/.env.test .env.local
       - name: Run unit tests
