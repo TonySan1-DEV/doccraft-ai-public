@@ -1,0 +1,44 @@
+# DocCraft-AI v3 Cursor Rules
+
+## Project Context
+- This is DocCraft-AI v3, an advanced AI-powered document processing platform
+- Uses TypeScript with strict type checking
+- Follows modular architecture with clear separation of concerns
+- Implements contextual prompt engineering and emotional arc analysis
+
+## Code Standards
+- Use TypeScript for all new code
+- Follow existing naming conventions (camelCase for variables, PascalCase for components)
+- Include comprehensive JSDoc comments for all functions
+- Write unit tests for all new functionality
+- Use the existing project structure and patterns
+
+## Architecture Guidelines
+- Follow the modular architecture pattern established in the codebase
+- Use the existing service layer for business logic
+- Implement proper error handling and fallback mechanisms
+- Maintain audit logging for compliance and debugging
+
+## Testing Requirements
+- All new code must include unit tests
+- Test edge cases and error scenarios
+- Maintain 100% test coverage for core functions
+- Use Jest testing framework with TypeScript support
+
+## MCP Integration
+- Reference `@mcpRegistry.ts` when generating code
+- Obey allowed actions and roles per file
+- Use examples in `examples/` directory
+- Stay within project scope as defined in `project_specs.md`
+
+## Security & Performance
+- Follow security best practices for API keys and sensitive data
+- Implement proper input validation
+- Optimize for performance with memoization where appropriate
+- Use the existing audit system for logging
+
+## Documentation
+- Update README.md for new features
+- Include usage examples in documentation
+- Document any new environment variables
+- Update CHANGELOG.md for significant changes 

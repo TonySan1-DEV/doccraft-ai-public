@@ -38,6 +38,7 @@ DocCraft-AI v3 is an advanced AI-powered document processing and content generat
 - npm or yarn package manager
 - Supabase account and project
 - OpenAI API key
+- Cursor AI Desktop (for MCP integration)
 
 ### Installation
 ```bash
@@ -56,6 +57,41 @@ npm test
 
 # Start development server
 npm run dev
+```
+
+## 🔌 MCP Setup
+
+DocCraft-AI v3 includes a Model Context Protocol (MCP) server for enhanced AI assistance in Cursor AI Desktop.
+
+### Prerequisites
+1. Ensure you have Node.js >=18 installed
+2. Install Cursor AI Desktop
+3. Have the project cloned locally
+
+### Setup Instructions
+1. **Start Cursor AI Desktop**
+2. **Open the project** in Cursor
+3. **MCP server will automatically launch** via the configured command:
+   ```bash
+   npm run mcp
+   ```
+
+### MCP Features
+- **Contextual Engineering**: Provides project-specific context to AI assistants
+- **CI/CD Awareness**: Integrates with GitHub Actions and deployment pipelines
+- **Database Context**: Access to Supabase schema and data patterns
+- **Environment Management**: Secure handling of environment variables
+
+### Development Mode
+For development with auto-reload:
+```bash
+npm run mcp:watch
+```
+
+### Validation
+The MCP configuration is validated in CI/CD:
+```bash
+node scripts/validate-mcp-config.js
 ```
 
 ### Usage

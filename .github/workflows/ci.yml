@@ -26,6 +26,17 @@ jobs:
   emotionArc:
     uses: ./.github/workflows/emotionArc.yml
 
+  validate-mcp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: npm ci
+      - name: Validate MCP Config
+        run: node scripts/validate-mcp-config.js
+
   audit-export:
     uses: ./.github/workflows/export-audit-logs.yml
     secrets: inherit
@@ -40,7 +51,7 @@ jobs:
 
   summary:
     runs-on: ubuntu-latest
-    needs: [lint, typecheck, test, coverage, emotionArc, audit-export, audit-reingest]
+    needs: [lint, typecheck, test, coverage, emotionArc, validate-mcp, audit-export, audit-reingest]
     if: always()
     steps:
       - name: Check workflow status
@@ -53,7 +64,8 @@ jobs:
                 "${{ needs.typecheck.result }}" != "success" ||
                 "${{ needs.test.result }}" != "success" ||
                 "${{ needs.coverage.result }}" != "success" ||
-                "${{ needs.emotionArc.result }}" != "success" ]]; then
+                "${{ needs.emotionArc.result }}" != "success" ||
+                "${{ needs.validate-mcp.result }}" != "success" ]]; then
             CORE_FAILURE=true
           fi
           
@@ -64,6 +76,7 @@ jobs:
             echo "❌ Test: ${{ needs.test.result }}"
             echo "❌ Coverage: ${{ needs.coverage.result }}"
             echo "❌ EmotionArc: ${{ needs.emotionArc.result }}"
+            echo "❌ MCP Validation: ${{ needs.validate-mcp.result }}"
             exit 1
           else
             echo "✅ All core CI checks passed successfully!"
@@ -72,6 +85,7 @@ jobs:
             echo "✅ Test: ${{ needs.test.result }}"
             echo "✅ Coverage: ${{ needs.coverage.result }}"
             echo "✅ EmotionArc: ${{ needs.emotionArc.result }}"
+            echo "✅ MCP Validation: ${{ needs.validate-mcp.result }}"
           fi
           
           echo "📊 Audit Export: ${{ needs.audit-export.result }}"
@@ -87,6 +101,7 @@ jobs:
             const testStatus = '${{ needs.test.result }}' === 'success' ? '✅' : '❌';
             const coverageStatus = '${{ needs.coverage.result }}' === 'success' ? '✅' : '❌';
             const emotionArcStatus = '${{ needs.emotionArc.result }}' === 'success' ? '✅' : '❌';
+            const mcpValidationStatus = '${{ needs.validate-mcp.result }}' === 'success' ? '✅' : '❌';
             const auditExportStatus = '${{ needs.audit-export.result }}' === 'success' ? '✅' : '📊';
             const auditReingestStatus = '${{ needs.audit-reingest.result }}' === 'success' ? '✅' : '📊';
 
@@ -95,7 +110,8 @@ jobs:
               '${{ needs.typecheck.result }}' === 'success' &&
               '${{ needs.test.result }}' === 'success' &&
               '${{ needs.coverage.result }}' === 'success' &&
-              '${{ needs.emotionArc.result }}' === 'success'
+              '${{ needs.emotionArc.result }}' === 'success' &&
+              '${{ needs.validate-mcp.result }}' === 'success'
                 ? '✅ PASSED'
                 : '❌ FAILED';
 
@@ -118,6 +134,7 @@ jobs:
               '- ' + linkForJob('test') + '\n' +
               '- ' + linkForJob('coverage') + '\n' +
               '- ' + linkForJob('emotionArc') + '\n' +
+              '- ' + linkForJob('validate-mcp') + '\n' +
               '- ' + linkForJob('audit-export') + '\n' +
               '- ' + linkForJob('audit-reingest') + '\n';
 
@@ -129,7 +146,8 @@ jobs:
               '- Type Check: ' + typecheckStatus + '\n' +
               '- Tests: ' + testStatus + '\n' +
               '- Coverage: ' + coverageStatus + '\n' +
-              '- Emotion Arc: ' + emotionArcStatus + '\n\n' +
+              '- Emotion Arc: ' + emotionArcStatus + '\n' +
+              '- MCP Validation: ' + mcpValidationStatus + '\n\n' +
               '### Audit Operations (Informational)\n' +
               '- Export Logs: ' + auditExportStatus + '\n' +
               '- Reingest Logs: ' + auditReingestStatus + '\n\n' +

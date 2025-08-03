@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "mcpServers": {
+    "doccraft-ai-v3": {
+      "name": "DocCraft-AI v3 MCP",
+      "command": "npm run mcp",
+      "cwd": "./",
+      "project": "DocCraft-AI v3",
+      "defaultProviders": ["repoContext", "ciContext", "dbContext", "envContext"],
+      "enforcementRules": ".cursor/.cursorrules",
+      "description": "MCP server for DocCraft-AI v3 providing contextual engineering and CI/CD awareness."
+    }
+  }
+} 
