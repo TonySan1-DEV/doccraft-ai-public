@@ -15,6 +15,9 @@
     "test:feedback": "jest --config jest.config.cjs --testPathPattern=feedbackSystem",
     "test:preset": "jest --config jest.config.cjs --testPathPattern=presetSystem",
     "test:versioning": "jest --config jest.config.cjs --testPathPattern=preferenceVersioning",
+    "pre-upgrade": "node scripts/pre-upgrade-snapshot.cjs",
+    "rollback": "node scripts/rollback-upgrade.cjs",
+    "upgrade:vite": "node scripts/upgrade-vite-secure.cjs",
     "supabase:setup": "node scripts/setup-supabase.js",
     "supabase:test": "node scripts/test-supabase-connection.js",
     "supabase:reset": "node scripts/reset-database.js",
@@ -47,10 +50,14 @@
     "@tiptap/react": "^3.0.7",
     "@tiptap/starter-kit": "^3.0.7",
     "@tiptap/y-tiptap": "^3.0.0",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.1.0",
     "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-transition-group": "^4.4.12",
     "clsx": "^2.1.0",
     "dotenv": "^16.6.1",
+    "esbuild": "^0.25.8",
+    "express": "^5.1.0",
     "lucide-react": "^0.263.1",
     "mammoth": "^1.6.0",
     "openai": "^4.28.0",
@@ -65,6 +72,7 @@
     "recharts": "^3.1.0",
     "socket.io-client": "^4.8.1",
     "stripe": "^18.3.0",
+    "ts-node": "^10.9.2",
     "y-prosemirror": "^1.2.1",
     "y-websocket": "^1.5.1",
     "yjs": "^13.6.8"
@@ -91,8 +99,8 @@
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.0",
     "ts-jest": "^29.4.0",
-    "typescript": "^5.2.2",
-    "vite": "^5.0.8"
+    "typescript": "^5.8.3",
+    "vite": "^7.0.6"
   },
   "serverDependencies": {
     "express": "^4.18.2",

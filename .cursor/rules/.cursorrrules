@@ -1,0 +1,51 @@
+{
+  "version": 2,
+  "name": "DocCraft-AI v3 Rules",
+  "rules": [
+    {
+      "type": "project",
+      "scope": "DocCraft-AI v3",
+      "deny": [
+        {
+          "path": "**/*.env.local",
+          "message": "⚠️ Never expose real secrets or `.env.local` files in prompts."
+        }
+      ],
+      "require": [
+        {
+          "field": "prompt.mode",
+          "values": [
+            "Beginner",
+            "Advanced"
+          ],
+          "message": "Please specify `mode: Beginner` or `mode: Advanced` in your prompt."
+        },
+        {
+          "field": "prompt.project",
+          "values": [
+            "DocCraft-AI v3"
+          ],
+          "message": "Prompt must include `Project: DocCraft‑AI v3`."
+        },
+        {
+          "field": "prompt.providers.repoContext",
+          "values": [
+            true,
+            false
+          ],
+          "message": "Specify `providers.repoContext` explicitly."
+        }
+      ]
+    },
+    {
+      "type": "user",
+      "scope": "*",
+      "deny": [
+        {
+          "pattern": ".*[A-Za-z0-9_]+=[A-Za-z0-9_]+",
+          "message": "No real secrets (API keys, database URLs) allowed in prompt text."
+        }
+      ]
+    }
+  ]
+}
