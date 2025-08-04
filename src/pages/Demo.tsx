@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useDocCraftAgent } from "../contexts/AgentContext";
 import DocCraftAgentChat from "../../modules/agent/components/DocCraftAgentChat";
+import { useMCP } from "../useMCP";
 
 interface DemoStep {
   id: string;
@@ -186,6 +187,9 @@ const ConfettiExplosion = () => {
 
 export default function Demo() {
   const navigate = useNavigate();
+  
+  /* MCP: { role: "curator", allowedActions: ["refactor", "animate", "style", "organize", "present"] } */
+  const ctx = useMCP("Demo.tsx");
 
   // Add error handling for the agent context
   let sendAgentGreeting: any = () => {};

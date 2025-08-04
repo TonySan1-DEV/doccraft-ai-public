@@ -189,6 +189,19 @@ export const mcpRegistry = {
       tier: "Admin",
       roleMeta: roleMeta.admin
     },
+    "Demo.tsx": { 
+      // 🎯 Interactive demo presentation page
+      // - Step-by-step feature demonstration
+      // - Interactive navigation and user control
+      // - Confetti celebration and agent integration
+      // - Professional conversion-focused experience
+      role: "curator", 
+      allowedActions: ['refactor', 'animate', 'style', 'organize', 'present'], 
+      theme: "demo-presentation", 
+      contentSensitivity: "medium",
+      tier: "Pro",
+      roleMeta: roleMeta.curator
+    },
     "DocumentProcessor.tsx": { 
       role: "admin", 
       allowedActions: ['analyze', 'process'], 
