@@ -18,7 +18,7 @@ export function createUserStyleProfile(profile: StyleTargetProfile): string {
   const updated = [...profiles, newProfile];
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   if (process.env.NODE_ENV === 'development') {
-    // eslint-disable-next-line no-console
+     
     console.log('[userStyleConfig] Created profile:', newProfile);
   }
   return id;
@@ -41,7 +41,7 @@ export function deleteUserStyleProfile(id: string): void {
   const updated = profiles.filter(p => p.id !== id);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   if (process.env.NODE_ENV === 'development') {
-    // eslint-disable-next-line no-console
+     
     console.log('[userStyleConfig] Deleted profile:', id);
   }
 }
@@ -57,13 +57,13 @@ export function importUserStyleProfiles(json: string): void {
     if (Array.isArray(arr)) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
       if (process.env.NODE_ENV === 'development') {
-        // eslint-disable-next-line no-console
+         
         console.log('[userStyleConfig] Imported profiles:', arr);
       }
     }
   } catch (e) {
     if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
+       
       console.error('[userStyleConfig] Failed to import profiles:', e);
     }
   }

@@ -1,28 +1,30 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  MessageCircle, 
-  HelpCircle, 
-  Mail, 
-  Phone, 
+import React from "react";
+import { Link } from "react-router-dom";
+import {
+  MessageCircle,
+  HelpCircle,
+  Mail,
+  Phone,
   MapPin,
   Heart,
-  ExternalLink
-} from 'lucide-react';
+  ExternalLink,
+} from "lucide-react";
 
 interface FooterProps {
   showContactButton?: boolean;
   className?: string;
 }
 
-export const Footer: React.FC<FooterProps> = ({ 
-  showContactButton = true, 
-  className = '' 
+export const Footer: React.FC<FooterProps> = ({
+  showContactButton = true,
+  className = "",
 }) => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className={`bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 ${className}`}>
+    <footer
+      className={`bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 ${className}`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -37,8 +39,9 @@ export const Footer: React.FC<FooterProps> = ({
                 </span>
               </div>
               <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                Empowering writers with AI-driven document processing and writing assistance. 
-                Transform your content creation workflow with our state-of-the-art platform.
+                Empowering writers with AI-driven document processing and
+                writing assistance. Transform your content creation workflow
+                with our state-of-the-art platform.
               </p>
               <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                 <div className="flex items-center space-x-1">
@@ -57,32 +60,32 @@ export const Footer: React.FC<FooterProps> = ({
               </h3>
               <ul className="space-y-2">
                 <li>
-                  <Link 
-                    to="/dashboard" 
+                  <Link
+                    to="/dashboard"
                     className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   >
                     Dashboard
                   </Link>
                 </li>
                 <li>
-                  <Link 
-                    to="/processor" 
+                  <Link
+                    to="/processor"
                     className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   >
                     Document Processor
                   </Link>
                 </li>
                 <li>
-                  <Link 
-                    to="/book-outliner" 
+                  <Link
+                    to="/book-outliner"
                     className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   >
                     Book Outliner
                   </Link>
                 </li>
                 <li>
-                  <Link 
-                    to="/analytics" 
+                  <Link
+                    to="/analytics"
                     className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   >
                     Analytics
@@ -98,8 +101,8 @@ export const Footer: React.FC<FooterProps> = ({
               </h3>
               <ul className="space-y-2">
                 <li>
-                  <Link 
-                    to="/support" 
+                  <Link
+                    to="/support"
                     className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center space-x-1"
                   >
                     <HelpCircle className="w-4 h-4" />
@@ -107,8 +110,8 @@ export const Footer: React.FC<FooterProps> = ({
                   </Link>
                 </li>
                 <li>
-                  <a 
-                    href="mailto:support@doccraft-ai.com" 
+                  <a
+                    href="mailto:support@doccraft-ai.com"
                     className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center space-x-1"
                   >
                     <Mail className="w-4 h-4" />
@@ -116,8 +119,8 @@ export const Footer: React.FC<FooterProps> = ({
                   </a>
                 </li>
                 <li>
-                  <a 
-                    href="tel:+1-555-0123" 
+                  <a
+                    href="tel:+1-555-0123"
                     className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center space-x-1"
                   >
                     <Phone className="w-4 h-4" />
@@ -139,7 +142,8 @@ export const Footer: React.FC<FooterProps> = ({
             <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
               <div className="flex flex-col sm:flex-row items-center justify-between">
                 <div className="text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-0">
-                  Need help? We're here to assist you with any questions or issues.
+                  Need help? We're here to assist you with any questions or
+                  issues.
                 </div>
                 <div className="flex space-x-3">
                   <Link
@@ -165,4 +169,4 @@ export const Footer: React.FC<FooterProps> = ({
       </div>
     </footer>
   );
-}; 
+};

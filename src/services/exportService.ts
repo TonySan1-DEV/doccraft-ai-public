@@ -1,0 +1,637 @@
+// Export Service
+// MCP: { role: "exporter", allowedActions: ["generate", "format", "optimize"], theme: "document_export", contentSensitivity: "medium", tier: "Pro" }
+
+import { EbookTemplate, FormattedContent } from "./ebookTemplateService";
+import { IntegratedEbookResult } from "./ebookIntegrationService";
+
+export interface ExportOptions {
+  format: "pdf" | "epub" | "pptx" | "docx";
+  quality: "standard" | "high" | "premium";
+  includeImages: boolean;
+  includeMetadata: boolean;
+  includeTableOfContents: boolean;
+  watermark?: string;
+  password?: string;
+}
+
+export interface ExportResult {
+  success: boolean;
+  downloadUrl?: string;
+  fileSize?: string;
+  error?: string;
+  metadata?: {
+    pages?: number;
+    wordCount?: number;
+    imageCount?: number;
+    chapters?: number;
+  };
+}
+
+export interface PDFExportConfig {
+  pageSize: "A4" | "Letter" | "Legal";
+  orientation: "portrait" | "landscape";
+  margins: {
+    top: number;
+    bottom: number;
+    left: number;
+    right: number;
+  };
+  headerFooter: boolean;
+  pageNumbers: boolean;
+  bookmarks: boolean;
+}
+
+export interface EPUBExportConfig {
+  version: "2.0" | "3.0";
+  includeNCX: boolean;
+  includeCover: boolean;
+  includeSpine: boolean;
+  includeManifest: boolean;
+  compression: "none" | "standard" | "high";
+}
+
+export interface PPTXExportConfig {
+  slideSize: "4:3" | "16:9" | "16:10";
+  includeNotes: boolean;
+  includeAnimations: boolean;
+  includeTransitions: boolean;
+  maxSlidesPerChapter: number;
+}
+
+export class ExportService {
+  private readonly PDF_LIBRARY = "jsPDF";
+  private readonly EPUB_LIBRARY = "epub-gen";
+  private readonly PPTX_LIBRARY = "pptxgenjs";
+
+  /**
+   * Export ebook to PDF format
+   */
+  async exportToPDF(
+    content: FormattedContent,
+    template: EbookTemplate,
+    options: ExportOptions,
+    config?: Partial<PDFExportConfig>
+  ): Promise<ExportResult> {
+    try {
+      const pdfConfig: PDFExportConfig = {
+        pageSize: "A4",
+        orientation: "portrait",
+        margins: { top: 72, bottom: 72, left: 72, right: 72 },
+        headerFooter: true,
+        pageNumbers: true,
+        bookmarks: true,
+        ...config,
+      };
+
+      // Generate PDF content
+      const pdfContent = await this.generatePDFContent(
+        content,
+        template,
+        pdfConfig
+      );
+
+      // Create PDF document
+      const pdfBlob = await this.createPDFDocument(pdfContent, pdfConfig);
+
+      // Generate download URL
+      const downloadUrl = URL.createObjectURL(pdfBlob);
+
+      // Calculate metadata
+      const metadata = await this.calculatePDFMetadata(pdfContent);
+
+      return {
+        success: true,
+        downloadUrl,
+        fileSize: this.formatFileSize(pdfBlob.size),
+        metadata,
+      };
+    } catch (error) {
+      console.error("PDF export error:", error);
+      return {
+        success: false,
+        error: `PDF export failed: ${error.message}`,
+      };
+    }
+  }
+
+  /**
+   * Export ebook to EPUB format
+   */
+  async exportToEPUB(
+    content: FormattedContent,
+    template: EbookTemplate,
+    options: ExportOptions,
+    config?: Partial<EPUBExportConfig>
+  ): Promise<ExportResult> {
+    try {
+      const epubConfig: EPUBExportConfig = {
+        version: "3.0",
+        includeNCX: true,
+        includeCover: true,
+        includeSpine: true,
+        includeManifest: true,
+        compression: "standard",
+        ...config,
+      };
+
+      // Generate EPUB content
+      const epubContent = await this.generateEPUBContent(
+        content,
+        template,
+        epubConfig
+      );
+
+      // Create EPUB document
+      const epubBlob = await this.createEPUBDocument(epubContent, epubConfig);
+
+      // Generate download URL
+      const downloadUrl = URL.createObjectURL(epubBlob);
+
+      // Calculate metadata
+      const metadata = await this.calculateEPUBMetadata(epubContent);
+
+      return {
+        success: true,
+        downloadUrl,
+        fileSize: this.formatFileSize(epubBlob.size),
+        metadata,
+      };
+    } catch (error) {
+      console.error("EPUB export error:", error);
+      return {
+        success: false,
+        error: `EPUB export failed: ${error.message}`,
+      };
+    }
+  }
+
+  /**
+   * Export ebook to PPTX format (slides)
+   */
+  async exportToPPTX(
+    content: FormattedContent,
+    template: EbookTemplate,
+    options: ExportOptions,
+    config?: Partial<PPTXExportConfig>
+  ): Promise<ExportResult> {
+    try {
+      const pptxConfig: PPTXExportConfig = {
+        slideSize: "16:9",
+        includeNotes: true,
+        includeAnimations: false,
+        includeTransitions: true,
+        maxSlidesPerChapter: 5,
+        ...config,
+      };
+
+      // Generate PPTX content
+      const pptxContent = await this.generatePPTXContent(
+        content,
+        template,
+        pptxConfig
+      );
+
+      // Create PPTX document
+      const pptxBlob = await this.createPPTXDocument(pptxContent, pptxConfig);
+
+      // Generate download URL
+      const downloadUrl = URL.createObjectURL(pptxBlob);
+
+      // Calculate metadata
+      const metadata = await this.calculatePPTXMetadata(pptxContent);
+
+      return {
+        success: true,
+        downloadUrl,
+        fileSize: this.formatFileSize(pptxBlob.size),
+        metadata,
+      };
+    } catch (error) {
+      console.error("PPTX export error:", error);
+      return {
+        success: false,
+        error: `PPTX export failed: ${error.message}`,
+      };
+    }
+  }
+
+  /**
+   * Generate PDF content with professional formatting
+   */
+  private async generatePDFContent(
+    content: FormattedContent,
+    template: EbookTemplate,
+    config: PDFExportConfig
+  ): Promise<any> {
+    const chapters = content.chapters || [];
+    const images = content.images || [];
+
+    return {
+      title: content.title,
+      author: content.author,
+      chapters: chapters.map((chapter, index) => ({
+        title: chapter.title,
+        content: this.formatContentForPDF(chapter.content, template),
+        level: chapter.level || 1,
+        pageBreak: index > 0,
+        images: images.filter((img) => img.chapterId === chapter.id),
+      })),
+      metadata: {
+        title: content.title,
+        author: content.author,
+        subject: content.subject,
+        keywords: content.keywords,
+        creator: "DocCraft AI",
+        producer: "DocCraft AI Export Service",
+        creationDate: new Date().toISOString(),
+      },
+      styling: {
+        fontFamily: template.typography?.fontFamily || "Times New Roman",
+        fontSize: template.typography?.fontSize?.base || 12,
+        lineHeight: template.typography?.lineHeight || 1.5,
+        colors: template.colors,
+        margins: config.margins,
+        pageSize: config.pageSize,
+        orientation: config.orientation,
+      },
+    };
+  }
+
+  /**
+   * Generate EPUB content with proper structure
+   */
+  private async generateEPUBContent(
+    content: FormattedContent,
+    template: EbookTemplate,
+    config: EPUBExportConfig
+  ): Promise<any> {
+    const chapters = content.chapters || [];
+    const images = content.images || [];
+
+    return {
+      title: content.title,
+      author: content.author,
+      language: "en",
+      chapters: chapters.map((chapter, index) => ({
+        id: `chapter-${index + 1}`,
+        title: chapter.title,
+        content: this.formatContentForEPUB(chapter.content, template),
+        level: chapter.level || 1,
+        images: images.filter((img) => img.chapterId === chapter.id),
+      })),
+      metadata: {
+        title: content.title,
+        author: content.author,
+        language: "en",
+        identifier: `doccraft-${Date.now()}`,
+        publisher: "DocCraft AI",
+        rights: "All rights reserved",
+        description: content.description,
+        subjects: content.keywords,
+      },
+      styling: {
+        css: this.generateEPUBCSS(template),
+        fonts: template.typography?.fontFamily || "serif",
+      },
+    };
+  }
+
+  /**
+   * Generate PPTX content for slides
+   */
+  private async generatePPTXContent(
+    content: FormattedContent,
+    template: EbookTemplate,
+    config: PPTXExportConfig
+  ): Promise<any> {
+    const chapters = content.chapters || [];
+    const images = content.images || [];
+
+    return {
+      title: content.title,
+      author: content.author,
+      slides: chapters.flatMap((chapter, chapterIndex) => {
+        const chapterSlides = [];
+
+        // Title slide for chapter
+        chapterSlides.push({
+          type: "title",
+          title: chapter.title,
+          subtitle: `Chapter ${chapterIndex + 1}`,
+          layout: "title",
+        });
+
+        // Content slides
+        const contentSlides = this.splitContentIntoSlides(
+          chapter.content,
+          config.maxSlidesPerChapter
+        );
+
+        contentSlides.forEach((slideContent, slideIndex) => {
+          chapterSlides.push({
+            type: "content",
+            title:
+              slideIndex === 0 ? chapter.title : `${chapter.title} (continued)`,
+            content: slideContent,
+            layout: "content",
+            images: images.filter((img) => img.chapterId === chapter.id),
+          });
+        });
+
+        return chapterSlides;
+      }),
+      styling: {
+        theme: template.colors,
+        fonts: template.typography,
+        slideSize: config.slideSize,
+      },
+    };
+  }
+
+  /**
+   * Create PDF document using jsPDF
+   */
+  private async createPDFDocument(
+    content: any,
+    config: PDFExportConfig
+  ): Promise<Blob> {
+    // Mock implementation - in real implementation, use jsPDF library
+    const pdfContent = this.generatePDFText(content);
+    return new Blob([pdfContent], { type: "application/pdf" });
+  }
+
+  /**
+   * Create EPUB document using epub-gen
+   */
+  private async createEPUBDocument(
+    content: any,
+    config: EPUBExportConfig
+  ): Promise<Blob> {
+    // Mock implementation - in real implementation, use epub-gen library
+    const epubContent = this.generateEPUBText(content);
+    return new Blob([epubContent], { type: "application/epub+zip" });
+  }
+
+  /**
+   * Create PPTX document using pptxgenjs
+   */
+  private async createPPTXDocument(
+    content: any,
+    config: PPTXExportConfig
+  ): Promise<Blob> {
+    // Mock implementation - in real implementation, use pptxgenjs library
+    const pptxContent = this.generatePPTXText(content);
+    return new Blob([pptxContent], {
+      type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    });
+  }
+
+  /**
+   * Format content for PDF export
+   */
+  private formatContentForPDF(
+    content: string,
+    template: EbookTemplate
+  ): string {
+    // Apply template styling and formatting
+    return content
+      .replace(/\n\n/g, "\n\n")
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*(.*?)\*/g, "<em>$1</em>")
+      .replace(/^# (.*$)/gm, "<h1>$1</h1>")
+      .replace(/^## (.*$)/gm, "<h2>$1</h2>")
+      .replace(/^### (.*$)/gm, "<h3>$1</h3>");
+  }
+
+  /**
+   * Format content for EPUB export
+   */
+  private formatContentForEPUB(
+    content: string,
+    template: EbookTemplate
+  ): string {
+    // Apply EPUB-specific formatting
+    return content
+      .replace(/\n\n/g, "</p><p>")
+      .replace(/^(.+)$/gm, "<p>$1</p>")
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*(.*?)\*/g, "<em>$1</em>");
+  }
+
+  /**
+   * Generate EPUB CSS styles
+   */
+  private generateEPUBCSS(template: EbookTemplate): string {
+    return `
+      body {
+        font-family: ${template.typography?.fontFamily || "serif"};
+        font-size: ${template.typography?.fontSize?.base || 16}px;
+        line-height: ${template.typography?.lineHeight || 1.6};
+        color: ${template.colors?.text || "#000000"};
+        background-color: ${template.colors?.background || "#ffffff"};
+        margin: 2em;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        color: ${template.colors?.primary || "#000000"};
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+      }
+      h1 { font-size: ${template.typography?.fontSize?.h1 || 24}px; }
+      h2 { font-size: ${template.typography?.fontSize?.h2 || 20}px; }
+      h3 { font-size: ${template.typography?.fontSize?.h3 || 18}px; }
+      p { margin-bottom: 1em; }
+      img { max-width: 100%; height: auto; }
+    `;
+  }
+
+  /**
+   * Split content into slides for PPTX
+   */
+  private splitContentIntoSlides(content: string, maxSlides: number): string[] {
+    const paragraphs = content.split("\n\n");
+    const slides: string[] = [];
+    let currentSlide = "";
+
+    for (const paragraph of paragraphs) {
+      if (
+        currentSlide.length + paragraph.length > 500 &&
+        currentSlide.length > 0
+      ) {
+        slides.push(currentSlide.trim());
+        currentSlide = paragraph;
+      } else {
+        currentSlide += (currentSlide ? "\n\n" : "") + paragraph;
+      }
+    }
+
+    if (currentSlide.trim()) {
+      slides.push(currentSlide.trim());
+    }
+
+    return slides.slice(0, maxSlides);
+  }
+
+  /**
+   * Generate PDF text content (mock)
+   */
+  private generatePDFText(content: any): string {
+    let pdfText = `%PDF-1.4\n`;
+    pdfText += `1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n`;
+    pdfText += `2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n`;
+    pdfText += `3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n/Contents 4 0 R\n>>\nendobj\n`;
+    pdfText += `4 0 obj\n<<\n/Length ${
+      content.title.length + 100
+    }\n>>\nstream\n`;
+    pdfText += `BT\n/F1 12 Tf\n72 720 Td\n(${content.title}) Tj\nET\n`;
+    pdfText += `endstream\nendobj\n`;
+    pdfText += `xref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000204 00000 n \n`;
+    pdfText += `trailer\n<<\n/Size 5\n/Root 1 0 R\n>>\nstartxref\n${
+      pdfText.length - 100
+    }\n%%EOF\n`;
+
+    return pdfText;
+  }
+
+  /**
+   * Generate EPUB text content (mock)
+   */
+  private generateEPUBText(content: any): string {
+    let epubText = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+    epubText += `<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml">\n<head>\n`;
+    epubText += `<title>${content.title}</title>\n`;
+    epubText += `<link rel="stylesheet" type="text/css" href="style.css" />\n`;
+    epubText += `</head>\n<body>\n`;
+    epubText += `<h1>${content.title}</h1>\n`;
+    epubText += `<p>By ${content.author}</p>\n`;
+
+    content.chapters.forEach((chapter: any) => {
+      epubText += `<h2>${chapter.title}</h2>\n`;
+      epubText += chapter.content + "\n";
+    });
+
+    epubText += `</body>\n</html>`;
+
+    return epubText;
+  }
+
+  /**
+   * Generate PPTX text content (mock)
+   */
+  private generatePPTXText(content: any): string {
+    let pptxText = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+    pptxText += `<p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">\n`;
+    pptxText += `<p:sldIdLst>\n`;
+
+    content.slides.forEach((slide: any, index: number) => {
+      pptxText += `<p:sldId id="${index + 256}" r:id="rId${index + 1}" />\n`;
+    });
+
+    pptxText += `</p:sldIdLst>\n`;
+    pptxText += `</p:presentation>`;
+
+    return pptxText;
+  }
+
+  /**
+   * Calculate PDF metadata
+   */
+  private async calculatePDFMetadata(content: any): Promise<any> {
+    const wordCount = content.chapters.reduce((total: number, chapter: any) => {
+      return total + chapter.content.split(" ").length;
+    }, 0);
+
+    return {
+      pages: Math.ceil(wordCount / 300), // Rough estimate
+      wordCount,
+      chapters: content.chapters.length,
+      imageCount: content.chapters.reduce((total: number, chapter: any) => {
+        return total + (chapter.images?.length || 0);
+      }, 0),
+    };
+  }
+
+  /**
+   * Calculate EPUB metadata
+   */
+  private async calculateEPUBMetadata(content: any): Promise<any> {
+    const wordCount = content.chapters.reduce((total: number, chapter: any) => {
+      return total + chapter.content.split(" ").length;
+    }, 0);
+
+    return {
+      wordCount,
+      chapters: content.chapters.length,
+      imageCount: content.chapters.reduce((total: number, chapter: any) => {
+        return total + (chapter.images?.length || 0);
+      }, 0),
+    };
+  }
+
+  /**
+   * Calculate PPTX metadata
+   */
+  private async calculatePPTXMetadata(content: any): Promise<any> {
+    return {
+      slides: content.slides.length,
+      wordCount: content.slides.reduce((total: number, slide: any) => {
+        return total + (slide.content?.split(" ").length || 0);
+      }, 0),
+      chapters: content.slides.filter((slide: any) => slide.type === "title")
+        .length,
+    };
+  }
+
+  /**
+   * Format file size for display
+   */
+  private formatFileSize(bytes: number): string {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  }
+
+  /**
+   * Export integrated ebook with all formats
+   */
+  async exportIntegratedEbook(
+    result: IntegratedEbookResult,
+    options: ExportOptions
+  ): Promise<{
+    pdf?: ExportResult;
+    epub?: ExportResult;
+    pptx?: ExportResult;
+  }> {
+    const exports: any = {};
+
+    if (result.exportOptions.pdf) {
+      exports.pdf = await this.exportToPDF(
+        result.formattedContent,
+        result.template,
+        options
+      );
+    }
+
+    if (result.exportOptions.epub) {
+      exports.epub = await this.exportToEPUB(
+        result.formattedContent,
+        result.template,
+        options
+      );
+    }
+
+    if (result.exportOptions.pptx) {
+      exports.pptx = await this.exportToPPTX(
+        result.formattedContent,
+        result.template,
+        options
+      );
+    }
+
+    return exports;
+  }
+}
+
+// Export singleton instance
+export const exportService = new ExportService();

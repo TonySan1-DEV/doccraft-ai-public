@@ -532,6 +532,78 @@ export const mcpRegistry = {
       contentSensitivity: "low",
       tier: "Admin",
       roleMeta: roleMeta.admin
+    },
+    "AICharacterDevelopment.tsx": { 
+      role: "admin", 
+      allowedActions: ["analyze", "process", "enhance"], 
+      theme: "character_ai", 
+      contentSensitivity: "medium",
+      tier: "Pro",
+      roleMeta: roleMeta.admin
+    },
+    "characterAIIntelligence.ts": { 
+      role: "admin", 
+      allowedActions: ["analyze", "process", "enhance"], 
+      theme: "character_ai", 
+      contentSensitivity: "medium",
+      tier: "Pro",
+      roleMeta: roleMeta.admin
+    },
+    "EnhancedCharacterChat.tsx": { 
+      role: "admin", 
+      allowedActions: ["analyze", "process", "enhance"], 
+      theme: "character_ai", 
+      contentSensitivity: "medium",
+      tier: "Pro",
+      roleMeta: roleMeta.admin
+    },
+    "enhancedCharacterInteraction.ts": { 
+      role: "admin", 
+      allowedActions: ["analyze", "process", "enhance"], 
+      theme: "character_ai", 
+      contentSensitivity: "medium",
+      tier: "Pro",
+      roleMeta: roleMeta.admin
+    },
+    "advancedCharacterAI.ts": { 
+      role: "admin", 
+      allowedActions: ["analyze", "process", "enhance"], 
+      theme: "character_ai", 
+      contentSensitivity: "medium",
+      tier: "Pro",
+      roleMeta: roleMeta.admin
+    },
+    "characterRelationshipEngine.ts": { 
+      role: "admin", 
+      allowedActions: ["analyze", "process", "enhance"], 
+      theme: "character_ai", 
+      contentSensitivity: "medium",
+      tier: "Pro",
+      roleMeta: roleMeta.admin
+    },
+    "AdvancedCharacterDevelopment.tsx": { 
+      role: "admin", 
+      allowedActions: ["analyze", "process", "enhance"], 
+      theme: "character_ai", 
+      contentSensitivity: "medium",
+      tier: "Pro",
+      roleMeta: roleMeta.admin
+    },
+    "llmIntegrationService.ts": { 
+      role: "admin", 
+      allowedActions: ["analyze", "process", "enhance"], 
+      theme: "llm_integration", 
+      contentSensitivity: "medium",
+      tier: "Pro",
+      roleMeta: roleMeta.admin
+    },
+    "LLMChatInterface.tsx": { 
+      role: "admin", 
+      allowedActions: ["analyze", "process", "enhance"], 
+      theme: "llm_integration", 
+      contentSensitivity: "medium",
+      tier: "Pro",
+      roleMeta: roleMeta.admin
     }
   };
 

@@ -39,7 +39,15 @@
     "export:audit-logs:s3": "ts-node scripts/cron/exportAuditLogs.ts s3",
     "export:audit-logs:bigquery": "ts-node scripts/cron/exportAuditLogs.ts bigquery",
     "mcp": "tsx mcp/server.ts",
-    "mcp:watch": "tsx watch mcp/server.ts"
+    "mcp:watch": "tsx watch mcp/server.ts",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "lint:strict": "eslint . --ext ts,tsx --max-warnings 0",
+    "build:optimized": "vite build --config vite.config.optimized.ts",
+    "analyze": "npm run build:optimized && npx vite-bundle-analyzer dist",
+    "test:fix": "npm test -- --passWithNoTests --updateSnapshot",
+    "type-check:strict": "tsc --noEmit --strict",
+    "improve": "node scripts/improve-codebase.js",
+    "pre-commit": "npm run lint:strict && npm run type-check:strict && npm test"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.450.0",

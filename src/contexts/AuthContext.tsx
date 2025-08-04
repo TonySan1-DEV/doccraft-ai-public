@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { getDefaultLandingPage } from '../utils/userRedirect'
+import { UserService } from '../lib/auth/userService'
 
 // Extended user type with tier property
 export interface ExtendedUser extends User {
@@ -33,6 +34,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<ExtendedUser | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Function to load user profile data including tier
+  const loadUserProfile = async (supabaseUser: User): Promise<ExtendedUser> => {
+    try {
+      console.log('🔐 Loading user profile for:', supabaseUser.id)
+      const profile = await UserService.getCurrentUser()
+      
+      if (profile) {
+        console.log('🔐 User profile loaded with tier:', profile.tier)
+        return {
+          ...supabaseUser,
+          tier: profile.tier
+        } as ExtendedUser
+      } else {
+        console.log('🔐 No profile found, using default tier')
+        return {
+          ...supabaseUser,
+          tier: 'Free' // Default tier for new users
+        } as ExtendedUser
+      }
+    } catch (error) {
+      console.error('🔐 Error loading user profile:', error)
+      return {
+        ...supabaseUser,
+        tier: 'Free' // Default tier on error
+      } as ExtendedUser
+    }
+  }
+
   useEffect(() => {
     console.log("🔐 AuthProvider useEffect running...")
     
@@ -43,9 +72,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, 5000) // 5 second timeout
     
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       console.log("🔐 Session loaded:", session ? "User logged in" : "No session")
-      setUser(session?.user ?? null)
+      
+      if (session?.user) {
+        // Load user profile data including tier
+        const extendedUser = await loadUserProfile(session.user)
+        setUser(extendedUser)
+      } else {
+        setUser(null)
+      }
+      
       setLoading(false)
       clearTimeout(timeout)
     }).catch((error) => {
@@ -56,22 +93,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log("🔐 Auth state changed:", session ? "User logged in" : "User logged out")
-        setUser(session?.user ?? null)
+        
+        if (session?.user) {
+          // Load user profile data including tier
+          const extendedUser = await loadUserProfile(session.user)
+          setUser(extendedUser)
+          
+          // Handle automatic redirections after auth state changes
+          if (event === 'SIGNED_IN') {
+            console.log('🔐 Auth state change: SIGNED_IN, redirecting user')
+            // Longer delay to ensure state is updated and avoid conflicts with manual redirects
+            setTimeout(() => {
+              const defaultPath = getDefaultLandingPage(extendedUser)
+              console.log('🔐 Auto-redirecting to:', defaultPath)
+              if (typeof window !== 'undefined' && window.location.pathname === '/') {
+                window.location.href = defaultPath
+              }
+            }, 2000)
+          }
+        } else {
+          setUser(null)
+        }
+        
         setLoading(false)
         clearTimeout(timeout)
-        
-        // Handle automatic redirections after auth state changes
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Small delay to ensure state is updated
-          setTimeout(() => {
-            const defaultPath = getDefaultLandingPage(session.user as ExtendedUser)
-            if (typeof window !== 'undefined' && window.location.pathname === '/') {
-              window.location.href = defaultPath
-            }
-          }, 500)
-        }
       }
     )
 
@@ -102,10 +149,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error
   }
 
-  const redirectToAppropriatePage = () => {
-    const defaultPath = getDefaultLandingPage(user)
-    if (typeof window !== 'undefined' && window.location.pathname !== defaultPath) {
-      window.location.href = defaultPath
+  const redirectToAppropriatePage = async () => {
+    // If user exists but doesn't have tier info, try to reload profile
+    if (user && !user.tier) {
+      console.log('🔐 User missing tier info, reloading profile...')
+      const extendedUser = await loadUserProfile(user)
+      setUser(extendedUser)
+      
+      const defaultPath = getDefaultLandingPage(extendedUser)
+      console.log('🔐 redirectToAppropriatePage called with updated user:', extendedUser, 'path:', defaultPath)
+      if (typeof window !== 'undefined' && window.location.pathname !== defaultPath) {
+        console.log('🔐 Redirecting to:', defaultPath)
+        window.location.href = defaultPath
+      }
+    } else {
+      const defaultPath = getDefaultLandingPage(user)
+      console.log('🔐 redirectToAppropriatePage called with user:', user, 'path:', defaultPath)
+      if (typeof window !== 'undefined' && window.location.pathname !== defaultPath) {
+        console.log('🔐 Redirecting to:', defaultPath)
+        window.location.href = defaultPath
+      }
     }
   }
 

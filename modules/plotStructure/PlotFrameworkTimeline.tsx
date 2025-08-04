@@ -174,7 +174,7 @@ function PlotFrameworkTimeline({
   // Dev logging for context-driven prop changes
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
+       
       console.log('[PlotFrameworkTimeline] context-driven props:', { currentSceneId, activeFramework });
     }
   }, [currentSceneId, activeFramework]);

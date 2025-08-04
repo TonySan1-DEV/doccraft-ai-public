@@ -51,7 +51,7 @@ export async function analyzeEngagement(
       return parseEngagementJSON(text);
     } else if (OPENAI_API_KEY) {
       // Use OpenAI SDK (Node.js)
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
+       
       const { OpenAI } = require('openai');
       const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
       const completion = await openai.chat.completions.create({

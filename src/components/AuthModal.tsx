@@ -1,106 +1,111 @@
-import React, { useState } from 'react'
-import { useAuth } from '../contexts/AuthContext'
-import { supabase } from '../lib/supabase'
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
-import toast from 'react-hot-toast'
+import React, { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabase";
+import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface AuthModalProps {
-  isOpen: boolean
-  onClose: () => void
-  defaultMode?: 'signin' | 'signup' | 'forgot'
+  isOpen: boolean;
+  onClose: () => void;
+  defaultMode?: "signin" | "signup" | "forgot";
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  defaultMode = 'signin' 
+export const AuthModal: React.FC<AuthModalProps> = ({
+  isOpen,
+  onClose,
+  defaultMode = "signin",
 }) => {
-  const { signIn, signUp, redirectToAppropriatePage } = useAuth()
-  const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>(defaultMode)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [fullName, setFullName] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const { signIn, signUp, redirectToAppropriatePage } = useAuth();
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">(defaultMode);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
-      if (mode === 'signin') {
-        await signIn(email, password)
-        toast.success('Signed in successfully!')
-        onClose()
+      if (mode === "signin") {
+        await signIn(email, password);
+        toast.success("Signed in successfully!");
+        onClose();
         // Redirect to appropriate page after successful sign in
-        setTimeout(() => {
-          redirectToAppropriatePage()
-        }, 1000)
-      } else if (mode === 'signup') {
+        // Use a longer delay to ensure the auth state is updated
+        setTimeout(async () => {
+          console.log('🔐 AuthModal: Redirecting after sign in')
+          await redirectToAppropriatePage();
+        }, 1500);
+      } else if (mode === "signup") {
         if (password !== confirmPassword) {
-          setError('Passwords do not match')
-          return
+          setError("Passwords do not match");
+          return;
         }
-        await signUp(email, password)
-        toast.success('Account created! Please check your email to verify your account.')
-        onClose()
+        await signUp(email, password);
+        toast.success(
+          "Account created! Please check your email to verify your account."
+        );
+        onClose();
         // Redirect to appropriate page after successful sign up
-        setTimeout(() => {
-          redirectToAppropriatePage()
-        }, 1000)
-      } else if (mode === 'forgot') {
+        setTimeout(async () => {
+          console.log('🔐 AuthModal: Redirecting after sign up')
+          await redirectToAppropriatePage();
+        }, 1500);
+      } else if (mode === "forgot") {
         // Handle forgot password
-        await handleForgotPassword()
+        await handleForgotPassword();
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred')
-      toast.error(err.message || 'An error occurred')
+      setError(err.message || "An error occurred");
+      toast.error(err.message || "An error occurred");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleForgotPassword = async () => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`
-      })
-      
-      if (error) throw error
-      
-      toast.success('Password reset email sent! Check your inbox.')
-      setMode('signin')
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast.success("Password reset email sent! Check your inbox.");
+      setMode("signin");
     } catch (err: any) {
-      throw new Error(err.message || 'Failed to send reset email')
+      throw new Error(err.message || "Failed to send reset email");
     }
-  }
+  };
 
   const resetForm = () => {
-    setEmail('')
-    setPassword('')
-    setConfirmPassword('')
-    setFullName('')
-    setError('')
-  }
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setFullName("");
+    setError("");
+  };
 
-  const switchMode = (newMode: 'signin' | 'signup' | 'forgot') => {
-    setMode(newMode)
-    resetForm()
-  }
+  const switchMode = (newMode: "signin" | "signup" | "forgot") => {
+    setMode(newMode);
+    resetForm();
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {mode === 'signin' && 'Sign In'}
-            {mode === 'signup' && 'Create Account'}
-            {mode === 'forgot' && 'Reset Password'}
+            {mode === "signin" && "Sign In"}
+            {mode === "signup" && "Create Account"}
+            {mode === "forgot" && "Reset Password"}
           </h2>
           <button
             onClick={onClose}
@@ -117,7 +122,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           )}
 
-          {mode === 'signup' && (
+          {mode === "signup" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Full Name
@@ -153,7 +158,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           </div>
 
-          {mode !== 'forgot' && (
+          {mode !== "forgot" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Password
@@ -161,7 +166,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -173,13 +178,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
           )}
 
-          {mode === 'signup' && (
+          {mode === "signup" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Confirm Password
@@ -187,7 +196,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -206,27 +215,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {loading ? (
               <div className="flex items-center justify-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                {mode === 'signin' && 'Signing in...'}
-                {mode === 'signup' && 'Creating account...'}
-                {mode === 'forgot' && 'Sending email...'}
+                {mode === "signin" && "Signing in..."}
+                {mode === "signup" && "Creating account..."}
+                {mode === "forgot" && "Sending email..."}
               </div>
             ) : (
               <>
-                {mode === 'signin' && 'Sign In'}
-                {mode === 'signup' && 'Create Account'}
-                {mode === 'forgot' && 'Send Reset Email'}
+                {mode === "signin" && "Sign In"}
+                {mode === "signup" && "Create Account"}
+                {mode === "forgot" && "Send Reset Email"}
               </>
             )}
           </button>
         </form>
 
         <div className="mt-6 text-center">
-          {mode === 'signin' && (
+          {mode === "signin" && (
             <div className="space-y-2">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Don't have an account?{' '}
+                Don't have an account?{" "}
                 <button
-                  onClick={() => switchMode('signup')}
+                  onClick={() => switchMode("signup")}
                   className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                 >
                   Sign up
@@ -234,7 +243,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 <button
-                  onClick={() => switchMode('forgot')}
+                  onClick={() => switchMode("forgot")}
                   className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                 >
                   Forgot your password?
@@ -243,11 +252,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           )}
 
-          {mode === 'signup' && (
+          {mode === "signup" && (
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Already have an account?{' '}
+              Already have an account?{" "}
               <button
-                onClick={() => switchMode('signin')}
+                onClick={() => switchMode("signin")}
                 className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
               >
                 Sign in
@@ -255,12 +264,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </p>
           )}
 
-          {mode === 'forgot' && (
+          {mode === "forgot" && (
             <div className="space-y-2">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Remember your password?{' '}
+                Remember your password?{" "}
                 <button
-                  onClick={() => switchMode('signin')}
+                  onClick={() => switchMode("signin")}
                   className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                 >
                   Sign in
@@ -274,7 +283,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AuthModal
+export default AuthModal;

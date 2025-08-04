@@ -2,15 +2,18 @@ import { Shield, Database, Bell, Palette, Key, Users, UserX, Pause, AlertTriangl
 import { useMCP } from '../useMCP'
 import { AccessWarning } from '../components/AccessWarning'
 import ThemeSelector from '../components/ThemeSelector'
+import APIKeyManagementPanel from '../components/APIKeyManagementPanel'
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
+import { apiKeyManager } from '../services/apiKeyManager'
 
 export default function Settings() {
   const ctx = useMCP("Settings.tsx")
   const { user, signOut } = useAuth()
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false)
+  const [isAPIKeyModalOpen, setIsAPIKeyModalOpen] = useState(false)
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false)
   const [isPauseModalOpen, setIsPauseModalOpen] = useState(false)
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false)
@@ -166,7 +169,10 @@ export default function Settings() {
           <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
             Manage API keys, webhooks, and third-party integrations.
           </p>
-          <button className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm font-medium">
+          <button 
+            onClick={() => setIsAPIKeyModalOpen(true)}
+            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm font-medium"
+          >
             Configure →
           </button>
         </div>
@@ -288,6 +294,20 @@ export default function Settings() {
       <ThemeSelector 
         isOpen={isThemeSelectorOpen} 
         onClose={() => setIsThemeSelectorOpen(false)} 
+      />
+
+      {/* API Key Management Modal */}
+      <APIKeyManagementPanel
+        isOpen={isAPIKeyModalOpen}
+        onClose={() => setIsAPIKeyModalOpen(false)}
+        onSave={(keys) => {
+          // Save keys using the API key manager
+          keys.forEach(key => {
+            apiKeyManager.addKey(key.provider, key.apiKey);
+          });
+          toast.success('API keys saved successfully');
+        }}
+        currentKeys={apiKeyManager.getAllKeys()}
       />
 
       {/* Account Management Modal */}

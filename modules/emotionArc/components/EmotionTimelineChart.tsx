@@ -236,7 +236,7 @@ function EmotionTimelineChart({
   // Dev logging for context-driven prop changes
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
+       
       console.log('[EmotionTimelineChart] context-driven props:', { selectedCharacter, contextScene });
     }
   }, [selectedCharacter, contextScene]);

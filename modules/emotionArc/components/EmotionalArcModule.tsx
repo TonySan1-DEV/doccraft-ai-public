@@ -196,7 +196,7 @@ export default function EmotionalArcModule({
     setCharacter(characterId);
     onCharacterSelect?.(characterId);
     if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
+       
       console.log('[NarrativeSync] characterFocusId updated:', characterId);
     }
   }, [onCharacterSelect, setCharacter]);
@@ -205,7 +205,7 @@ export default function EmotionalArcModule({
     setScene(sceneId);
     onSceneSelect?.(sceneId);
     if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
+       
       console.log('[NarrativeSync] currentSceneId updated:', sceneId);
     }
   }, [onSceneSelect, setScene]);

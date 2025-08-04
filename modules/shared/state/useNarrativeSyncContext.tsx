@@ -36,7 +36,7 @@ const initialState: NarrativeSyncState = {
 
 function narrativeSyncReducer(state: NarrativeSyncState, action: NarrativeSyncAction): NarrativeSyncState {
   if (process.env.NODE_ENV === 'development') {
-    // eslint-disable-next-line no-console
+     
     console.log('[NarrativeSync] Action:', action, 'PrevState:', state);
   }
   switch (action.type) {
