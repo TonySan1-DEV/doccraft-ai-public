@@ -10,25 +10,40 @@
 }
 */
 
-import { useState, useEffect } from 'react';
-import { feedbackService, FeedbackStats, PatternAnalytics } from '../services/feedbackService';
+import { useState, useEffect } from "react";
+import {
+  feedbackService,
+  FeedbackStats,
+  PatternAnalytics,
+} from "../services/feedbackService";
 
 interface FeedbackAnalyticsProps {
   className?: string;
   showPatternAnalytics?: boolean;
   showUserStats?: boolean;
-  timeRange?: '7 days' | '30 days' | '90 days';
+  timeRange?: "7 days" | "30 days" | "90 days";
 }
 
 export function FeedbackAnalytics({
-  className = '',
+  className = "",
   showPatternAnalytics = true,
   showUserStats = true,
-  timeRange = '30 days'
+  timeRange = "30 days",
 }: FeedbackAnalyticsProps) {
   const [feedbackStats, setFeedbackStats] = useState<FeedbackStats[]>([]);
-  const [patternAnalytics, setPatternAnalytics] = useState<PatternAnalytics[]>([]);
-  const [userRecentFeedback, setUserRecentFeedback] = useState<any[]>([]);
+  const [patternAnalytics, setPatternAnalytics] = useState<PatternAnalytics[]>(
+    []
+  );
+  const [userRecentFeedback, setUserRecentFeedback] = useState<
+    Array<{
+      id: string;
+      user_id: string;
+      feedback_type: string;
+      rating: number;
+      comment?: string;
+      created_at: string;
+    }>
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,16 +58,29 @@ export function FeedbackAnalytics({
     try {
       const [stats, analytics, recent] = await Promise.all([
         feedbackService.getFeedbackStats(undefined, undefined, timeRange),
-        showPatternAnalytics ? feedbackService.getPatternAnalytics(timeRange) : Promise.resolve([]),
-        showUserStats ? feedbackService.getUserRecentFeedback(5) : Promise.resolve([])
+        showPatternAnalytics
+          ? feedbackService.getPatternAnalytics(timeRange)
+          : Promise.resolve([]),
+        showUserStats
+          ? feedbackService.getUserRecentFeedback(5)
+          : Promise.resolve([]),
       ]);
 
       setFeedbackStats(stats);
       setPatternAnalytics(analytics);
-      setUserRecentFeedback(recent);
+      // Convert FeedbackEvent to expected format
+      const convertedRecent = recent.map(feedback => ({
+        id: feedback.id,
+        user_id: feedback.user_id,
+        feedback_type: feedback.feedback_type,
+        rating: feedback.feedback_type === 'positive' ? 5 : 1,
+        comment: feedback.source_prompt,
+        created_at: feedback.timestamp,
+      }));
+      setUserRecentFeedback(convertedRecent);
     } catch (err) {
-      console.error('Error loading feedback analytics:', err);
-      setError('Failed to load analytics data');
+      console.error("Error loading feedback analytics:", err);
+      setError("Failed to load analytics data");
     } finally {
       setIsLoading(false);
     }
@@ -60,17 +88,21 @@ export function FeedbackAnalytics({
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'improving': return '📈';
-      case 'declining': return '📉';
-      case 'stable': return '➡️';
-      default: return '❓';
+      case "improving":
+        return "📈";
+      case "declining":
+        return "📉";
+      case "stable":
+        return "➡️";
+      default:
+        return "❓";
     }
   };
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence < 5) return 'text-green-600';
-    if (confidence < 10) return 'text-yellow-600';
-    return 'text-red-600';
+    if (confidence < 5) return "text-green-600";
+    if (confidence < 10) return "text-yellow-600";
+    return "text-red-600";
   };
 
   if (isLoading) {
@@ -88,9 +120,7 @@ export function FeedbackAnalytics({
   if (error) {
     return (
       <div className={`feedback-analytics ${className}`}>
-        <div className="text-red-600 dark:text-red-400 text-sm">
-          {error}
-        </div>
+        <div className="text-red-600 dark:text-red-400 text-sm">{error}</div>
       </div>
     );
   }
@@ -113,30 +143,48 @@ export function FeedbackAnalytics({
                   <h4 className="font-medium text-gray-900 dark:text-white">
                     {pattern.pattern_used}
                   </h4>
-                  <span className="text-lg">{getTrendIcon(pattern.trend_direction)}</span>
+                  <span className="text-lg">
+                    {getTrendIcon(pattern.trend_direction)}
+                  </span>
                 </div>
-                
+
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Usage:</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Usage:
+                    </span>
                     <span className="font-medium">{pattern.total_usage}</span>
                   </div>
-                  
+
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Positive Rate:</span>
-                    <span className="font-medium">{pattern.positive_rate.toFixed(1)}%</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Positive Rate:
+                    </span>
+                    <span className="font-medium">
+                      {pattern.positive_rate.toFixed(1)}%
+                    </span>
                   </div>
-                  
+
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Confidence:</span>
-                    <span className={`font-medium ${getConfidenceColor(pattern.confidence_interval)}`}>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Confidence:
+                    </span>
+                    <span
+                      className={`font-medium ${getConfidenceColor(
+                        pattern.confidence_interval
+                      )}`}
+                    >
                       ±{pattern.confidence_interval.toFixed(1)}%
                     </span>
                   </div>
-                  
+
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Trend:</span>
-                    <span className="font-medium capitalize">{pattern.trend_direction}</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Trend:
+                    </span>
+                    <span className="font-medium capitalize">
+                      {pattern.trend_direction}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -217,15 +265,22 @@ export function FeedbackAnalytics({
                 className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
               >
                 <div className="flex items-center space-x-3">
-                  <span className={`text-lg ${feedback.feedback_type === 'positive' ? 'text-green-600' : 'text-red-600'}`}>
-                    {feedback.feedback_type === 'positive' ? '👍' : '👎'}
+                  <span
+                    className={`text-lg ${
+                      feedback.feedback_type === "positive"
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {feedback.feedback_type === "positive" ? "👍" : "👎"}
                   </span>
                   <div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {feedback.pattern_used}
+                      {feedback.feedback_type}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {feedback.content_type} • {new Date(feedback.created_at).toLocaleDateString()}
+                      {feedback.comment?.substring(0, 50)}... •{" "}
+                      {new Date(feedback.created_at).toLocaleDateString()}
                     </div>
                   </div>
                 </div>
@@ -239,19 +294,21 @@ export function FeedbackAnalytics({
       )}
 
       {/* Empty State */}
-      {feedbackStats.length === 0 && patternAnalytics.length === 0 && userRecentFeedback.length === 0 && (
-        <div className="text-center py-8">
-          <div className="text-gray-400 dark:text-gray-500 text-lg mb-2">
-            📊
+      {feedbackStats.length === 0 &&
+        patternAnalytics.length === 0 &&
+        userRecentFeedback.length === 0 && (
+          <div className="text-center py-8">
+            <div className="text-gray-400 dark:text-gray-500 text-lg mb-2">
+              📊
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              No Feedback Data Yet
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Start providing feedback on AI suggestions to see analytics here.
+            </p>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            No Feedback Data Yet
-          </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Start providing feedback on AI suggestions to see analytics here.
-          </p>
-        </div>
-      )}
+        )}
 
       {/* Refresh Button */}
       <div className="flex justify-end">
@@ -260,7 +317,7 @@ export function FeedbackAnalytics({
           disabled={isLoading}
           className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
         >
-          {isLoading ? 'Loading...' : 'Refresh Analytics'}
+          {isLoading ? "Loading..." : "Refresh Analytics"}
         </button>
       </div>
     </div>
@@ -273,17 +330,17 @@ export function useFeedbackAnalytics() {
   const [analytics, setAnalytics] = useState<PatternAnalytics[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const loadStats = async (timeRange: string = '30 days') => {
+  const loadStats = async (timeRange: string = "30 days") => {
     setIsLoading(true);
     try {
       const [feedbackStats, patternAnalytics] = await Promise.all([
         feedbackService.getFeedbackStats(undefined, undefined, timeRange),
-        feedbackService.getPatternAnalytics(timeRange)
+        feedbackService.getPatternAnalytics(timeRange),
       ]);
       setStats(feedbackStats);
       setAnalytics(patternAnalytics);
     } catch (error) {
-      console.error('Error loading feedback analytics:', error);
+      console.error("Error loading feedback analytics:", error);
     } finally {
       setIsLoading(false);
     }
@@ -293,6 +350,6 @@ export function useFeedbackAnalytics() {
     stats,
     analytics,
     isLoading,
-    loadStats
+    loadStats,
   };
-} 
+}

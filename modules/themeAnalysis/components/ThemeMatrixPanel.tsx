@@ -114,8 +114,6 @@ const ThemeMatrixPanel: React.FC<ThemeMatrixPanelProps> = ({ scenes, themes, con
                   <td
                     key={theme}
                     className={`p-2 text-center align-middle ${drift ? 'bg-red-100' : present ? 'bg-green-50' : 'bg-gray-50'}`}
-                    role="cell"
-                    tabIndex={0}
                     aria-label={`Scene ${scene.sceneId}, Theme ${theme}, ${present ? `strength ${Math.round(strength * 100)}%` : 'absent'}${drift ? ', drift alert' : ''}${conflict ? ', conflict detected' : ''}`}
                   >
                     {conflict ? (

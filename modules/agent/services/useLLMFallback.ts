@@ -13,6 +13,12 @@ interface LLMContext {
   activeModule?: string;
   currentWorkflow?: string;
   recentActions?: string[];
+  genre?: string;
+  genreContext?: {
+    category: 'fiction' | 'nonfiction' | 'special';
+    subgenre?: string;
+    targetAudience?: string[];
+  };
 }
 
 interface LLMResponse {
@@ -36,37 +42,49 @@ function sanitizeMarkdown(content: string): string {
 }
 
 // Extract suggested actions from LLM response
-function extractSuggestedActions(content: string): { content: string; suggestedActions: { label: string; action: string }[] } {
+function extractSuggestedActions(content: string): {
+  content: string;
+  suggestedActions: { label: string; action: string }[];
+} {
   const suggestedActions: { label: string; action: string }[] = [];
-  
+
   // Look for button patterns like [Button Text] or [Action]
   const buttonRegex = /\[([^\]]+)\]/g;
   let match;
   let cleanedContent = content;
-  
+
   while ((match = buttonRegex.exec(content)) !== null) {
     const buttonText = match[1];
-    if (buttonText.length > 0 && buttonText.length < 50) { // Sanity check
+    if (buttonText.length > 0 && buttonText.length < 50) {
+      // Sanity check
       suggestedActions.push({
         label: buttonText,
-        action: buttonText.toLowerCase().replace(/\s+/g, '_')
+        action: buttonText.toLowerCase().replace(/\s+/g, '_'),
       });
     }
   }
-  
+
   // Remove button syntax from content
   cleanedContent = content.replace(buttonRegex, '');
-  
+
   return {
     content: cleanedContent.trim(),
-    suggestedActions: suggestedActions.slice(0, 3) // Limit to 3 actions
+    suggestedActions: suggestedActions.slice(0, 3), // Limit to 3 actions
   };
 }
 
 // Check if user has permission for suggested actions
-function validateSuggestedActions(actions: { label: string; action: string }[], userTier: string): { label: string; action: string }[] {
-  const tierRestrictedActions = ['exportJSON', 'exportMarkdown', 'advancedAnalytics', 'systemSettings'];
-  
+function validateSuggestedActions(
+  actions: { label: string; action: string }[],
+  userTier: string
+): { label: string; action: string }[] {
+  const tierRestrictedActions = [
+    'exportJSON',
+    'exportMarkdown',
+    'advancedAnalytics',
+    'systemSettings',
+  ];
+
   return actions.filter(action => {
     if (tierRestrictedActions.includes(action.action) && userTier !== 'Admin') {
       return false;
@@ -83,20 +101,22 @@ export async function queryLLMFallback(
   const userKey = `${context.userRole}-${context.tier}`;
   const now = Date.now();
   const lastRequest = rateLimitMap.get(userKey);
-  
-  if (lastRequest && (now - lastRequest) < RATE_LIMIT_MS) {
-    throw new Error('Rate limit exceeded. Please wait a moment before trying again.');
+
+  if (lastRequest && now - lastRequest < RATE_LIMIT_MS) {
+    throw new Error(
+      'Rate limit exceeded. Please wait a moment before trying again.'
+    );
   }
-  
+
   rateLimitMap.set(userKey, now);
 
   // Build context-aware prompt
   const prompt = buildLLMPrompt(userQuery, context);
-  
+
   try {
     // Try GPT-4 first, fallback to Claude-3, then local stub
     let response: LLMResponse;
-    
+
     try {
       response = await queryGPT4(prompt, context);
     } catch (gptError) {
@@ -111,8 +131,12 @@ export async function queryLLMFallback(
 
     // Sanitize and process response
     const sanitizedContent = sanitizeMarkdown(response.content);
-    const { content, suggestedActions } = extractSuggestedActions(sanitizedContent);
-    const validatedActions = validateSuggestedActions(suggestedActions, context.tier);
+    const { content, suggestedActions } =
+      extractSuggestedActions(sanitizedContent);
+    const validatedActions = validateSuggestedActions(
+      suggestedActions,
+      context.tier
+    );
 
     // Log metadata for debugging (no PII)
     console.log('LLM Fallback Query:', {
@@ -123,15 +147,14 @@ export async function queryLLMFallback(
       modelUsed: response.modelUsed,
       responseLength: content.length,
       actionCount: validatedActions.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     return {
       content,
       suggestedActions: validatedActions,
-      modelUsed: response.modelUsed
+      modelUsed: response.modelUsed,
     };
-
   } catch (error) {
     console.error('LLM fallback failed:', error);
     throw new Error('Unable to process your request. Please try again later.');
@@ -139,8 +162,12 @@ export async function queryLLMFallback(
 }
 
 function buildLLMPrompt(userQuery: string, context: LLMContext): string {
-  const recentActionsText = context.recentActions?.length 
+  const recentActionsText = context.recentActions?.length
     ? `Recent actions: ${context.recentActions.slice(-3).join(', ')}`
+    : '';
+
+  const genreContextText = context.genre
+    ? `- Genre: ${context.genre}${context.genreContext ? ` (${context.genreContext.category})` : ''}`
     : '';
 
   return `You are DocCraft Agent, the in-app assistant for a professional writing intelligence platform.
@@ -151,6 +178,7 @@ User context:
 - Current module: ${context.activeModule || 'General'}
 - Current workflow: ${context.currentWorkflow || 'None'}
 ${recentActionsText ? `- ${recentActionsText}` : ''}
+${genreContextText ? `- ${genreContextText}` : ''}
 
 Query: "${userQuery}"
 
@@ -164,24 +192,31 @@ Available features:
 - Smart Revision Engine
 - Export capabilities (JSON, Markdown, CSV)
 - Onboarding flows for different modules
+- Genre-specific content generation and analysis
 
 Respond in a helpful, professional tone. If suggesting actions, use button syntax like [Show Me] or [Run Analysis].
 Keep responses concise but informative.`;
 }
 
-async function queryGPT4(prompt: string, context: LLMContext): Promise<LLMResponse> {
+async function queryGPT4(
+  prompt: string,
+  _context: LLMContext
+): Promise<LLMResponse> {
   const response = await fetch('/api/gpt-chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'gpt-4',
       messages: [
-        { role: 'system', content: 'You are DocCraft Agent, a helpful writing assistant.' },
-        { role: 'user', content: prompt }
+        {
+          role: 'system',
+          content: 'You are DocCraft Agent, a helpful writing assistant.',
+        },
+        { role: 'user', content: prompt },
       ],
       temperature: 0.7,
-      max_tokens: 500
-    })
+      max_tokens: 500,
+    }),
   });
 
   if (!response.ok) {
@@ -191,21 +226,22 @@ async function queryGPT4(prompt: string, context: LLMContext): Promise<LLMRespon
   const data = await response.json();
   return {
     content: data.choices?.[0]?.message?.content || 'No response from GPT-4',
-    modelUsed: 'gpt-4'
+    modelUsed: 'gpt-4',
   };
 }
 
-async function queryClaude3(prompt: string, context: LLMContext): Promise<LLMResponse> {
+async function queryClaude3(
+  prompt: string,
+  _context: LLMContext
+): Promise<LLMResponse> {
   const response = await fetch('/api/claude-chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'claude-3-sonnet-20240229',
-      messages: [
-        { role: 'user', content: prompt }
-      ],
-      max_tokens: 500
-    })
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 500,
+    }),
   });
 
   if (!response.ok) {
@@ -215,11 +251,14 @@ async function queryClaude3(prompt: string, context: LLMContext): Promise<LLMRes
   const data = await response.json();
   return {
     content: data.content?.[0]?.text || 'No response from Claude-3',
-    modelUsed: 'claude-3-sonnet'
+    modelUsed: 'claude-3-sonnet',
   };
 }
 
-async function queryLocalStub(prompt: string, context: LLMContext): Promise<LLMResponse> {
+async function queryLocalStub(
+  prompt: string,
+  context: LLMContext
+): Promise<LLMResponse> {
   // Local stub for development/testing
   const responses = [
     {
@@ -232,7 +271,7 @@ async function queryLocalStub(prompt: string, context: LLMContext): Promise<LLMR
 Would you like me to help you with any of these areas?
 
 [Show Dashboard] [Run Analysis] [Check Style]`,
-      modelUsed: 'local-stub'
+      modelUsed: 'local-stub',
     },
     {
       content: `I can help you with that! Based on your ${context.tier} tier access, you have several options:
@@ -244,10 +283,10 @@ Would you like me to help you with any of these areas?
 What would you like to explore first?
 
 [Start Revision] [Check Themes] [Export Data]`,
-      modelUsed: 'local-stub'
-    }
+      modelUsed: 'local-stub',
+    },
   ];
 
   // Return a random response for variety
   return responses[Math.floor(Math.random() * responses.length)];
-} 
+}

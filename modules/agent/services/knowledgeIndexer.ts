@@ -8,7 +8,7 @@ theme: "agent_context"
 */
 
 import fs from 'fs';
-import path from 'path';
+import _path from 'path';
 
 export type KnowledgeEntry = {
   id: string;

@@ -10,17 +10,21 @@
 }
 */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { buildContextualPromptHeader } from '../agent/ContextualPromptEngine';
-import type { UserPrefs, DocumentContext, PromptHeader } from '../agent/ContextualPromptEngine';
+import type {
+  UserPrefs,
+  DocumentContext,
+  PromptHeader,
+} from '../agent/ContextualPromptEngine';
 
 // Icons
-import { 
-  Info, 
-  ChevronDown, 
+import {
+  Info,
+  ChevronDown,
   ChevronUp,
   AlertTriangle,
-  Code
+  Code,
 } from 'lucide-react';
 
 // Types
@@ -39,35 +43,48 @@ interface PreviewState {
 }
 
 // Utility functions
-function isFallbackPattern(_genre: string, _arc: string, patternUsed: string): boolean {
+function isFallbackPattern(
+  _genre: string,
+  _arc: string,
+  patternUsed: string
+): boolean {
   // Check if we're using a fallback pattern
   const defaultPatterns = [
     'Introduce [CHARACTER] and establish the central conflict',
     'Create a challenge that [CHARACTER] must overcome',
     'Force [CHARACTER] to make a difficult choice',
-    'Show [CHARACTER] dealing with the consequences of their choice'
+    'Show [CHARACTER] dealing with the consequences of their choice',
   ];
-  
-  return defaultPatterns.some(defaultPattern => 
+
+  return defaultPatterns.some(defaultPattern =>
     patternUsed.includes(defaultPattern)
   );
 }
 
 function getFallbackReason(genre: string, arc: string): string {
   const reasons = [];
-  
+
   // Check if genre is unknown
-  const knownGenres = ['Romance', 'Sci-Fi', 'Mystery', 'Fantasy', 'Thriller', 'Horror', 'Comedy', 'Historical'];
+  const knownGenres = [
+    'Romance',
+    'Sci-Fi',
+    'Mystery',
+    'Fantasy',
+    'Thriller',
+    'Horror',
+    'Comedy',
+    'Historical',
+  ];
   if (!knownGenres.includes(genre)) {
     reasons.push(`Unknown genre: "${genre}"`);
   }
-  
+
   // Check if arc is unknown
   const knownArcs = ['setup', 'rising', 'climax', 'resolution'];
   if (!knownArcs.includes(arc)) {
     reasons.push(`Unknown arc: "${arc}"`);
   }
-  
+
   return reasons.join(', ');
 }
 
@@ -76,50 +93,62 @@ export const PromptPreviewPanel: React.FC<PromptPreviewPanelProps> = ({
   doc,
   className = '',
   collapsible = true,
-  showPatternDetails = true
+  showPatternDetails = true,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [previewState, setPreviewState] = useState<PreviewState>({
     header: null,
     isLoading: true,
     error: null,
-    isFallback: false
+    isFallback: false,
   });
 
   // Mock user preferences - in real app, get from context
   const mockPrefs: UserPrefs = {
     tone: 'friendly',
     language: 'en',
-    genre: 'Romance'
+    genre: 'Romance',
   };
 
   // Generate preview header
-  const generatePreview = useMemo(() => {
+  const generatePreview = useCallback(() => {
     try {
       setPreviewState(prev => ({ ...prev, isLoading: true, error: null }));
-      
+
       const header = buildContextualPromptHeader(mockPrefs, doc);
-      const isFallback = isFallbackPattern(mockPrefs.genre, doc.arc, header.patternUsed || '');
-      
+      const isFallback = isFallbackPattern(
+        mockPrefs.genre,
+        doc.arc,
+        header.patternUsed || ''
+      );
+
       setPreviewState({
         header,
         isLoading: false,
         error: null,
-        isFallback
+        isFallback,
       });
     } catch (error) {
       setPreviewState({
         header: null,
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to generate preview',
-        isFallback: false
+        error:
+          error instanceof Error ? error.message : 'Failed to generate preview',
+        isFallback: false,
       });
     }
-  }, [doc.scene, doc.arc, doc.characterName, mockPrefs.tone, mockPrefs.language, mockPrefs.genre]);
+  }, [
+    doc.scene,
+    doc.arc,
+    doc.characterName,
+    mockPrefs.tone,
+    mockPrefs.language,
+    mockPrefs.genre,
+  ]);
 
   // Auto-refresh on context changes
   useEffect(() => {
-    generatePreview;
+    generatePreview();
   }, [generatePreview]);
 
   // Handle collapse/expand
@@ -134,7 +163,7 @@ export const PromptPreviewPanel: React.FC<PromptPreviewPanelProps> = ({
     const reason = getFallbackReason(mockPrefs.genre, doc.arc);
 
     return (
-      <div 
+      <div
         className="flex items-center gap-2 p-3 mb-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg"
         role="alert"
         aria-live="polite"
@@ -195,7 +224,7 @@ export const PromptPreviewPanel: React.FC<PromptPreviewPanelProps> = ({
               AI Prompt Header Preview
             </span>
           </div>
-          
+
           <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <pre className="text-sm font-mono text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
               {previewState.header.header}
@@ -212,13 +241,13 @@ export const PromptPreviewPanel: React.FC<PromptPreviewPanelProps> = ({
                 Pattern Details
               </span>
             </div>
-            
+
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
               <p className="text-sm text-blue-800 dark:text-blue-200">
                 <span className="font-medium">Selected Pattern:</span>
               </p>
               <p className="text-sm text-blue-700 dark:text-blue-300 mt-1 font-mono">
-                "{previewState.header.patternUsed}"
+                &quot;{previewState.header.patternUsed}&quot;
               </p>
             </div>
           </div>
@@ -232,7 +261,7 @@ export const PromptPreviewPanel: React.FC<PromptPreviewPanelProps> = ({
               Context Summary
             </span>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <span className="text-gray-500 dark:text-gray-400">Tone:</span>
@@ -241,7 +270,9 @@ export const PromptPreviewPanel: React.FC<PromptPreviewPanelProps> = ({
               </span>
             </div>
             <div>
-              <span className="text-gray-500 dark:text-gray-400">Language:</span>
+              <span className="text-gray-500 dark:text-gray-400">
+                Language:
+              </span>
               <span className="ml-2 font-medium text-gray-700 dark:text-gray-300">
                 {previewState.header.language}
               </span>
@@ -260,7 +291,9 @@ export const PromptPreviewPanel: React.FC<PromptPreviewPanelProps> = ({
             </div>
             {doc.characterName && (
               <div className="col-span-2">
-                <span className="text-gray-500 dark:text-gray-400">Character:</span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  Character:
+                </span>
                 <span className="ml-2 font-medium text-gray-700 dark:text-gray-300">
                   {doc.characterName}
                 </span>
@@ -273,7 +306,9 @@ export const PromptPreviewPanel: React.FC<PromptPreviewPanelProps> = ({
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm ${className}`}>
+    <div
+      className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm ${className}`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2">
@@ -282,7 +317,7 @@ export const PromptPreviewPanel: React.FC<PromptPreviewPanelProps> = ({
             Prompt Preview
           </h3>
         </div>
-        
+
         {collapsible && (
           <button
             onClick={toggleCollapse}
@@ -315,13 +350,13 @@ export const usePromptPreview = (doc: DocumentContext) => {
   const [prefs, setPrefs] = useState<UserPrefs>({
     tone: 'friendly',
     language: 'en',
-    genre: 'Romance'
+    genre: 'Romance',
   });
 
   const header = useMemo(() => {
     try {
       return buildContextualPromptHeader(prefs, doc);
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }, [prefs, doc]);
@@ -330,9 +365,11 @@ export const usePromptPreview = (doc: DocumentContext) => {
     header,
     prefs,
     setPrefs,
-    isFallback: header ? isFallbackPattern(prefs.genre, doc.arc, header.patternUsed || '') : false
+    isFallback: header
+      ? isFallbackPattern(prefs.genre, doc.arc, header.patternUsed || '')
+      : false,
   };
 };
 
 // Export types
-export type { PromptPreviewPanelProps }; 
+export type { PromptPreviewPanelProps };

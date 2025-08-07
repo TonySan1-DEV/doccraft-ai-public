@@ -1,23 +1,32 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import { Check, Star, Zap, Crown, Shield, FileText, Brain, Sparkles } from 'lucide-react'
-import { supabase } from '../lib/supabase'
-import toast from 'react-hot-toast'
-import PaymentForm from '../components/PaymentForm'
-import { Footer } from '../components/Footer'
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import {
+  Check,
+  Star,
+  Zap,
+  Crown,
+  Shield,
+  FileText,
+  Brain,
+  Sparkles,
+} from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import toast from 'react-hot-toast';
+import PaymentForm from '../components/PaymentForm';
+import { Footer } from '../components/Footer';
 
 interface PricingTier {
-  id: string
-  name: string
-  description: string
-  price: number
-  billingPeriod: 'month' | 'year'
-  features: string[]
-  popular?: boolean
-  icon: React.ReactNode
-  color: string
-  gradient: string
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  billingPeriod: 'month' | 'year';
+  features: string[];
+  popular?: boolean;
+  icon: React.ReactNode;
+  color: string;
+  gradient: string;
 }
 
 const pricingTiers: PricingTier[] = [
@@ -33,11 +42,11 @@ const pricingTiers: PricingTier[] = [
       'Standard AI suggestions',
       'Community support',
       'Basic templates',
-      'Email notifications'
+      'Email notifications',
     ],
     icon: <FileText className="w-6 h-6" />,
     color: 'text-gray-600',
-    gradient: 'from-gray-400 to-gray-600'
+    gradient: 'from-gray-400 to-gray-600',
   },
   {
     id: 'pro',
@@ -55,12 +64,12 @@ const pricingTiers: PricingTier[] = [
       'Custom branding',
       'Export to multiple formats',
       'Collaboration tools',
-      'API access'
+      'API access',
     ],
     popular: true,
     icon: <Zap className="w-6 h-6" />,
     color: 'text-blue-600',
-    gradient: 'from-blue-500 to-purple-600'
+    gradient: 'from-blue-500 to-purple-600',
   },
   {
     id: 'enterprise',
@@ -78,130 +87,132 @@ const pricingTiers: PricingTier[] = [
       'Advanced analytics',
       'Custom AI training',
       'SLA guarantees',
-      'On-premise deployment'
+      'On-premise deployment',
     ],
     icon: <Crown className="w-6 h-6" />,
     color: 'text-purple-600',
-    gradient: 'from-purple-500 to-pink-600'
-  }
-]
+    gradient: 'from-purple-500 to-pink-600',
+  },
+];
 
 export const SignUp: React.FC = () => {
-  const navigate = useNavigate()
-  const { signUp } = useAuth()
-  const [selectedTier, setSelectedTier] = useState<string>('pro')
-  const [billingPeriod, setBillingPeriod] = useState<'month' | 'year'>('month')
+  const navigate = useNavigate();
+  const { signUp } = useAuth();
+  const [selectedTier, setSelectedTier] = useState<string>('pro');
+  const [billingPeriod, setBillingPeriod] = useState<'month' | 'year'>('month');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
     fullName: '',
-    company: ''
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [showPaymentForm, setShowPaymentForm] = useState(false)
+    company: '',
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
 
-  const selectedTierData = pricingTiers.find(tier => tier.id === selectedTier)!
-  
+  const selectedTierData = pricingTiers.find(tier => tier.id === selectedTier)!;
+
   const getDiscountedPrice = (price: number) => {
     if (billingPeriod === 'year') {
-      return Math.round(price * 10) // 2 months free
+      return Math.round(price * 10); // 2 months free
     }
-    return price
-  }
+    return price;
+  };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }))
+      setErrors(prev => ({ ...prev, [field]: '' }));
     }
-  }
+  };
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     if (!formData.email) {
-      newErrors.email = 'Email is required'
+      newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email'
+      newErrors.email = 'Please enter a valid email';
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters'
+      newErrors.password = 'Password must be at least 8 characters';
     }
 
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
+      newErrors.confirmPassword = 'Passwords do not match';
     }
 
     if (!formData.fullName) {
-      newErrors.fullName = 'Full name is required'
+      newErrors.fullName = 'Full name is required';
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!validateForm()) return
+    e.preventDefault();
+
+    if (!validateForm()) return;
 
     // If it's a paid tier, show payment form
     if (selectedTier !== 'free') {
-      setShowPaymentForm(true)
-      return
+      setShowPaymentForm(true);
+      return;
     }
 
     // For free tier, create account directly
-    await createAccount()
-  }
+    await createAccount();
+  };
 
   const createAccount = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
       // Create user account
-      await signUp(formData.email, formData.password)
-      
-      // Update user profile with tier and billing info
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (user) {
-        const { error } = await supabase
-          .from('writer_profiles')
-          .upsert({
-            user_id: user.id,
-            full_name: formData.fullName,
-            company: formData.company,
-            tier: selectedTier,
-            billing_period: billingPeriod,
-            created_at: new Date().toISOString()
-          })
+      await signUp(formData.email, formData.password);
 
-        if (error) throw error
+      // Update user profile with tier and billing info
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { error } = await supabase.from('writer_profiles').upsert({
+          user_id: user.id,
+          full_name: formData.fullName,
+          company: formData.company,
+          tier: selectedTier,
+          billing_period: billingPeriod,
+          created_at: new Date().toISOString(),
+        });
+
+        if (error) throw error;
       }
 
-      toast.success(`Welcome to DocCraft-AI ${selectedTierData.name}!`)
-      navigate('/dashboard')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create account')
-      setErrors({ general: error.message })
+      toast.success(`Welcome to DocCraft-AI ${selectedTierData.name}!`);
+      navigate('/dashboard');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to create account';
+      toast.error(errorMessage);
+      setErrors({ general: errorMessage });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handlePaymentSuccess = () => {
-    createAccount()
-  }
+    createAccount();
+  };
 
   const handlePaymentCancel = () => {
-    setShowPaymentForm(false)
-  }
+    setShowPaymentForm(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -212,7 +223,8 @@ export const SignUp: React.FC = () => {
             Choose Your Plan
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Start your journey with DocCraft-AI. Choose the perfect plan for your content creation needs.
+            Start your journey with DocCraft-AI. Choose the perfect plan for
+            your content creation needs.
           </p>
         </div>
 
@@ -249,7 +261,7 @@ export const SignUp: React.FC = () => {
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-12">
-          {pricingTiers.map((tier) => (
+          {pricingTiers.map(tier => (
             <div
               key={tier.id}
               className={`relative bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border-2 transition-all duration-300 hover:shadow-2xl ${
@@ -268,7 +280,9 @@ export const SignUp: React.FC = () => {
               )}
 
               <div className="text-center mb-6">
-                <div className={`w-16 h-16 bg-gradient-to-r ${tier.gradient} rounded-full flex items-center justify-center mx-auto mb-4 text-white`}>
+                <div
+                  className={`w-16 h-16 bg-gradient-to-r ${tier.gradient} rounded-full flex items-center justify-center mx-auto mb-4 text-white`}
+                >
                   {tier.icon}
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -291,7 +305,9 @@ export const SignUp: React.FC = () => {
                 {tier.features.map((feature, index) => (
                   <li key={index} className="flex items-start">
                     <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700 dark:text-gray-300">{feature}</span>
+                    <span className="text-gray-700 dark:text-gray-300">
+                      {feature}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -320,19 +336,27 @@ export const SignUp: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               {errors.general && (
                 <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <p className="text-red-600 dark:text-red-400 text-sm">{errors.general}</p>
+                  <p className="text-red-600 dark:text-red-400 text-sm">
+                    {errors.general}
+                  </p>
                 </div>
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="full-name"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Full Name *
                   </label>
                   <input
+                    id="full-name"
                     type="text"
                     value={formData.fullName}
-                    onChange={(e) => handleInputChange('fullName', e.target.value)}
+                    onChange={e =>
+                      handleInputChange('fullName', e.target.value)
+                    }
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
                       errors.fullName
                         ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20'
@@ -341,18 +365,24 @@ export const SignUp: React.FC = () => {
                     placeholder="Enter your full name"
                   />
                   {errors.fullName && (
-                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.fullName}</p>
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {errors.fullName}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="company"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Company (Optional)
                   </label>
                   <input
+                    id="company"
                     type="text"
                     value={formData.company}
-                    onChange={(e) => handleInputChange('company', e.target.value)}
+                    onChange={e => handleInputChange('company', e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white dark:bg-slate-700"
                     placeholder="Enter your company name"
                   />
@@ -360,13 +390,17 @@ export const SignUp: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="email-address"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   Email Address *
                 </label>
                 <input
+                  id="email-address"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  onChange={e => handleInputChange('email', e.target.value)}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
                     errors.email
                       ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20'
@@ -375,19 +409,27 @@ export const SignUp: React.FC = () => {
                   placeholder="Enter your email address"
                 />
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.email}
+                  </p>
                 )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Password *
                   </label>
                   <input
+                    id="password"
                     type="password"
                     value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    onChange={e =>
+                      handleInputChange('password', e.target.value)
+                    }
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
                       errors.password
                         ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20'
@@ -396,18 +438,26 @@ export const SignUp: React.FC = () => {
                     placeholder="Create a password"
                   />
                   {errors.password && (
-                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password}</p>
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {errors.password}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="confirm-password"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Confirm Password *
                   </label>
                   <input
+                    id="confirm-password"
                     type="password"
                     value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                    onChange={e =>
+                      handleInputChange('confirmPassword', e.target.value)
+                    }
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
                       errors.confirmPassword
                         ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20'
@@ -416,7 +466,9 @@ export const SignUp: React.FC = () => {
                     placeholder="Confirm your password"
                   />
                   {errors.confirmPassword && (
-                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.confirmPassword}</p>
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {errors.confirmPassword}
+                    </p>
                   )}
                 </div>
               </div>
@@ -429,12 +481,15 @@ export const SignUp: React.FC = () => {
                       Selected Plan: {selectedTierData.name}
                     </h3>
                     <p className="text-blue-700 dark:text-blue-300 text-sm">
-                      ${getDiscountedPrice(selectedTierData.price)}/{billingPeriod}
+                      ${getDiscountedPrice(selectedTierData.price)}/
+                      {billingPeriod}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-blue-600 dark:text-blue-400">
-                      {billingPeriod === 'year' ? 'Save 20% with yearly billing' : 'Monthly billing'}
+                      {billingPeriod === 'year'
+                        ? 'Save 20% with yearly billing'
+                        : 'Monthly billing'}
                     </p>
                   </div>
                 </div>
@@ -457,13 +512,19 @@ export const SignUp: React.FC = () => {
 
               <p className="text-center text-sm text-gray-500 dark:text-gray-400">
                 By creating an account, you agree to our{' '}
-                <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">
+                <button
+                  type="button"
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                >
                   Terms of Service
-                </a>{' '}
+                </button>{' '}
                 and{' '}
-                <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">
+                <button
+                  type="button"
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                >
                   Privacy Policy
-                </a>
+                </button>
               </p>
             </form>
           </div>
@@ -483,7 +544,8 @@ export const SignUp: React.FC = () => {
                 Advanced AI
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                State-of-the-art AI models for intelligent content analysis and generation
+                State-of-the-art AI models for intelligent content analysis and
+                generation
               </p>
             </div>
             <div className="text-center">
@@ -494,7 +556,8 @@ export const SignUp: React.FC = () => {
                 Smart Features
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Intelligent suggestions, auto-completion, and personalized recommendations
+                Intelligent suggestions, auto-completion, and personalized
+                recommendations
               </p>
             </div>
             <div className="text-center">
@@ -525,11 +588,11 @@ export const SignUp: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {/* Footer */}
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default SignUp 
+export default SignUp;

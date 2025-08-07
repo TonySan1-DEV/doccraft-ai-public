@@ -16,7 +16,7 @@ jobs:
       - name: Run ESLint
         id: lint
         run: |
-          npx eslint . --ext .ts,.tsx,.js,.jsx
+          npx eslint . --ext .ts,.tsx,.js,.jsx --max-warnings 0
           echo "exit_code=$?" >> $GITHUB_OUTPUT
 
       - name: Comment on PR with lint results

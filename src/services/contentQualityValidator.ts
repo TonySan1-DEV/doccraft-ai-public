@@ -39,12 +39,12 @@ export interface ContentMetrics {
 }
 
 class ContentQualityValidator {
-  private readonly VALIDATION_THRESHOLDS = {
-    hallucination: 0.3, // Maximum acceptable hallucination score
-    factCheck: 0.8, // Minimum fact check confidence
-    coherence: 0.7, // Minimum coherence score
-    plagiarism: 0.1 // Maximum acceptable similarity
-  };
+  // private readonly VALIDATION_THRESHOLDS = {
+  //   hallucination: 0.3, // Maximum acceptable hallucination score
+  //   factCheck: 0.8, // Minimum fact check confidence
+  //   coherence: 0.7, // Minimum coherence score
+  //   plagiarism: 0.1 // Maximum acceptable similarity
+  // };
 
   /**
    * Comprehensive content validation for long-form content
@@ -58,7 +58,7 @@ class ContentQualityValidator {
       targetAudience?: string;
     }
   ): Promise<QualityValidationResult> {
-    const startTime = Date.now();
+    // const startTime = Date.now();
     
     try {
       // Parallel validation tasks
@@ -523,7 +523,7 @@ Return JSON:
   /**
    * Call LLM with specific provider
    */
-  private async callLLM(provider: string, prompt: string): Promise<string> {
+  private async callLLM(_provider: string, _prompt: string): Promise<string> {
     // In production, use the LLM integration service
     // For now, return a mock response
     return '{"score": 0.8, "issues": []}';

@@ -1,137 +1,146 @@
-import React, { useState } from 'react'
-import { X, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import React, { useState } from "react";
+import { X, Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 
-type AuthMode = 'login' | 'signup' | 'forgot'
+type AuthMode = "login" | "signup" | "forgot";
 
 interface LoginModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 interface FormData {
-  email: string
-  password: string
-  confirmPassword: string
+  email: string;
+  password: string;
+  confirmPassword: string;
 }
 
 interface FormErrors {
-  email?: string
-  password?: string
-  confirmPassword?: string
-  general?: string
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  general?: string;
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
-  const [mode, setMode] = useState<AuthMode>('login')
+  const [mode, setMode] = useState<AuthMode>("login");
   const [formData, setFormData] = useState<FormData>({
-    email: '',
-    password: '',
-    confirmPassword: ''
-  })
-  const [errors, setErrors] = useState<FormErrors>({})
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = (): boolean => {
-    const newErrors: FormErrors = {}
+    const newErrors: FormErrors = {};
 
     // Email validation
     if (!formData.email) {
-      newErrors.email = 'Email is required'
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email'
+      newErrors.email = "Please enter a valid email";
     }
 
     // Password validation
-    if (mode !== 'forgot') {
+    if (mode !== "forgot") {
       if (!formData.password) {
-        newErrors.password = 'Password is required'
+        newErrors.password = "Password is required";
       } else if (formData.password.length < 6) {
-        newErrors.password = 'Password must be at least 6 characters'
+        newErrors.password = "Password must be at least 6 characters";
       }
     }
 
     // Confirm password validation for signup
-    if (mode === 'signup') {
+    if (mode === "signup") {
       if (!formData.confirmPassword) {
-        newErrors.confirmPassword = 'Please confirm your password'
+        newErrors.confirmPassword = "Please confirm your password";
       } else if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match'
+        newErrors.confirmPassword = "Passwords do not match";
       }
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!validateForm()) return
+    e.preventDefault();
 
-    setIsLoading(true)
-    
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Handle different modes
       switch (mode) {
-        case 'login':
-          console.log('Logging in:', { email: formData.email, password: formData.password })
+        case "login":
+          console.log("Logging in:", {
+            email: formData.email,
+            password: formData.password,
+          });
           // Add your login logic here
-          break
-        case 'signup':
-          console.log('Signing up:', { email: formData.email, password: formData.password })
+          break;
+        case "signup":
+          console.log("Signing up:", {
+            email: formData.email,
+            password: formData.password,
+          });
           // Add your signup logic here
-          break
-        case 'forgot':
-          console.log('Password reset requested for:', formData.email)
+          break;
+        case "forgot":
+          console.log("Password reset requested for:", formData.email);
           // Add your password reset logic here
-          break
+          break;
       }
-      
+
       // Reset form and close modal on success
-      resetForm()
-      onClose()
-    } catch (error) {
-      setErrors({ general: 'An error occurred. Please try again.' })
+      resetForm();
+      onClose();
+    } catch (_error) {
+      setErrors({ general: "An error occurred. Please try again." });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const resetForm = () => {
-    setFormData({ email: '', password: '', confirmPassword: '' })
-    setErrors({})
-    setShowPassword(false)
-    setShowConfirmPassword(false)
-  }
+    setFormData({ email: "", password: "", confirmPassword: "" });
+    setErrors({});
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  };
 
   const handleModeChange = (newMode: AuthMode) => {
-    setMode(newMode)
-    resetForm()
-  }
+    setMode(newMode);
+    resetForm();
+  };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear field-specific error when user starts typing
     if (errors[field as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }))
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
-  }
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
+        onKeyDown={(e) => e.key === "Enter" && onClose()}
+        role="button"
+        tabIndex={0}
       />
-      
+
       {/* Modal */}
       <div className="relative w-full max-w-md mx-4 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
@@ -143,35 +152,35 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             <X className="h-5 w-5" />
           </button>
           <h2 className="text-xl font-bold text-white">
-            {mode === 'login' && 'Welcome Back'}
-            {mode === 'signup' && 'Create Account'}
-            {mode === 'forgot' && 'Reset Password'}
+            {mode === "login" && "Welcome Back"}
+            {mode === "signup" && "Create Account"}
+            {mode === "forgot" && "Reset Password"}
           </h2>
           <p className="text-blue-100 text-sm mt-1">
-            {mode === 'login' && 'Sign in to your account'}
-            {mode === 'signup' && 'Join DocCraft-AI today'}
-            {mode === 'forgot' && 'Enter your email to reset password'}
+            {mode === "login" && "Sign in to your account"}
+            {mode === "signup" && "Join DocCraft-AI today"}
+            {mode === "forgot" && "Enter your email to reset password"}
           </p>
         </div>
 
         {/* Mode Tabs */}
         <div className="flex border-b border-gray-200 dark:border-slate-700">
           <button
-            onClick={() => handleModeChange('login')}
+            onClick={() => handleModeChange("login")}
             className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
-              mode === 'login'
-                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              mode === "login"
+                ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             }`}
           >
             Login
           </button>
           <button
-            onClick={() => handleModeChange('signup')}
+            onClick={() => handleModeChange("signup")}
             className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
-              mode === 'signup'
-                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              mode === "signup"
+                ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             }`}
           >
             Sign Up
@@ -184,13 +193,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           {errors.general && (
             <div className="flex items-center space-x-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               <AlertCircle className="h-4 w-4 text-red-500" />
-              <span className="text-sm text-red-600 dark:text-red-400">{errors.general}</span>
+              <span className="text-sm text-red-600 dark:text-red-400">
+                {errors.general}
+              </span>
             </div>
           )}
 
           {/* Email Field */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Email Address
             </label>
             <div className="relative">
@@ -201,22 +215,29 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+                onChange={(e) => handleInputChange("email", e.target.value)}
                 className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${
-                  errors.email ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-slate-600'
+                  errors.email
+                    ? "border-red-300 dark:border-red-600"
+                    : "border-gray-300 dark:border-slate-600"
                 }`}
                 placeholder="Enter your email"
               />
             </div>
             {errors.email && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                {errors.email}
+              </p>
             )}
           </div>
 
           {/* Password Field */}
-          {mode !== 'forgot' && (
+          {mode !== "forgot" && (
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
                 Password
               </label>
               <div className="relative">
@@ -225,11 +246,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                   className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${
-                    errors.password ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-slate-600'
+                    errors.password
+                      ? "border-red-300 dark:border-red-600"
+                      : "border-gray-300 dark:border-slate-600"
                   }`}
                   placeholder="Enter your password"
                 />
@@ -246,15 +271,20 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.password}
+                </p>
               )}
             </div>
           )}
 
           {/* Confirm Password Field (Signup only) */}
-          {mode === 'signup' && (
+          {mode === "signup" && (
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
                 Confirm Password
               </label>
               <div className="relative">
@@ -263,11 +293,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <input
                   id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
+                  type={showConfirmPassword ? "text" : "password"}
                   value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("confirmPassword", e.target.value)
+                  }
                   className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${
-                    errors.confirmPassword ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-slate-600'
+                    errors.confirmPassword
+                      ? "border-red-300 dark:border-red-600"
+                      : "border-gray-300 dark:border-slate-600"
                   }`}
                   placeholder="Confirm your password"
                 />
@@ -284,17 +318,19 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.confirmPassword}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.confirmPassword}
+                </p>
               )}
             </div>
           )}
 
           {/* Forgot Password Link (Login mode only) */}
-          {mode === 'login' && (
+          {mode === "login" && (
             <div className="text-right">
               <button
                 type="button"
-                onClick={() => handleModeChange('forgot')}
+                onClick={() => handleModeChange("forgot")}
                 className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
               >
                 Forgot your password?
@@ -315,45 +351,45 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               </div>
             ) : (
               <>
-                {mode === 'login' && 'Sign In'}
-                {mode === 'signup' && 'Create Account'}
-                {mode === 'forgot' && 'Send Reset Link'}
+                {mode === "login" && "Sign In"}
+                {mode === "signup" && "Create Account"}
+                {mode === "forgot" && "Send Reset Link"}
               </>
             )}
           </button>
 
           {/* Mode Switch Links */}
           <div className="text-center pt-4 border-t border-gray-200 dark:border-slate-700">
-            {mode === 'login' && (
+            {mode === "login" && (
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{" "}
                 <button
                   type="button"
-                  onClick={() => handleModeChange('signup')}
+                  onClick={() => handleModeChange("signup")}
                   className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
                 >
                   Sign up
                 </button>
               </p>
             )}
-            {mode === 'signup' && (
+            {mode === "signup" && (
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Already have an account?{' '}
+                Already have an account?{" "}
                 <button
                   type="button"
-                  onClick={() => handleModeChange('login')}
+                  onClick={() => handleModeChange("login")}
                   className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
                 >
                   Sign in
                 </button>
               </p>
             )}
-            {mode === 'forgot' && (
+            {mode === "forgot" && (
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Remember your password?{' '}
+                Remember your password?{" "}
                 <button
                   type="button"
-                  onClick={() => handleModeChange('login')}
+                  onClick={() => handleModeChange("login")}
                   className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
                 >
                   Back to login
@@ -364,5 +400,5 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
         </form>
       </div>
     </div>
-  )
-} 
+  );
+};

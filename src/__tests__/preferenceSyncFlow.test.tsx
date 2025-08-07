@@ -27,13 +27,17 @@ jest.mock('../lib/supabase', () => ({
 }));
 
 jest.mock('../services/promptBehaviorSync', () => ({
-  syncPromptBehavior: jest.fn().mockImplementation((tone: string, language: string) => Promise.resolve({
-    header: `/* Tone: ${tone} | Language: ${language} */`,
-    injected: true,
-    tone: tone as any,
-    language: language as any,
-    reason: 'success' as const,
-  })),
+  syncPromptBehavior: jest
+    .fn()
+    .mockImplementation((tone: string, language: string) =>
+      Promise.resolve({
+        header: `/* Tone: ${tone} | Language: ${language} */`,
+        injected: true,
+        tone: tone as any,
+        language: language as any,
+        reason: 'success' as const,
+      })
+    ),
 }));
 
 jest.mock('../utils/loadInitialPrefs', () => ({
@@ -57,7 +61,9 @@ Object.defineProperty(window, 'localStorage', {
 
 describe('Preference Sync Flow Integration', () => {
   const mockSupabase = supabase as jest.Mocked<typeof supabase>;
-  const mockSyncPromptBehavior = syncPromptBehavior as jest.MockedFunction<typeof syncPromptBehavior>;
+  const mockSyncPromptBehavior = syncPromptBehavior as jest.MockedFunction<
+    typeof syncPromptBehavior
+  >;
   const mockFrom = jest.fn();
   const mockSelect = jest.fn();
   const mockEq = jest.fn();
@@ -115,7 +121,9 @@ describe('Preference Sync Flow Integration', () => {
 
       // Verify defaults are loaded
       const toneSelect = screen.getByLabelText(/tone/i) as HTMLSelectElement;
-      const languageSelect = screen.getByLabelText(/language/i) as HTMLSelectElement;
+      const languageSelect = screen.getByLabelText(
+        /language/i
+      ) as HTMLSelectElement;
       const memoryToggle = screen.getByLabelText(/memory/i) as HTMLInputElement;
 
       expect(toneSelect.value).toBe('friendly');
@@ -127,7 +135,9 @@ describe('Preference Sync Flow Integration', () => {
   describe('Error handling and safe fallbacks', () => {
     it('should handle network failure without crashing', async () => {
       // Mock authentication failure
-      (mockSupabase.auth.getUser as jest.Mock).mockRejectedValue(new Error('Network error'));
+      (mockSupabase.auth.getUser as jest.Mock).mockRejectedValue(
+        new Error('Network error')
+      );
 
       // Mock sync is handled by the mock implementation
 
@@ -237,8 +247,14 @@ describe('Preference Sync Flow Integration', () => {
       });
 
       // Mock subsequent sync to return updated values
-      mockSyncPromptBehavior
-        // Mock sync is handled by the mock implementation
+      mockSyncPromptBehavior.mockReturnValue({
+        header: `/* Tone: formal | Language: en */`,
+        injected: true,
+        tone: 'formal',
+        language: 'en',
+        reason: 'success',
+      });
+      // Mock sync is handled by the mock implementation
 
       const { rerender } = render(
         <AgentPreferencesProvider>
@@ -252,7 +268,9 @@ describe('Preference Sync Flow Integration', () => {
       });
 
       // Verify initial values
-      const initialToneSelect = screen.getByLabelText(/tone/i) as HTMLSelectElement;
+      const initialToneSelect = screen.getByLabelText(
+        /tone/i
+      ) as HTMLSelectElement;
       expect(initialToneSelect.value).toBe('friendly');
 
       // Simulate user update
@@ -276,8 +294,10 @@ describe('Preference Sync Flow Integration', () => {
       });
 
       // Verify updated values are restored
-      const reloadedToneSelect = screen.getByLabelText(/tone/i) as HTMLSelectElement;
+      const reloadedToneSelect = screen.getByLabelText(
+        /tone/i
+      ) as HTMLSelectElement;
       expect(reloadedToneSelect.value).toBe('formal');
     });
   });
-}); 
+});

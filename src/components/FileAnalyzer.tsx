@@ -1,142 +1,195 @@
-import { useState } from 'react'
-import { FileText, Download, Share2, BookOpen } from 'lucide-react'
-import { useDropzone } from 'react-dropzone'
-import toast from 'react-hot-toast'
+import { useState } from "react";
+import { FileText, Download, Share2, BookOpen } from "lucide-react";
+import { useDropzone } from "react-dropzone";
+import toast from "react-hot-toast";
 
 interface FileAnalyzerProps {
-  onAnalysisComplete?: (results: any) => void
+  onAnalysisComplete?: (results: AnalysisResult[]) => void;
 }
 
 interface AnalysisResult {
-  sectionId: string
-  content: string
+  sectionId: string;
+  content: string;
   analysis: {
-    topics: string[]
-    sentiment: string
-    tone: string
-    keyInsights: string[]
-    suggestions: string[]
-  }
+    topics: string[];
+    sentiment: string;
+    tone: string;
+    keyInsights: string[];
+    suggestions: string[];
+  };
 }
 
 export function FileAnalyzer({ onAnalysisComplete }: FileAnalyzerProps) {
-  const [document, setDocument] = useState<any>(null)
-  const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([])
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [currentSection, setCurrentSection] = useState<number>(0)
+  const [document, setDocument] = useState<{
+    id: string;
+    title: string;
+    content: string;
+    sections: Array<{
+      id: string;
+      content: string;
+      topicTags: string[];
+      tone: string;
+      intent: string;
+    }>;
+  } | null>(null);
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [currentSection, setCurrentSection] = useState<number>(0);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
-      'application/pdf': ['.pdf'],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-      'text/plain': ['.txt'],
-      'text/markdown': ['.md'],
+      "application/pdf": [".pdf"],
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        [".docx"],
+      "text/plain": [".txt"],
+      "text/markdown": [".md"],
     },
     maxSize: 10 * 1024 * 1024, // 10MB
     onDrop: async (acceptedFiles) => {
-      if (acceptedFiles.length === 0) return
+      if (acceptedFiles.length === 0) return;
 
-      const file = acceptedFiles[0]
-      setIsAnalyzing(true)
+      const file = acceptedFiles[0];
+      setIsAnalyzing(true);
 
       try {
         const text = await file.text();
         const processedDoc = await processDocument(file.name, text);
         setDocument(processedDoc);
         await analyzeDocument(processedDoc);
-      } catch (error: any) {
-        toast.error(error.message || 'Failed to parse document');
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to parse document";
+        toast.error(errorMessage);
       } finally {
         setIsAnalyzing(false);
       }
     },
-  })
+  });
 
   const processDocument = async (docTitle: string, docContent: string) => {
-    const sections = docContent.split('\n\n').filter(section => section.trim().length > 50).map((sectionContent, index) => ({
-      id: `section-${index + 1}`,
-      content: sectionContent.trim(),
-      topicTags: extractTopicTags(sectionContent),
-      tone: analyzeTone(),
-      intent: analyzeIntent()
-    }))
+    const sections = docContent
+      .split("\n\n")
+      .filter((section) => section.trim().length > 50)
+      .map((sectionContent, index) => ({
+        id: `section-${index + 1}`,
+        content: sectionContent.trim(),
+        topicTags: extractTopicTags(sectionContent),
+        tone: analyzeTone(),
+        intent: analyzeIntent(),
+      }));
 
     return {
       id: `doc-${Date.now()}`,
       title: docTitle,
       content: docContent,
-      sections
-    }
-  }
+      sections,
+    };
+  };
 
-  const analyzeDocument = async (doc: any) => {
-    const results: AnalysisResult[] = []
+  const analyzeDocument = async (doc: {
+    id: string;
+    title: string;
+    content: string;
+    sections: Array<{
+      id: string;
+      content: string;
+      topicTags: string[];
+      tone: string;
+      intent: string;
+    }>;
+  }) => {
+    const results: AnalysisResult[] = [];
 
     for (let i = 0; i < doc.sections.length; i++) {
-      setCurrentSection(i + 1)
-      const section = doc.sections[i]
+      setCurrentSection(i + 1);
+      const section = doc.sections[i];
 
-      const analysis = await analyzeSection(section)
+      const analysis = await analyzeSection(section);
       results.push({
         sectionId: section.id,
         content: section.content,
-        analysis
-      })
+        analysis,
+      });
 
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
-    setAnalysisResults(results)
-    onAnalysisComplete?.(results)
-    toast.success(`Analysis complete! Processed ${results.length} sections.`)
-  }
+    setAnalysisResults(results);
+    onAnalysisComplete?.(results);
+    toast.success(`Analysis complete! Processed ${results.length} sections.`);
+  };
 
-  const analyzeSection = async (section: any) => {
+  const analyzeSection = async (section: {
+    id: string;
+    content: string;
+    topicTags: string[];
+    tone: string;
+    intent: string;
+  }) => {
     return {
       topics: extractTopicTags(section.content),
       sentiment: analyzeSentiment(),
       tone: section.tone,
       keyInsights: extractKeyInsights(),
-      suggestions: generateSuggestions()
-    }
-  }
+      suggestions: generateSuggestions(),
+    };
+  };
 
   const extractTopicTags = (content: string): string[] => {
-    const keywords = ['technology', 'business', 'innovation', 'strategy', 'development', 'analysis', 'research', 'data', 'process', 'solution']
-    const contentLower = content.toLowerCase()
-    return keywords.filter(keyword => contentLower.includes(keyword)).slice(0, 3)
-  }
+    const keywords = [
+      "technology",
+      "business",
+      "innovation",
+      "strategy",
+      "development",
+      "analysis",
+      "research",
+      "data",
+      "process",
+      "solution",
+    ];
+    const contentLower = content.toLowerCase();
+    return keywords
+      .filter((keyword) => contentLower.includes(keyword))
+      .slice(0, 3);
+  };
 
   const analyzeTone = (): string => {
-    const tones = ['professional', 'casual', 'technical', 'persuasive', 'informative']
-    return tones[Math.floor(Math.random() * tones.length)]
-  }
+    const tones = [
+      "professional",
+      "casual",
+      "technical",
+      "persuasive",
+      "informative",
+    ];
+    return tones[Math.floor(Math.random() * tones.length)];
+  };
 
   const analyzeIntent = (): string => {
-    const intents = ['inform', 'persuade', 'explain', 'analyze', 'describe']
-    return intents[Math.floor(Math.random() * intents.length)]
-  }
+    const intents = ["inform", "persuade", "explain", "analyze", "describe"];
+    return intents[Math.floor(Math.random() * intents.length)];
+  };
 
   const analyzeSentiment = (): string => {
-    const sentiments = ['positive', 'neutral', 'negative']
-    return sentiments[Math.floor(Math.random() * sentiments.length)]
-  }
+    const sentiments = ["positive", "neutral", "negative"];
+    return sentiments[Math.floor(Math.random() * sentiments.length)];
+  };
 
   const extractKeyInsights = (): string[] => {
     return [
-      'Key insight 1 from content analysis',
-      'Important finding 2',
-      'Notable observation 3'
-    ]
-  }
+      "Key insight 1 from content analysis",
+      "Important finding 2",
+      "Notable observation 3",
+    ];
+  };
 
   const generateSuggestions = (): string[] => {
     return [
-      'Consider adding more specific examples',
-      'Enhance with visual elements',
-      'Expand on key concepts'
-    ]
-  }
+      "Consider adding more specific examples",
+      "Enhance with visual elements",
+      "Expand on key concepts",
+    ];
+  };
 
   if (!document) {
     return (
@@ -149,17 +202,20 @@ export function FileAnalyzer({ onAnalysisComplete }: FileAnalyzerProps) {
             Upload Document for Full Analysis
           </h3>
           <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Drop your document here for comprehensive section-by-section analysis.
+            Drop your document here for comprehensive section-by-section
+            analysis.
           </p>
-          <div 
-            {...getRootProps()} 
+          <div
+            {...getRootProps()}
             className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 hover:border-blue-500 dark:hover:border-blue-400 transition-colors cursor-pointer"
           >
             <input {...getInputProps()} />
             <div className="text-center">
               <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600 dark:text-gray-400 mb-2">
-                {isDragActive ? 'Drop the file here' : 'Drag and drop your document here'}
+                {isDragActive
+                  ? "Drop the file here"
+                  : "Drag and drop your document here"}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-500">
                 PDF, DOCX, or TXT files supported
@@ -168,7 +224,7 @@ export function FileAnalyzer({ onAnalysisComplete }: FileAnalyzerProps) {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -178,7 +234,10 @@ export function FileAnalyzer({ onAnalysisComplete }: FileAnalyzerProps) {
           Analyzing: {document.title}
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          {document.sections.length} sections • {isAnalyzing ? `Processing section ${currentSection}/${document.sections.length}` : 'Analysis complete'}
+          {document.sections.length} sections •{" "}
+          {isAnalyzing
+            ? `Processing section ${currentSection}/${document.sections.length}`
+            : "Analysis complete"}
         </p>
       </div>
 
@@ -205,28 +264,44 @@ export function FileAnalyzer({ onAnalysisComplete }: FileAnalyzerProps) {
           </h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {analysisResults.map((result, index) => (
-              <div key={result.sectionId} className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+              <div
+                key={result.sectionId}
+                className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+              >
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">
                   Section {index + 1}
                 </h4>
                 <div className="space-y-3 text-sm">
                   <div>
-                    <span className="font-medium text-gray-700 dark:text-gray-300">Topics:</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">
+                      Topics:
+                    </span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {result.analysis.topics.map((topic, i) => (
-                        <span key={i} className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full text-xs">
+                        <span
+                          key={i}
+                          className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full text-xs"
+                        >
                           {topic}
                         </span>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700 dark:text-gray-300">Sentiment:</span>
-                    <span className="ml-2 text-gray-600 dark:text-gray-400">{result.analysis.sentiment}</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">
+                      Sentiment:
+                    </span>
+                    <span className="ml-2 text-gray-600 dark:text-gray-400">
+                      {result.analysis.sentiment}
+                    </span>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700 dark:text-gray-300">Tone:</span>
-                    <span className="ml-2 text-gray-600 dark:text-gray-400">{result.analysis.tone}</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">
+                      Tone:
+                    </span>
+                    <span className="ml-2 text-gray-600 dark:text-gray-400">
+                      {result.analysis.tone}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -248,5 +323,5 @@ export function FileAnalyzer({ onAnalysisComplete }: FileAnalyzerProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

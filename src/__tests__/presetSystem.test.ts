@@ -10,7 +10,12 @@
 }
 */
 
-import { writerPresets, validatePresetPreferences, mergePresetWithCurrent, getPresetRecommendations } from '../constants/writerPresets';
+import {
+  writerPresets,
+  validatePresetPreferences,
+  mergePresetWithCurrent,
+  getPresetRecommendations,
+} from '../constants/writerPresets';
 import { presetService } from '../services/presetService';
 import { AgentPrefs } from '../types/agentPreferences';
 
@@ -22,7 +27,7 @@ const localStorageMock = {
   clear: jest.fn(),
 };
 Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
+  value: localStorageMock,
 });
 
 describe('Preset System', () => {
@@ -32,7 +37,7 @@ describe('Preset System', () => {
     copilotEnabled: true,
     memoryEnabled: true,
     defaultCommandView: 'list' as const,
-    lockedFields: []
+    lockedFields: [],
   };
 
   beforeEach(() => {
@@ -57,14 +62,21 @@ describe('Preset System', () => {
     });
 
     it('should have valid categories', () => {
-      const validCategories = ['writing', 'editing', 'publishing', 'specialized'];
+      const validCategories = [
+        'writing',
+        'editing',
+        'publishing',
+        'specialized',
+      ];
       Object.values(writerPresets).forEach(preset => {
         expect(validCategories).toContain(preset.category);
       });
     });
 
     it('should have popular presets marked', () => {
-      const popularPresets = Object.values(writerPresets).filter(preset => preset.isPopular);
+      const popularPresets = Object.values(writerPresets).filter(
+        preset => preset.isPopular
+      );
       expect(popularPresets.length).toBeGreaterThan(0);
     });
   });
@@ -76,7 +88,7 @@ describe('Preset System', () => {
         language: 'en' as const,
         copilotEnabled: true,
         memoryEnabled: false,
-        defaultCommandView: 'list' as const
+        defaultCommandView: 'list' as const,
       };
 
       expect(validatePresetPreferences(validPreferences as any)).toBe(true);
@@ -85,7 +97,7 @@ describe('Preset System', () => {
     it('should reject invalid tone values', () => {
       const invalidPreferences = {
         ...mockPreferences,
-        tone: 'invalid-tone' as any
+        tone: 'invalid-tone' as any,
       };
 
       expect(validatePresetPreferences(invalidPreferences as any)).toBe(false);
@@ -94,7 +106,7 @@ describe('Preset System', () => {
     it('should reject invalid language values', () => {
       const invalidPreferences = {
         ...mockPreferences,
-        language: 'invalid-language' as any
+        language: 'invalid-language' as any,
       };
 
       expect(validatePresetPreferences(invalidPreferences as any)).toBe(false);
@@ -103,7 +115,7 @@ describe('Preset System', () => {
     it('should reject invalid command view values', () => {
       const invalidPreferences = {
         ...mockPreferences,
-        defaultCommandView: 'invalid-view' as any
+        defaultCommandView: 'invalid-view' as any,
       };
 
       expect(validatePresetPreferences(invalidPreferences as any)).toBe(false);
@@ -112,7 +124,7 @@ describe('Preset System', () => {
     it('should reject non-boolean values for toggles', () => {
       const invalidPreferences = {
         ...mockPreferences,
-        copilotEnabled: 'not-a-boolean' as any
+        copilotEnabled: 'not-a-boolean' as any,
       };
 
       expect(validatePresetPreferences(invalidPreferences as any)).toBe(false);
@@ -123,10 +135,13 @@ describe('Preset System', () => {
     it('should merge preset preferences with current preferences', () => {
       const presetPreferences = {
         tone: 'formal' as const,
-        copilotEnabled: false
+        copilotEnabled: false,
       };
 
-      const result = mergePresetWithCurrent(presetPreferences as any, mockPreferences);
+      const result = mergePresetWithCurrent(
+        presetPreferences as any,
+        mockPreferences
+      );
 
       expect(result.tone).toBe('formal');
       expect(result.copilotEnabled).toBe(false);
@@ -153,23 +168,28 @@ describe('Preset System', () => {
 
     it('should prioritize presets with matching tone', () => {
       const formalPreferences = { ...mockPreferences, tone: 'formal' as const };
-      const recommendations = getPresetRecommendations(formalPreferences as any);
+      const recommendations = getPresetRecommendations(
+        formalPreferences as any
+      );
 
       // Should prioritize presets with formal tone
-      const formalPresets = recommendations.filter(preset => 
-        preset.preferences.tone === 'formal'
+      const formalPresets = recommendations.filter(
+        preset => preset.preferences.tone === 'formal'
       );
 
       expect(formalPresets.length).toBeGreaterThan(0);
     });
 
     it('should prioritize presets with matching copilot setting', () => {
-      const noCopilotPreferences = { ...mockPreferences, copilotEnabled: false };
+      const noCopilotPreferences = {
+        ...mockPreferences,
+        copilotEnabled: false,
+      };
       const recommendations = getPresetRecommendations(noCopilotPreferences);
 
       // Should prioritize presets with copilot disabled
-      const noCopilotPresets = recommendations.filter(preset => 
-        preset.preferences.copilotEnabled === false
+      const noCopilotPresets = recommendations.filter(
+        preset => preset.preferences.copilotEnabled === false
       );
 
       expect(noCopilotPresets.length).toBeGreaterThan(0);
@@ -205,9 +225,9 @@ describe('Preset System', () => {
     it('should search presets by query', () => {
       const searchResults = presetService.searchPresets('fast');
       expect(Array.isArray(searchResults)).toBe(true);
-      
+
       searchResults.forEach(preset => {
-        const matches = 
+        const matches =
           preset.name.toLowerCase().includes('fast') ||
           preset.description.toLowerCase().includes('fast') ||
           preset.tags.some(tag => tag.toLowerCase().includes('fast'));
@@ -222,7 +242,9 @@ describe('Preset System', () => {
     });
 
     it('should return undefined for non-existent preset', () => {
-      const nonExistentPreset = presetService.getPresetByName('Non Existent Preset');
+      const nonExistentPreset = presetService.getPresetByName(
+        'Non Existent Preset'
+      );
       expect(nonExistentPreset).toBeUndefined();
     });
 
@@ -252,17 +274,20 @@ describe('Preset System', () => {
     });
 
     it('should create custom preset', async () => {
-      const customPreset = await presetService.createCustomPreset({
-        name: 'Test Custom Preset',
-        description: 'A test custom preset',
-        category: 'writing',
-        preferences: {
-          tone: 'friendly' as const,
-          copilotEnabled: true,
-          memoryEnabled: false
+      const customPreset = await presetService.createCustomPreset(
+        {
+          name: 'Test Custom Preset',
+          description: 'A test custom preset',
+          category: 'writing',
+          preferences: {
+            tone: 'friendly' as const,
+            copilotEnabled: true,
+            memoryEnabled: false,
+          },
+          tags: ['test', 'custom'],
         },
-        tags: ['test', 'custom']
-      }, 'test-user-id');
+        'test-user-id'
+      );
 
       expect(customPreset).toBeDefined();
       expect(customPreset?.name).toBe('Test Custom Preset');
@@ -270,51 +295,63 @@ describe('Preset System', () => {
     });
 
     it('should reject custom preset with invalid preferences', async () => {
-      const customPreset = await presetService.createCustomPreset({
-        name: 'Invalid Preset',
-        description: 'An invalid preset',
-        category: 'writing',
-        preferences: {
-          tone: 'invalid-tone' as any,
-          copilotEnabled: true
+      const customPreset = await presetService.createCustomPreset(
+        {
+          name: 'Invalid Preset',
+          description: 'An invalid preset',
+          category: 'writing',
+          preferences: {
+            tone: 'invalid-tone' as any,
+            copilotEnabled: true,
+          },
+          tags: ['invalid'],
         },
-        tags: ['invalid']
-      }, 'test-user-id');
+        'test-user-id'
+      );
 
       expect(customPreset).toBeNull();
     });
 
     it('should reject custom preset with duplicate name', async () => {
       // Create first preset
-      await presetService.createCustomPreset({
-        name: 'Duplicate Preset',
-        description: 'First preset',
-        category: 'writing',
-        preferences: { tone: 'friendly' as const },
-        tags: ['first']
-      }, 'test-user-id');
+      await presetService.createCustomPreset(
+        {
+          name: 'Duplicate Preset',
+          description: 'First preset',
+          category: 'writing',
+          preferences: { tone: 'friendly' as const },
+          tags: ['first'],
+        },
+        'test-user-id'
+      );
 
       // Try to create second preset with same name
-      const duplicatePreset = await presetService.createCustomPreset({
-        name: 'Duplicate Preset',
-        description: 'Second preset',
-        category: 'writing',
-        preferences: { tone: 'formal' as const },
-        tags: ['second']
-      }, 'test-user-id');
+      const duplicatePreset = await presetService.createCustomPreset(
+        {
+          name: 'Duplicate Preset',
+          description: 'Second preset',
+          category: 'writing',
+          preferences: { tone: 'formal' as const },
+          tags: ['second'],
+        },
+        'test-user-id'
+      );
 
       expect(duplicatePreset).toBeNull();
     });
 
     it('should update custom preset', async () => {
       // Create preset first
-      const originalPreset = await presetService.createCustomPreset({
-        name: 'Update Test Preset',
-        description: 'Original description',
-        category: 'writing',
-        preferences: { tone: 'friendly' as const },
-        tags: ['original']
-      }, 'test-user-id');
+      const originalPreset = await presetService.createCustomPreset(
+        {
+          name: 'Update Test Preset',
+          description: 'Original description',
+          category: 'writing',
+          preferences: { tone: 'friendly' as const },
+          tags: ['original'],
+        },
+        'test-user-id'
+      );
 
       expect(originalPreset).toBeDefined();
 
@@ -323,7 +360,7 @@ describe('Preset System', () => {
         'Update Test Preset',
         {
           description: 'Updated description',
-          preferences: { tone: 'formal' as const }
+          preferences: { tone: 'formal' as const },
         },
         'test-user-id'
       );
@@ -335,16 +372,22 @@ describe('Preset System', () => {
 
     it('should delete custom preset', async () => {
       // Create preset first
-      await presetService.createCustomPreset({
-        name: 'Delete Test Preset',
-        description: 'To be deleted',
-        category: 'writing',
-        preferences: { tone: 'friendly' as const },
-        tags: ['delete']
-      }, 'test-user-id');
+      await presetService.createCustomPreset(
+        {
+          name: 'Delete Test Preset',
+          description: 'To be deleted',
+          category: 'writing',
+          preferences: { tone: 'friendly' as const },
+          tags: ['delete'],
+        },
+        'test-user-id'
+      );
 
       // Delete the preset
-      const deleteResult = await presetService.deleteCustomPreset('Delete Test Preset', 'test-user-id');
+      const deleteResult = await presetService.deleteCustomPreset(
+        'Delete Test Preset',
+        'test-user-id'
+      );
       expect(deleteResult).toBe(true);
 
       // Verify it's gone
@@ -355,10 +398,14 @@ describe('Preset System', () => {
 
   describe('Preset Application', () => {
     it('should apply preset successfully', async () => {
-      const result = await presetService.applyPreset('Fast Draft', mockPreferences, {
-        createVersion: false,
-        mergeMode: 'replace'
-      });
+      const result = await presetService.applyPreset(
+        'Fast Draft',
+        mockPreferences,
+        {
+          createVersion: false,
+          mergeMode: 'replace',
+        }
+      );
 
       expect(result.success).toBe(true);
       expect(result.appliedPreferences).toBeDefined();
@@ -367,7 +414,10 @@ describe('Preset System', () => {
     });
 
     it('should handle non-existent preset', async () => {
-      const result = await presetService.applyPreset('Non Existent Preset', mockPreferences);
+      const result = await presetService.applyPreset(
+        'Non Existent Preset',
+        mockPreferences
+      );
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
@@ -377,27 +427,44 @@ describe('Preset System', () => {
     it('should handle invalid preset preferences', async () => {
       // Mock a preset with invalid preferences
       const originalPresets = { ...writerPresets };
-      (writerPresets as any)['Invalid Preset'] = {
+      const mockWriterPresets = { ...originalPresets };
+      mockWriterPresets['Invalid Preset'] = {
         name: 'Invalid Preset',
         description: 'Invalid preset',
         category: 'writing',
         preferences: { tone: 'invalid-tone' as any },
-        tags: ['invalid']
+        tags: ['invalid'],
       };
 
-      const result = await presetService.applyPreset('Invalid Preset', mockPreferences);
+      // Mock the preset service to use our modified presets
+      const originalGetPresetByName = presetService.getPresetByName;
+      presetService.getPresetByName = jest.fn((name: string) => {
+        if (name === 'Invalid Preset') {
+          return mockWriterPresets['Invalid Preset'];
+        }
+        return originalGetPresetByName.call(presetService, name);
+      });
+
+      const result = await presetService.applyPreset(
+        'Invalid Preset',
+        mockPreferences
+      );
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
 
-      // Restore original presets
-      (writerPresets as any) = originalPresets;
+      // Restore original method
+      presetService.getPresetByName = originalGetPresetByName;
     });
 
     it('should merge preset with current preferences', async () => {
-      const result = await presetService.applyPreset('Fast Draft', mockPreferences, {
-        mergeMode: 'merge'
-      });
+      const result = await presetService.applyPreset(
+        'Fast Draft',
+        mockPreferences,
+        {
+          mergeMode: 'merge',
+        }
+      );
 
       expect(result.success).toBe(true);
       // Should preserve some current preferences while applying preset ones
@@ -409,7 +476,7 @@ describe('Preset System', () => {
     it('should export custom presets', () => {
       const exportData = presetService.exportCustomPresets();
       expect(typeof exportData).toBe('string');
-      
+
       const parsed = JSON.parse(exportData);
       expect(Array.isArray(parsed)).toBe(true);
     });
@@ -425,15 +492,18 @@ describe('Preset System', () => {
           id: 'import-1',
           userId: 'test-user',
           createdAt: new Date().toISOString(),
-          isCustom: true
-        }
+          isCustom: true,
+        },
       ]);
 
-      const result = await presetService.importCustomPresets(importData, 'test-user-id');
+      const result = await presetService.importCustomPresets(
+        importData,
+        'test-user-id'
+      );
       expect(result).toBe(true);
 
       const importedPreset = presetService.getPresetByName('Imported Preset');
       expect(importedPreset).toBeDefined();
     });
   });
-}); 
+});

@@ -77,13 +77,11 @@ const ThematicTab: React.FC = () => {
               className={`px-3 py-1 rounded ${view === 'matrix' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
               onClick={() => setView('matrix')}
               aria-pressed={view === 'matrix'}
-              role="tab"
             >Matrix View</button>
             <button
               className={`px-3 py-1 rounded ${view === 'summary' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
               onClick={() => setView('summary')}
               aria-pressed={view === 'summary'}
-              role="tab"
             >Coverage Summary</button>
             <select
               className="ml-4 border rounded px-2 py-1 text-xs"
@@ -131,7 +129,7 @@ const ThematicTab: React.FC = () => {
           )}
         </main>
         {/* Sidebar */}
-        <aside className="md:col-span-1 md:border-l border-gray-200 bg-gray-50" aria-label="Sidebar" role="complementary">
+        <aside className="md:col-span-1 md:border-l border-gray-200 bg-gray-50" aria-label="Sidebar">
           <ThemeSummarySidebar report={report} onSelectTheme={setSelectedTheme} />
         </aside>
       </div>

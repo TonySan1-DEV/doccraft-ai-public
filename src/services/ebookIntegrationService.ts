@@ -3,7 +3,7 @@
 
 import {
   SemanticImageMatcher,
-  ContentAnalysis,
+  // ContentAnalysis,
   ImageMatch,
 } from "./semanticImageMatcher";
 import {
@@ -182,7 +182,7 @@ export class EbookIntegrationService {
       };
     } catch (error) {
       console.error("Ebook integration error:", error);
-      throw new Error(`Failed to create integrated ebook: ${error.message}`);
+      throw new Error(`Failed to create integrated ebook: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -391,7 +391,7 @@ export class EbookIntegrationService {
    * Optimize export settings based on template and content
    */
   private optimizeForExport(
-    formattedContent: FormattedContent,
+    _formattedContent: FormattedContent,
     template: EbookTemplate
   ): IntegratedEbookResult["exportOptions"] {
     const supportedFormats = template.exportFormats.map((f) => f.id);

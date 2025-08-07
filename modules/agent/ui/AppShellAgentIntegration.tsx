@@ -134,7 +134,6 @@ const AgentTriggerButton: React.FC<AgentTriggerButtonProps> = ({
       title={`${isVisible ? 'Close' : 'Open'} Assistant (Cmd+Shift+A)`}
       aria-label={`${isVisible ? 'Close' : 'Open'} DocCraft Assistant`}
       aria-pressed={isVisible}
-      role="button"
     >
       {isVisible ? (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

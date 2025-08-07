@@ -78,6 +78,17 @@ export const MODULE_INFO = {
   homepage: 'https://doccraft-ai.com/docs/emotion-arc'
 } as const;
 
+// Import components and services for default export
+import EmotionalArcModule from './components/EmotionalArcModule';
+import { EmotionAnalyzer } from './services/emotionAnalyzer';
+import { ArcSimulator } from './services/arcSimulator';
+import { SuggestionEngine } from './services/suggestionEngine';
+import EmotionTimelineChart from './components/EmotionTimelineChart';
+import TensionCurveViewer from './components/TensionCurveViewer';
+import OptimizationSuggestions from './components/OptimizationSuggestions';
+import SceneSentimentPanel from './components/SceneSentimentPanel';
+import CharacterArcSwitch from './components/CharacterArcSwitch';
+
 // Default export for convenience
 export default {
   EmotionalArcModule,

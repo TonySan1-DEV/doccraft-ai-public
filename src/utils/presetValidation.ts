@@ -18,11 +18,14 @@ export const VALID_PRESET_KEYS: (keyof AgentPrefs)[] = [
   'language',
   'copilotEnabled',
   'memoryEnabled',
-  'defaultCommandView'
+  'defaultCommandView',
 ];
 
 // Valid values for each preset key
-export const VALID_PRESET_VALUES: Record<keyof AgentPrefs, any[]> = {
+export const VALID_PRESET_VALUES: Record<
+  keyof AgentPrefs,
+  (string | boolean)[]
+> = {
   tone: ['friendly', 'formal', 'concise'],
   language: ['en', 'es', 'fr', 'de', 'ja', 'ko', 'zh'],
   copilotEnabled: [true, false],
@@ -31,7 +34,7 @@ export const VALID_PRESET_VALUES: Record<keyof AgentPrefs, any[]> = {
   genre: [], // Not used in presets
   lockedFields: [], // Not used in presets
   memory: [true, false],
-  copilot: [true, false]
+  copilot: [true, false],
 };
 
 /**
@@ -57,7 +60,10 @@ export function validatePresetPreferences(preferences: Partial<AgentPrefs>): {
 
     // Check if value is valid for the key
     const validValues = VALID_PRESET_VALUES[presetKey];
-    if (validValues.length > 0 && !validValues.includes(value)) {
+    if (
+      validValues.length > 0 &&
+      !validValues.includes(value as string | boolean)
+    ) {
       errors.push(`Invalid value for ${key}: ${value}`);
       continue;
     }
@@ -65,29 +71,37 @@ export function validatePresetPreferences(preferences: Partial<AgentPrefs>): {
     // Check for type safety
     if (presetKey === 'copilotEnabled' || presetKey === 'memoryEnabled') {
       if (typeof value !== 'boolean') {
-        errors.push(`Invalid type for ${key}: expected boolean, got ${typeof value}`);
+        errors.push(
+          `Invalid type for ${key}: expected boolean, got ${typeof value}`
+        );
         continue;
       }
     } else if (presetKey === 'defaultCommandView') {
       if (typeof value !== 'string') {
-        errors.push(`Invalid type for ${key}: expected string, got ${typeof value}`);
+        errors.push(
+          `Invalid type for ${key}: expected string, got ${typeof value}`
+        );
         continue;
       }
     } else if (presetKey === 'tone' || presetKey === 'language') {
       if (typeof value !== 'string') {
-        errors.push(`Invalid type for ${key}: expected string, got ${typeof value}`);
+        errors.push(
+          `Invalid type for ${key}: expected string, got ${typeof value}`
+        );
         continue;
       }
     }
 
     // Add to sanitized preferences if valid
-    (sanitizedPreferences as any)[presetKey] = value;
+    if (presetKey in sanitizedPreferences) {
+      (sanitizedPreferences as any)[presetKey] = value;
+    }
   }
 
   return {
     isValid: errors.length === 0,
     errors,
-    sanitizedPreferences
+    sanitizedPreferences,
   };
 }
 
@@ -134,7 +148,7 @@ export function validatePresetName(name: string): {
   return {
     isValid: errors.length === 0,
     errors,
-    sanitizedName
+    sanitizedName,
   };
 }
 
@@ -159,7 +173,7 @@ export function validatePresetDescription(description: string): {
   return {
     isValid: errors.length === 0,
     errors,
-    sanitizedDescription
+    sanitizedDescription,
   };
 }
 
@@ -209,7 +223,7 @@ export function validatePresetTags(tags: string[]): {
   return {
     isValid: errors.length === 0,
     errors,
-    sanitizedTags
+    sanitizedTags,
   };
 }
 
@@ -225,10 +239,28 @@ export function validatePresetObject(preset: {
 }): {
   isValid: boolean;
   errors: string[];
-  sanitizedPreset: any;
+  sanitizedPreset: {
+    name: string;
+    description: string;
+    category: string;
+    preferences: Partial<AgentPrefs>;
+    tags: string[];
+  };
 } {
   const errors: string[] = [];
-  const sanitizedPreset: any = {};
+  const sanitizedPreset: {
+    name: string;
+    description: string;
+    category: string;
+    preferences: Partial<AgentPrefs>;
+    tags: string[];
+  } = {
+    name: '',
+    description: '',
+    category: '',
+    preferences: {},
+    tags: [],
+  };
 
   // Validate name
   const nameValidation = validatePresetName(preset.name);
@@ -273,7 +305,7 @@ export function validatePresetObject(preset: {
   return {
     isValid: errors.length === 0,
     errors,
-    sanitizedPreset
+    sanitizedPreset,
   };
 }
 
@@ -285,8 +317,10 @@ export function checkPresetMatch(
   presetPreferences: Partial<AgentPrefs>
 ): boolean {
   for (const key of VALID_PRESET_KEYS) {
-    if (presetPreferences[key] !== undefined && 
-        currentPreferences[key] !== presetPreferences[key]) {
+    if (
+      presetPreferences[key] !== undefined &&
+      currentPreferences[key] !== presetPreferences[key]
+    ) {
       return false;
     }
   }
@@ -303,8 +337,10 @@ export function getPresetDifference(
   const differences: Partial<AgentPrefs> = {};
 
   for (const key of VALID_PRESET_KEYS) {
-    if (presetPreferences[key] !== undefined && 
-        currentPreferences[key] !== presetPreferences[key]) {
+    if (
+      presetPreferences[key] !== undefined &&
+      currentPreferences[key] !== presetPreferences[key]
+    ) {
       (differences as any)[key] = presetPreferences[key];
     }
   }
@@ -328,10 +364,16 @@ export function sanitizePresetInput(input: {
 } {
   return {
     name: sanitizePresetName(input.name),
-    description: input.description ? validatePresetDescription(input.description).sanitizedDescription : '',
-    category: input.category && ['writing', 'editing', 'publishing', 'specialized'].includes(input.category) 
-      ? input.category 
-      : 'writing',
-    tags: input.tags ? validatePresetTags(input.tags).sanitizedTags : []
+    description: input.description
+      ? validatePresetDescription(input.description).sanitizedDescription
+      : '',
+    category:
+      input.category &&
+      ['writing', 'editing', 'publishing', 'specialized'].includes(
+        input.category
+      )
+        ? input.category
+        : 'writing',
+    tags: input.tags ? validatePresetTags(input.tags).sanitizedTags : [],
   };
-} 
+}

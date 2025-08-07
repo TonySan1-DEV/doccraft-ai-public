@@ -152,9 +152,11 @@ export const ResetPassword: React.FC = () => {
       setTimeout(() => {
         navigate("/login");
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || "Failed to reset password");
-      toast.error(err.message || "Failed to reset password");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to reset password";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -170,8 +172,8 @@ export const ResetPassword: React.FC = () => {
               Password Updated!
             </h1>
             <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Your password has been successfully reset. You'll be redirected to
-              the login page shortly.
+              Your password has been successfully reset. You&apos;ll be
+              redirected to the login page shortly.
             </p>
             <button
               onClick={() => navigate("/login")}

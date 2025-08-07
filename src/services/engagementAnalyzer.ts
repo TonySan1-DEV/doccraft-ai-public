@@ -22,12 +22,13 @@ export async function analyzeEngagement(
   const messages = [
     {
       role: 'system',
-      content: 'You are a literary engagement analyst. Return structured JSON feedback on how engaging a piece of writing is.'
+      content:
+        'You are a literary engagement analyst. Return structured JSON feedback on how engaging a piece of writing is.',
     },
     {
       role: 'user',
-      content: `GENRE: ${genre || 'Unknown'}\n\nPROFILE:\n- Sentence Length: ${profile?.preferred_sentence_length ?? 'N/A'}\n- Vocabulary: ${profile?.vocabulary_complexity ?? 'N/A'}\n- Pacing: ${profile?.pacing_style ?? 'N/A'}\n- Specializations: ${(profile?.genre_specializations ?? []).join(', ') || 'N/A'}\n\nTEXT:\n"""\n${content}\n"""\n\nReturn a JSON object matching:\n{\n  engagementScore: number (0.0-1.0),\n  confidence: number (0.0-1.0),\n  summary: string,\n  tags: string[],\n  recommendations: string[],\n  matchedTrends?: string[]\n}`
-    }
+      content: `GENRE: ${genre || 'Unknown'}\n\nPROFILE:\n- Sentence Length: ${profile?.preferred_sentence_length ?? 'N/A'}\n- Vocabulary: ${profile?.vocabulary_complexity ?? 'N/A'}\n- Pacing: ${profile?.pacing_style ?? 'N/A'}\n- Specializations: ${(profile?.genre_specializations ?? []).join(', ') || 'N/A'}\n\nTEXT:\n"""\n${content}\n"""\n\nReturn a JSON object matching:\n{\n  engagementScore: number (0.0-1.0),\n  confidence: number (0.0-1.0),\n  summary: string,\n  tags: string[],\n  recommendations: string[],\n  matchedTrends?: string[]\n}`,
+    },
   ];
 
   try {
@@ -42,8 +43,8 @@ export async function analyzeEngagement(
           model: 'gpt-4',
           messages,
           max_tokens: 500,
-          temperature: 0.5
-        })
+          temperature: 0.5,
+        }),
       });
       if (!response.ok) throw new Error('Proxy API error');
       const data = await response.json();
@@ -51,14 +52,15 @@ export async function analyzeEngagement(
       return parseEngagementJSON(text);
     } else if (OPENAI_API_KEY) {
       // Use OpenAI SDK (Node.js)
-       
+
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { OpenAI } = require('openai');
       const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
       const completion = await openai.chat.completions.create({
         model: 'gpt-4',
         messages,
         max_tokens: 500,
-        temperature: 0.5
+        temperature: 0.5,
       });
       const text = completion.choices?.[0]?.message?.content || '';
       return parseEngagementJSON(text);
@@ -66,7 +68,10 @@ export async function analyzeEngagement(
       throw new Error('No OpenAI API key or proxy available');
     }
   } catch (err) {
-    console.warn('[EngagementAnalyzer] GPT-4 call failed:', (err as any)?.message || err);
+    console.warn(
+      '[EngagementAnalyzer] GPT-4 call failed:',
+      (err as any)?.message || err
+    );
     // Fallback response
     return {
       engagementScore: 0.5,
@@ -86,15 +91,28 @@ function parseEngagementJSON(text: string): EngagementAnalysis {
     const obj = JSON.parse(match[0]);
     // Validate and coerce fields
     return {
-      engagementScore: typeof obj.engagementScore === 'number' ? Math.max(0, Math.min(1, obj.engagementScore)) : 0.5,
-      confidence: typeof obj.confidence === 'number' ? Math.max(0, Math.min(1, obj.confidence)) : 0.5,
+      engagementScore:
+        typeof obj.engagementScore === 'number'
+          ? Math.max(0, Math.min(1, obj.engagementScore))
+          : 0.5,
+      confidence:
+        typeof obj.confidence === 'number'
+          ? Math.max(0, Math.min(1, obj.confidence))
+          : 0.5,
       summary: typeof obj.summary === 'string' ? obj.summary : '',
       tags: Array.isArray(obj.tags) ? obj.tags.map(String) : [],
-      recommendations: Array.isArray(obj.recommendations) ? obj.recommendations.map(String) : [],
-      matchedTrends: Array.isArray(obj.matchedTrends) ? obj.matchedTrends.map(String) : undefined
+      recommendations: Array.isArray(obj.recommendations)
+        ? obj.recommendations.map(String)
+        : [],
+      matchedTrends: Array.isArray(obj.matchedTrends)
+        ? obj.matchedTrends.map(String)
+        : undefined,
     };
   } catch (err) {
-    console.warn('[EngagementAnalyzer] Failed to parse GPT response:', (err as any)?.message || err);
+    console.warn(
+      '[EngagementAnalyzer] Failed to parse GPT response:',
+      (err as any)?.message || err
+    );
     return {
       engagementScore: 0.5,
       confidence: 0.5,
@@ -103,4 +121,4 @@ function parseEngagementJSON(text: string): EngagementAnalysis {
       recommendations: ['Try again later or check your input.'],
     };
   }
-} 
+}

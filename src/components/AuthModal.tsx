@@ -38,7 +38,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         // Redirect to appropriate page after successful sign in
         // Use a longer delay to ensure the auth state is updated
         setTimeout(async () => {
-          console.log('🔐 AuthModal: Redirecting after sign in')
+          console.log("🔐 AuthModal: Redirecting after sign in");
           await redirectToAppropriatePage();
         }, 1500);
       } else if (mode === "signup") {
@@ -53,16 +53,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         onClose();
         // Redirect to appropriate page after successful sign up
         setTimeout(async () => {
-          console.log('🔐 AuthModal: Redirecting after sign up')
+          console.log("🔐 AuthModal: Redirecting after sign up");
           await redirectToAppropriatePage();
         }, 1500);
       } else if (mode === "forgot") {
         // Handle forgot password
         await handleForgotPassword();
       }
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
-      toast.error(err.message || "An error occurred");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -78,8 +80,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
       toast.success("Password reset email sent! Check your inbox.");
       setMode("signin");
-    } catch (err: any) {
-      throw new Error(err.message || "Failed to send reset email");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to send reset email";
+      throw new Error(errorMessage);
     }
   };
 
@@ -124,12 +128,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           {mode === "signup" && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="full-name"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Full Name
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
+                  id="full-name"
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -142,12 +150,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
               Email
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
+                id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -160,12 +172,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           {mode !== "forgot" && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Password
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
+                  id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -190,12 +206,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           {mode === "signup" && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="confirm-password"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Confirm Password
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
+                  id="confirm-password"
                   type={showPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -233,7 +253,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {mode === "signin" && (
             <div className="space-y-2">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <button
                   onClick={() => switchMode("signup")}
                   className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
@@ -276,7 +296,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </button>
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-500">
-                We'll send you a link to reset your password
+                We&apos;ll send you a link to reset your password
               </p>
             </div>
           )}

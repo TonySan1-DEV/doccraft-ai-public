@@ -88,14 +88,9 @@ function PlotFrameworkTimeline({
   'aria-label': ariaLabel = 'Plot Framework Timeline'
 }: PlotFrameworkTimelineProps) {
   // --- Shared Narrative State ---
-  let narrativeSync;
-  try {
-    narrativeSync = useNarrativeSync();
-  } catch (e) {
-    narrativeSync = null;
-  }
-  const contextScene = narrativeSync?.state.currentSceneId;
-  const contextFramework = narrativeSync?.state.activePlotFramework;
+  const narrativeSync = useNarrativeSync();
+  const contextScene = narrativeSync?.state?.currentSceneId;
+  const contextFramework = narrativeSync?.state?.activePlotFramework;
 
   // Prefer context over prop if available
   const currentSceneId = contextScene || propCurrentSceneId;
@@ -111,7 +106,6 @@ function PlotFrameworkTimeline({
   }, [debouncedBeats]);
 
   // State for keyboard navigation
-  const [focusedBeatIndex, setFocusedBeatIndex] = useState<number>(-1);
   const timelineRef = useRef<HTMLDivElement>(null);
 
   // Keyboard navigation
@@ -126,55 +120,54 @@ function PlotFrameworkTimeline({
     }
   }, [onBeatClick, narrativeSync]);
 
-  const handleTimelineKeyDown = useCallback((event: React.KeyboardEvent) => {
-    if (!sortedBeats.length) return;
+  // const handleTimelineKeyDown = useCallback((event: React.KeyboardEvent) => {
+  //   if (!sortedBeats.length) return;
     
-    switch (event.key) {
-      case 'ArrowLeft':
-        event.preventDefault();
-        setFocusedBeatIndex(prev => Math.max(0, prev - 1));
-        break;
-      case 'ArrowRight':
-        event.preventDefault();
-        setFocusedBeatIndex(prev => Math.min(sortedBeats.length - 1, prev + 1));
-        break;
-      case 'Home':
-        event.preventDefault();
-        setFocusedBeatIndex(0);
-        break;
-      case 'End':
-        event.preventDefault();
-        setFocusedBeatIndex(sortedBeats.length - 1);
-        break;
-      case 'Tab':
-        // Allow default tab behavior
-        break;
-      default:
-        return;
-    }
-  }, [sortedBeats.length]);
+  //   switch (event.key) {
+  //     case 'ArrowLeft':
+  //       event.preventDefault();
+  //       setFocusedBeatIndex(prev => Math.max(0, prev - 1));
+  //       break;
+  //     case 'ArrowRight':
+  //       event.preventDefault();
+  //       setFocusedBeatIndex(prev => Math.min(sortedBeats.length - 1, prev + 1));
+  //       break;
+  //     case 'Home':
+  //       event.preventDefault();
+  //       setFocusedBeatIndex(0);
+  //       break;
+  //     case 'End':
+  //       event.preventDefault();
+  //       setFocusedBeatIndex(sortedBeats.length - 1);
+  //       break;
+  //     case 'Tab':
+  //       // Allow default tab behavior
+  //       break;
+  //     default:
+  //       return;
+  //   }
+  // }, [sortedBeats.length]);
 
   // Touch handling for mobile
-  const handleTouchStart = useCallback((event: React.TouchEvent) => {
-    const touch = event.touches[0];
-    const rect = timelineRef.current?.getBoundingClientRect();
-    if (!rect) return;
+  // const handleTouchStart = useCallback((event: React.TouchEvent) => {
+  //   const touch = event.touches[0];
+  //   const rect = timelineRef.current?.getBoundingClientRect();
+  //   if (!rect) return;
     
-    const x = touch.clientX - rect.left;
-    const beatWidth = rect.width / sortedBeats.length;
-    const beatIndex = Math.floor(x / beatWidth);
+  //   const x = touch.clientX - rect.left;
+  //   const beatWidth = rect.width / sortedBeats.length;
+  //   const beatIndex = Math.floor(x / beatWidth);
     
-    if (beatIndex >= 0 && beatIndex < sortedBeats.length) {
-      setFocusedBeatIndex(beatIndex);
-      const beat = sortedBeats[beatIndex];
-      onBeatClick?.(beat);
-    }
-  }, [sortedBeats, onBeatClick]);
+  //   if (beatIndex >= 0 && beatIndex < sortedBeats.length) {
+  //     setFocusedBeatIndex(beatIndex);
+  //     const beat = sortedBeats[beatIndex];
+  //     onBeatClick?.(beat);
+  //   }
+  // }, [sortedBeats, onBeatClick]);
 
   // Dev logging for context-driven prop changes
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-       
       console.log('[PlotFrameworkTimeline] context-driven props:', { currentSceneId, activeFramework });
     }
   }, [currentSceneId, activeFramework]);
@@ -193,20 +186,16 @@ function PlotFrameworkTimeline({
         style={{ minHeight: 120 }}
         role="list"
         aria-label="Plot beats timeline"
-        tabIndex={0}
-        onKeyDown={handleTimelineKeyDown}
-        onTouchStart={handleTouchStart}
       >
         {sortedBeats.map((beat, idx) => {
           const isSelected = debouncedCurrentSceneId === beat.id;
-          const isFocused = focusedBeatIndex === idx;
           
           return (
             <BeatButton
               key={beat.id}
               beat={beat}
               isSelected={isSelected}
-              isFocused={isFocused}
+              isFocused={false}
               onClick={onBeatClick || (() => {})}
               onKeyDown={handleKeyDown}
             />

@@ -105,7 +105,7 @@ export function SectionAnalyzer() {
               />
             </svg>
             <span className="text-yellow-800 font-medium">
-              You don't have permission to analyze sections
+              You don&apos;t have permission to analyze sections
             </span>
           </div>
         </div>

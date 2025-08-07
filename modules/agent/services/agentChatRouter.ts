@@ -3,44 +3,52 @@
 role: ai-engineer,
 tier: Pro,
 file: "modules/agent/services/agentChatRouter.ts",
-allowedActions: ["integrate", "fallback", "query"],
+allowedActions: ["integrate", "fallback", "query", "pipeline"],
 theme: "agent_llm"
 */
 
-import { queryLLMFallback } from "./useLLMFallback";
-import { enrichAgentMessage } from "./enrichAgentMessage";
+import { queryLLMFallback } from './useLLMFallback';
+import { enrichAgentMessage } from './enrichAgentMessage';
+import { docToVideoRouter } from './docToVideoRouter';
 
 // Mock implementations for missing dependencies
-const getKBEntry = (query: string, role: string, tier: string) => {
+const getKBEntry = (query: string, _role: string, _tier: string) => {
   // Mock KB lookup - in real implementation, this would search the knowledge base
   const mockKB = [
     {
       id: 'kb-emotion-drift',
-      content: 'To check for emotional drift, use the Emotion Timeline Chart in the dashboard.',
-      mcp: { role: 'frontend-developer', tier: 'Pro', theme: 'emotion_analysis' }
+      content:
+        'To check for emotional drift, use the Emotion Timeline Chart in the dashboard.',
+      mcp: {
+        role: 'frontend-developer',
+        tier: 'Pro',
+        theme: 'emotion_analysis',
+      },
     },
     {
       id: 'kb-theme-conflicts',
-      content: 'Theme conflicts can be detected using the Theme Matrix Panel in the dashboard.',
-      mcp: { role: 'frontend-developer', tier: 'Pro', theme: 'theme_analysis' }
-    }
+      content:
+        'Theme conflicts can be detected using the Theme Matrix Panel in the dashboard.',
+      mcp: { role: 'frontend-developer', tier: 'Pro', theme: 'theme_analysis' },
+    },
   ];
-  
-  return mockKB.filter(entry => 
-    query.toLowerCase().includes('emotion') || 
-    query.toLowerCase().includes('theme') ||
-    query.toLowerCase().includes('drift')
+
+  return mockKB.filter(
+    _entry =>
+      query.toLowerCase().includes('emotion') ||
+      query.toLowerCase().includes('theme') ||
+      query.toLowerCase().includes('drift')
   );
 };
 
 const OnboardingEngine = {
   startFlow: (flowId: string) => {
     console.log(`Starting onboarding flow: ${flowId}`);
-  }
+  },
 };
 
 export type AgentMessage = {
-  type: "user" | "agent" | "system";
+  type: 'user' | 'agent' | 'system';
   content: string;
   relatedStepId?: string;
   kbRef?: string;
@@ -58,44 +66,141 @@ export async function agentChatRouter(
     activeModule?: string;
     currentWorkflow?: string;
     recentActions?: string[];
+    genre?: string;
+    genreContext?: {
+      category: 'fiction' | 'nonfiction' | 'special';
+      subgenre?: string;
+      targetAudience?: string[];
+    };
   }
 ): Promise<AgentMessage> {
   let matchFound = false;
   let response: AgentMessage | null = null;
 
   // Command handling
-  if (input.startsWith("/")) {
-    if (input.startsWith("/onboarding")) {
-      const [, flowId] = input.split(" ");
+  if (input.startsWith('/')) {
+    if (input.startsWith('/onboarding')) {
+      const [, flowId] = input.split(' ');
       if (flowId) {
         OnboardingEngine.startFlow(flowId);
         matchFound = true;
         response = {
-          type: "agent",
+          type: 'agent',
           content: `Onboarding for ${flowId} started.`,
-          relatedStepId: onboardingFlows.find(f => f.id === flowId)?.steps[0]?.id,
-          suggestedActions: [{ label: "Resume Onboarding", action: "resumeOnboarding" }]
+          relatedStepId: onboardingFlows.find(f => f.id === flowId)?.steps[0]
+            ?.id,
+          suggestedActions: [
+            { label: 'Resume Onboarding', action: 'resumeOnboarding' },
+          ],
         };
       }
     }
-    if (input.startsWith("/help")) {
+    if (input.startsWith('/help')) {
       matchFound = true;
       response = {
-        type: "agent",
-        content: "How can I help? Try asking about features, exports, or workflows.",
-        suggestedActions: [{ label: "Show Docs", action: "openDocs" }]
+        type: 'agent',
+        content:
+          'How can I help? Try asking about features, exports, or workflows.',
+        suggestedActions: [{ label: 'Show Docs', action: 'openDocs' }],
       };
     }
-    if (input.startsWith("/export")) {
+    if (input.startsWith('/export')) {
       matchFound = true;
       response = {
-        type: "agent",
-        content: "Export options available: JSON, Markdown, or CSV formats.",
+        type: 'agent',
+        content: 'Export options available: JSON, Markdown, or CSV formats.',
         suggestedActions: [
-          { label: "Export JSON", action: "exportJSON" },
-          { label: "Export Markdown", action: "exportMarkdown" }
-        ]
+          { label: 'Export JSON', action: 'exportJSON' },
+          { label: 'Export Markdown', action: 'exportMarkdown' },
+        ],
       };
+    }
+    if (input.startsWith('/doc2video')) {
+      matchFound = true;
+      try {
+        // Extract command mode (auto, scriptOnly, slidesOnly, voiceoverOnly)
+        const [, _mode = 'auto'] = input.split(' ');
+
+        // Example stubbed document for testing — in real use, this will come from file upload or user context
+        const mockDocument = `
+          Welcome to DocCraft-AI. This platform empowers creators to transform documents into dynamic video presentations.
+          Our tools include eBook builders, AI character interaction, and now, full video pipelines.
+          
+          Key Features:
+          - Document analysis and enhancement
+          - AI-powered writing assistance
+          - Real-time collaboration tools
+          - Advanced analytics and insights
+          
+          Benefits:
+          - 50% faster content creation
+          - Improved content quality
+          - Reduced revision cycles
+          - Enhanced team productivity
+        `;
+
+        // TODO: Connect real document upload later
+        // TODO: Allow hybrid/multi-step workflows
+
+        const result = await docToVideoRouter.executeCommand(
+          input,
+          mockDocument
+        );
+
+        if (result.success) {
+          const slideCount = result.slides?.length || 0;
+          const wordCount = result.script?.wordCount || 0;
+          const duration = result.script?.totalDuration || 0;
+
+          response = {
+            type: 'agent',
+            content: `🎬 **Doc-to-Video Pipeline Complete!**
+            
+✅ **Generated ${slideCount} slides** with ${wordCount} words of narration
+⏱️ **Total duration:** ${duration} seconds
+🎤 **Audio timeline:** ${result.narration?.timeline?.length || 0} segments
+
+**Available Actions:**
+• Download PowerPoint presentation
+• Preview narration audio
+• Export timing data for video production
+• Switch to Hybrid Mode for manual adjustments`,
+            suggestedActions: [
+              { label: 'Download PPT', action: 'downloadPowerPoint' },
+              { label: 'Preview Narration', action: 'previewNarration' },
+              { label: 'Export Timeline', action: 'exportTimeline' },
+              { label: 'Switch to Hybrid', action: 'switchToHybrid' },
+            ],
+            mcp: {
+              role: 'Document to Video Pipeline Orchestrator',
+              tier: 'Premium',
+              theme: 'Content Transformation',
+            },
+          };
+        } else {
+          response = {
+            type: 'agent',
+            content: `❌ **Pipeline Error:** ${result.error}
+            
+Please check your document content and try again.`,
+            suggestedActions: [
+              { label: 'Try Again', action: 'retry' },
+              { label: 'Show Help', action: 'showHelp' },
+            ],
+          };
+        }
+      } catch (error) {
+        response = {
+          type: 'agent',
+          content: `❌ **Pipeline Error:** ${error instanceof Error ? error.message : 'Unknown error'}
+          
+Please ensure you have valid document content and try again.`,
+          suggestedActions: [
+            { label: 'Try Again', action: 'retry' },
+            { label: 'Show Help', action: 'showHelp' },
+          ],
+        };
+      }
     }
   }
 
@@ -106,14 +211,14 @@ export async function agentChatRouter(
       matchFound = true;
       const top = kbResults[0];
       response = {
-        type: "agent",
+        type: 'agent',
         content: top.content,
         kbRef: top.id,
         suggestedActions: [
-          { label: "Show Me", action: "showOnboarding", targetStepId: top.id },
-          { label: "Open Docs", action: "openDocs" }
+          { label: 'Show Me', action: 'showOnboarding', targetStepId: top.id },
+          { label: 'Open Docs', action: 'openDocs' },
         ],
-        mcp: top.mcp
+        mcp: top.mcp,
       };
     }
   }
@@ -127,10 +232,12 @@ export async function agentChatRouter(
       OnboardingEngine.startFlow(onboardingMatch.id);
       matchFound = true;
       response = {
-        type: "agent",
+        type: 'agent',
         content: `Let's walk through "${onboardingMatch.title}".`,
         relatedStepId: onboardingMatch.id,
-        suggestedActions: [{ label: "Start Walkthrough", action: "resumeOnboarding" }]
+        suggestedActions: [
+          { label: 'Start Walkthrough', action: 'resumeOnboarding' },
+        ],
       };
     }
   }
@@ -143,37 +250,45 @@ export async function agentChatRouter(
         tier,
         activeModule: context?.activeModule,
         currentWorkflow: context?.currentWorkflow,
-        recentActions: context?.recentActions
+        recentActions: context?.recentActions,
+        genre: context?.genre,
+        genreContext: context?.genreContext,
       });
 
       response = {
-        type: "agent",
+        type: 'agent',
         content: llmResponse.content,
         suggestedActions: llmResponse.suggestedActions || [
-          { label: "Suggest Next Step", action: "suggestNextStep" }
+          { label: 'Suggest Next Step', action: 'suggestNextStep' },
         ],
         llmFallback: true,
-        modelUsed: llmResponse.modelUsed
+        modelUsed: llmResponse.modelUsed,
       };
     } catch (error) {
       console.error('LLM fallback failed:', error);
       response = {
-        type: "agent",
-        content: "I'm having trouble processing that request. Could you try rephrasing or ask about a specific feature?",
+        type: 'agent',
+        content:
+          "I'm having trouble processing that request. Could you try rephrasing or ask about a specific feature?",
         suggestedActions: [
-          { label: "Show Help", action: "showHelp" },
-          { label: "Try Again", action: "retry" }
-        ]
+          { label: 'Show Help', action: 'showHelp' },
+          { label: 'Try Again', action: 'retry' },
+        ],
       };
     }
   }
 
   // Enrich the response with additional context
-  return enrichAgentMessage(response || {
-    type: "agent",
-    content: "I'm not sure how to help with that. Try asking about specific features or workflows.",
-    suggestedActions: [{ label: "Suggest Next Step", action: "suggestNextStep" }]
-  });
+  return enrichAgentMessage(
+    response || {
+      type: 'agent',
+      content:
+        "I'm not sure how to help with that. Try asking about specific features or workflows.",
+      suggestedActions: [
+        { label: 'Suggest Next Step', action: 'suggestNextStep' },
+      ],
+    }
+  );
 }
 
 // Mock onboarding flows for now (should be imported from actual file)
@@ -185,8 +300,8 @@ const onboardingFlows = [
       {
         id: 'theme-step-1',
         title: 'Check for emotional drift',
-        description: 'Learn how to detect emotional inconsistencies'
-      }
-    ]
-  }
-]; 
+        description: 'Learn how to detect emotional inconsistencies',
+      },
+    ],
+  },
+];

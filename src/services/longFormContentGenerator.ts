@@ -56,7 +56,7 @@ export interface ResearchSource {
 class LongFormContentGenerator {
   private readonly MIN_WORD_COUNT = 8000;
   private readonly MAX_CHAPTER_WORDS = 2000;
-  private readonly QUALITY_THRESHOLD = 0.7;
+  // private readonly QUALITY_THRESHOLD = 0.7;
 
   /**
    * Generate comprehensive long-form content
@@ -103,7 +103,7 @@ class LongFormContentGenerator {
         validationResults,
         metadata: {
           generationTime: Date.now() - startTime,
-          modelUsed: "gpt-4",
+          modelUsed: 'gpt-4',
           factCheckPassed: validationResults?.isValid || false,
           hallucinationScore: validationResults?.hallucinationScore || 0,
         },
@@ -111,10 +111,10 @@ class LongFormContentGenerator {
 
       return content;
     } catch (error) {
-      console.error("Long-form content generation error:", error);
+      console.error('Long-form content generation error:', error);
       throw new Error(
         `Content generation failed: ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`
       );
     }
@@ -131,11 +131,11 @@ class LongFormContentGenerator {
     }
 
     if (!config.title || config.title.trim().length === 0) {
-      throw new Error("Title is required");
+      throw new Error('Title is required');
     }
 
     if (!config.genre || config.genre.trim().length === 0) {
-      throw new Error("Genre is required");
+      throw new Error('Genre is required');
     }
   }
 
@@ -172,12 +172,12 @@ Return JSON array:
 ]`;
 
     try {
-      const response = await this.callLLM("openai", prompt);
+      const response = await this.callLLM('openai', prompt);
       const outline = JSON.parse(response);
 
       // Validate outline structure
       if (!Array.isArray(outline) || outline.length === 0) {
-        throw new Error("Invalid outline structure generated");
+        throw new Error('Invalid outline structure generated');
       }
 
       return outline.map((chapter: any) => ({
@@ -188,7 +188,7 @@ Return JSON array:
         researchRequirements: chapter.researchRequirements || [],
       }));
     } catch (error) {
-      console.error("Outline generation error:", error);
+      console.error('Outline generation error:', error);
       // Fallback to basic outline
       return this.generateFallbackOutline(config);
     }
@@ -257,7 +257,7 @@ Return JSON array:
 
       for (const prompt of researchPrompts) {
         try {
-          const researchData = await this.callLLM("openai", prompt);
+          const researchData = await this.callLLM('openai', prompt);
           researchSources.push({
             title: `AI Research: ${prompt.substring(0, 50)}...`,
             content: researchData,
@@ -265,7 +265,7 @@ Return JSON array:
             relevance: 0.8,
           });
         } catch (error) {
-          console.warn("Research generation failed:", error);
+          console.warn('Research generation failed:', error);
         }
       }
     }
@@ -282,7 +282,7 @@ Return JSON array:
   ): string[] {
     const prompts: string[] = [];
 
-    outline.forEach((chapter, index) => {
+    outline.forEach((chapter, _index) => {
       if (
         chapter.researchRequirements &&
         chapter.researchRequirements.length > 0
@@ -292,7 +292,7 @@ Return JSON array:
         } book chapter:
         
 Chapter: ${chapter.title}
-Topics: ${chapter.researchRequirements.join(", ")}
+Topics: ${chapter.researchRequirements.join(', ')}
 Genre: ${config.genre}
 Audience: ${config.audience}
 
@@ -378,7 +378,7 @@ Tone: ${config.tone}
 Audience: ${config.audience}
 
 Chapter Summary: ${outline.summary}
-Key Points: ${outline.keyPoints.join(", ")}
+Key Points: ${outline.keyPoints.join(', ')}
 
 Research Context: ${researchContext}
 
@@ -393,7 +393,7 @@ Requirements:
 Return the chapter content only, no additional formatting.`;
 
     try {
-      const content = await this.callLLM("openai", prompt);
+      const content = await this.callLLM('openai', prompt);
       const wordCount = this.countWords(content);
 
       return {
@@ -405,7 +405,7 @@ Return the chapter content only, no additional formatting.`;
         citations: this.extractCitations(content),
       };
     } catch (error) {
-      console.error("Chapter generation error:", error);
+      console.error('Chapter generation error:', error);
       return this.generateFallbackChapter(outline, chapterNumber);
     }
   }
@@ -415,13 +415,11 @@ Return the chapter content only, no additional formatting.`;
    */
   private buildResearchContext(researchData: ResearchSource[]): string {
     if (researchData.length === 0)
-      return "No specific research data available.";
+      return 'No specific research data available.';
 
     return researchData
-      .map(
-        (source) => `${source.title}: ${source.content.substring(0, 500)}...`
-      )
-      .join("\n\n");
+      .map(source => `${source.title}: ${source.content.substring(0, 500)}...`)
+      .join('\n\n');
   }
 
   /**
@@ -433,7 +431,7 @@ Return the chapter content only, no additional formatting.`;
   ): Promise<any> {
     // Import the content quality validator
     const { contentQualityValidator } = await import(
-      "./contentQualityValidator"
+      './contentQualityValidator'
     );
 
     return await contentQualityValidator.validateContent(
@@ -454,11 +452,11 @@ Return the chapter content only, no additional formatting.`;
     chapters: GeneratedChapter[],
     config: LongFormContentConfig
   ): Promise<any> {
-    const fullContent = chapters.map((c) => c.content).join("\n\n");
+    const fullContent = chapters.map(c => c.content).join('\n\n');
 
     // Import the content quality validator
     const { contentQualityValidator } = await import(
-      "./contentQualityValidator"
+      './contentQualityValidator'
     );
 
     return await contentQualityValidator.validateContent(
@@ -484,7 +482,7 @@ Return the chapter content only, no additional formatting.`;
 ${outline.summary}
 
 This chapter covers the following key points:
-${outline.keyPoints.map((point) => `- ${point}`).join("\n")}
+${outline.keyPoints.map(point => `- ${point}`).join('\n')}
 
 [Content generation failed. Please manually write this chapter or regenerate.]`;
 
@@ -507,7 +505,7 @@ ${outline.keyPoints.map((point) => `- ${point}`).join("\n")}
     // Look for common citation patterns
     const citationPatterns = [/\[([^\]]+)\]/g, /\(([^)]+)\)/g, /"([^"]+)"/g];
 
-    citationPatterns.forEach((pattern) => {
+    citationPatterns.forEach(pattern => {
       const matches = content.match(pattern);
       if (matches) {
         citations.push(...matches.slice(1));
@@ -521,13 +519,13 @@ ${outline.keyPoints.map((point) => `- ${point}`).join("\n")}
    * Count words in text
    */
   private countWords(text: string): number {
-    return text.split(/\s+/).filter((word) => word.length > 0).length;
+    return text.split(/\s+/).filter(word => word.length > 0).length;
   }
 
   /**
    * Call LLM with specific provider
    */
-  private async callLLM(provider: string, prompt: string): Promise<string> {
+  private async callLLM(_provider: string, prompt: string): Promise<string> {
     // In production, use the LLM integration service
     // For now, return a mock response
     return `Generated content for: ${prompt.substring(0, 100)}...`;

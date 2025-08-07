@@ -11,13 +11,13 @@
 */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { 
-  MessageCircle, 
-  Brain, 
-  Heart, 
-  Target, 
-  Users, 
-  BookOpen, 
+import {
+  MessageCircle,
+  Brain,
+  Heart,
+  Target,
+  Users,
+  BookOpen,
   Zap,
   Send,
   Mic,
@@ -25,12 +25,12 @@ import {
   Star,
   TrendingUp,
   Lightbulb,
-  Eye
+  Eye,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 // Enhanced Character Interface
-interface EnhancedCharacter {
+export interface EnhancedCharacter {
   id: string;
   name: string;
   role: 'protagonist' | 'antagonist' | 'supporting' | 'minor';
@@ -83,10 +83,14 @@ interface EnhancedCharacter {
     currentStage: number;
   };
   relationships: {
-    allies: Array<{name: string; relationship: string; description: string}>;
-    enemies: Array<{name: string; relationship: string; description: string}>;
-    mentors: Array<{name: string; relationship: string; description: string}>;
-    loveInterests: Array<{name: string; relationship: string; description: string}>;
+    allies: Array<{ name: string; relationship: string; description: string }>;
+    enemies: Array<{ name: string; relationship: string; description: string }>;
+    mentors: Array<{ name: string; relationship: string; description: string }>;
+    loveInterests: Array<{
+      name: string;
+      relationship: string;
+      description: string;
+    }>;
   };
   development: {
     currentStage: number;
@@ -132,7 +136,13 @@ interface ChatMessage {
 
 interface DevelopmentPrompt {
   id: string;
-  category: 'personality' | 'background' | 'goals' | 'relationships' | 'psychology' | 'communication';
+  category:
+    | 'personality'
+    | 'background'
+    | 'goals'
+    | 'relationships'
+    | 'psychology'
+    | 'communication';
   question: string;
   description: string;
   importance: 'low' | 'medium' | 'high';
@@ -151,18 +161,27 @@ interface CharacterInteractionSystemProps {
 export default function CharacterInteractionSystem({
   character,
   onCharacterUpdate,
-  className = ''
+  className = '',
 }: CharacterInteractionSystemProps) {
-  const [activeTab, setActiveTab] = useState<'chat' | 'development' | 'analysis' | 'prompts'>('chat');
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(character.interactionHistory || []);
+  const [activeTab, setActiveTab] = useState<
+    'chat' | 'development' | 'analysis' | 'prompts'
+  >('chat');
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(
+    character.interactionHistory || []
+  );
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [developmentPrompts, setDevelopmentPrompts] = useState<DevelopmentPrompt[]>(character.developmentPrompts || []);
-  const [selectedPrompt, setSelectedPrompt] = useState<DevelopmentPrompt | null>(null);
+  const [developmentPrompts, setDevelopmentPrompts] = useState<
+    DevelopmentPrompt[]
+  >(character.developmentPrompts || []);
+  const [selectedPrompt, setSelectedPrompt] =
+    useState<DevelopmentPrompt | null>(null);
   const [showCharacterProfile, setShowCharacterProfile] = useState(false);
-  const [analysisMode, setAnalysisMode] = useState<'personality' | 'relationships' | 'goals' | 'psychology'>('personality');
-  
+  const [analysisMode, setAnalysisMode] = useState<
+    'personality' | 'relationships' | 'goals' | 'psychology'
+  >('personality');
+
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -172,9 +191,10 @@ export default function CharacterInteractionSystem({
   }, [chatMessages]);
 
   // Generate character response using AI
-  const generateCharacterResponse = useCallback(async (userMessage: string): Promise<string> => {
-    // System prompt for character interactions (currently unused)
-    /*
+  const generateCharacterResponse = useCallback(
+    async (userMessage: string): Promise<string> => {
+      // System prompt for character interactions (currently unused)
+      /*
     const _systemPrompt = `
 You are role-playing as ${character.name}, a fictional character with the following profile:
 
@@ -211,44 +231,51 @@ Respond as ${character.name} would, maintaining their personality, speaking styl
 `;
     */
 
-    try {
-      const response = await fetch('http://localhost:3002/api/character-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage,
-          character: {
-            name: character.name,
-            archetype: character.archetype,
-            personality: character.personality.traits.join(', '),
-            goals: character.goals.primary,
-            voiceStyle: character.communication?.speakingStyle || 'Natural and conversational',
-            worldview: 'Optimistic and determined',
-            backstory: character.background.origin,
-            knownConnections: character.relationships.allies.map(ally => ({
-              name: ally.name,
-              relationship: ally.relationship,
-              description: ally.description
-            }))
-          },
-          context: character.storyContext?.currentSituation || '',
-          conversationHistory: chatMessages.slice(-5).map(msg => ({
-            sender: msg.sender,
-            content: msg.content,
-            timestamp: msg.timestamp.toISOString()
-          }))
-        })
-      });
+      try {
+        const response = await fetch(
+          'http://localhost:3002/api/character-chat',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: userMessage,
+              character: {
+                name: character.name,
+                archetype: character.archetype,
+                personality: character.personality.traits.join(', '),
+                goals: character.goals.primary,
+                voiceStyle:
+                  character.communication?.speakingStyle ||
+                  'Natural and conversational',
+                worldview: 'Optimistic and determined',
+                backstory: character.background.origin,
+                knownConnections: character.relationships.allies.map(ally => ({
+                  name: ally.name,
+                  relationship: ally.relationship,
+                  description: ally.description,
+                })),
+              },
+              context: character.storyContext?.currentSituation || '',
+              conversationHistory: chatMessages.slice(-5).map(msg => ({
+                sender: msg.sender,
+                content: msg.content,
+                timestamp: msg.timestamp.toISOString(),
+              })),
+            }),
+          }
+        );
 
-      if (!response.ok) throw new Error('AI service unavailable');
-      
-      const data = await response.json();
-      return data.response || `${character.name} seems lost in thought...`;
-    } catch (error) {
-      console.error('Character response generation failed:', error);
-      return `${character.name} is momentarily distracted and doesn't respond clearly.`;
-    }
-  }, [character, chatMessages]);
+        if (!response.ok) throw new Error('AI service unavailable');
+
+        const data = await response.json();
+        return data.response || `${character.name} seems lost in thought...`;
+      } catch (error) {
+        console.error('Character response generation failed:', error);
+        return `${character.name} is momentarily distracted and doesn't respond clearly.`;
+      }
+    },
+    [character, chatMessages]
+  );
 
   // Handle sending a message
   const handleSendMessage = async () => {
@@ -258,7 +285,7 @@ Respond as ${character.name} would, maintaining their personality, speaking styl
       id: Date.now().toString(),
       sender: 'user',
       content: inputMessage,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     setChatMessages(prev => [...prev, userMessage]);
@@ -267,23 +294,22 @@ Respond as ${character.name} would, maintaining their personality, speaking styl
 
     try {
       const characterResponse = await generateCharacterResponse(inputMessage);
-      
+
       const characterMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         sender: 'character',
         content: characterResponse,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       setChatMessages(prev => [...prev, characterMessage]);
-      
+
       // Update character with new interaction history
       const updatedCharacter = {
         ...character,
-        interactionHistory: [...chatMessages, userMessage, characterMessage]
+        interactionHistory: [...chatMessages, userMessage, characterMessage],
       };
       onCharacterUpdate(updatedCharacter);
-      
     } catch (error) {
       toast.error('Failed to generate character response');
     } finally {
@@ -301,8 +327,8 @@ Respond as ${character.name} would, maintaining their personality, speaking styl
           'How do you typically react under pressure?',
           'What makes you feel most alive and fulfilled?',
           'How do you handle criticism from others?',
-          'What is your greatest strength and how do you use it?'
-        ]
+          'What is your greatest strength and how do you use it?',
+        ],
       },
       {
         category: 'background',
@@ -311,8 +337,8 @@ Respond as ${character.name} would, maintaining their personality, speaking styl
           'How did your family shape who you are today?',
           'What was your first job and what did you learn from it?',
           'What cultural traditions are important to you?',
-          'What was the hardest lesson you ever learned?'
-        ]
+          'What was the hardest lesson you ever learned?',
+        ],
       },
       {
         category: 'goals',
@@ -321,8 +347,8 @@ Respond as ${character.name} would, maintaining their personality, speaking styl
           'What would you sacrifice everything for?',
           'What do you want to achieve in the next year?',
           'What legacy do you want to leave behind?',
-          'What would make you feel truly successful?'
-        ]
+          'What would make you feel truly successful?',
+        ],
       },
       {
         category: 'relationships',
@@ -331,8 +357,8 @@ Respond as ${character.name} would, maintaining their personality, speaking styl
           'What do you look for in a friend?',
           'How do you handle conflict with loved ones?',
           'What is your love language?',
-          'How do you show affection to others?'
-        ]
+          'How do you show affection to others?',
+        ],
       },
       {
         category: 'psychology',
@@ -341,8 +367,8 @@ Respond as ${character.name} would, maintaining their personality, speaking styl
           'How do you cope with difficult emotions?',
           'What helps you feel grounded and centered?',
           'How do you process grief or loss?',
-          'What patterns do you notice in your behavior?'
-        ]
+          'What patterns do you notice in your behavior?',
+        ],
       },
       {
         category: 'communication',
@@ -351,32 +377,41 @@ Respond as ${character.name} would, maintaining their personality, speaking styl
           'What topics are hardest for you to discuss?',
           'How do you give feedback to others?',
           'What makes you feel heard and understood?',
-          'How do you handle misunderstandings?'
-        ]
-      }
+          'How do you handle misunderstandings?',
+        ],
+      },
     ];
 
-    const newPrompts: DevelopmentPrompt[] = promptCategories.flatMap(category => 
+    const newPrompts: DevelopmentPrompt[] = promptCategories.flatMap(category =>
       category.questions.map((question, index) => ({
         id: `${category.category}-${index}`,
-        category: category.category as any,
+        category: category.category as
+          | 'personality'
+          | 'background'
+          | 'goals'
+          | 'relationships'
+          | 'psychology'
+          | 'communication',
         question,
         description: `Explore ${character.name}'s ${category.category} through this question`,
-        importance: Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low',
+        importance:
+          Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low',
         completed: false,
-        timestamp: new Date()
+        timestamp: new Date(),
       }))
     );
 
     setDevelopmentPrompts(newPrompts);
-    
+
     const updatedCharacter = {
       ...character,
-      developmentPrompts: newPrompts
+      developmentPrompts: newPrompts,
     };
     onCharacterUpdate(updatedCharacter);
-    
-    toast.success(`Generated ${newPrompts.length} development prompts for ${character.name}`);
+
+    toast.success(
+      `Generated ${newPrompts.length} development prompts for ${character.name}`
+    );
   }, [character, onCharacterUpdate]);
 
   // Handle prompt response
@@ -407,8 +442,9 @@ Respond as ${character.name} would, maintaining their personality, speaking styl
   */
 
   // Analyze character personality
-  const analyzeCharacter = useCallback(async (analysisType: string) => {
-    const analysisPrompt = `
+  const analyzeCharacter = useCallback(
+    async (analysisType: string) => {
+      const analysisPrompt = `
 Analyze ${character.name}'s ${analysisType} based on their profile:
 
 PERSONALITY: ${JSON.stringify(character.personality)}
@@ -420,39 +456,51 @@ PSYCHOLOGY: ${JSON.stringify(character.psychology)}
 Provide insights about their ${analysisType} patterns, strengths, areas for growth, and how this affects their story arc.
 `;
 
-    try {
-      const response = await fetch('/api/openai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'gpt-4',
-          messages: [
-            { role: 'system', content: 'You are a character development expert analyzing fictional characters.' },
-            { role: 'user', content: analysisPrompt }
-          ],
-          temperature: 0.7,
-          max_tokens: 500
-        })
-      });
+      try {
+        const response = await fetch('/api/openai/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'gpt-4',
+            messages: [
+              {
+                role: 'system',
+                content:
+                  'You are a character development expert analyzing fictional characters.',
+              },
+              { role: 'user', content: analysisPrompt },
+            ],
+            temperature: 0.7,
+            max_tokens: 500,
+          }),
+        });
 
-      if (!response.ok) throw new Error('Analysis service unavailable');
-      
-      const data = await response.json();
-      return data.choices?.[0]?.message?.content?.trim() || 'Analysis unavailable';
-    } catch (error) {
-      console.error('Character analysis failed:', error);
-      return 'Analysis failed. Please try again.';
-    }
-  }, [character]);
+        if (!response.ok) throw new Error('Analysis service unavailable');
+
+        const data = await response.json();
+        return (
+          data.choices?.[0]?.message?.content?.trim() || 'Analysis unavailable'
+        );
+      } catch (error) {
+        console.error('Character analysis failed:', error);
+        return 'Analysis failed. Please try again.';
+      }
+    },
+    [character]
+  );
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg ${className}`}>
+    <div
+      className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg ${className}`}
+    >
       {/* Header */}
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg">{character.name.charAt(0)}</span>
+              <span className="text-white font-bold text-lg">
+                {character.name.charAt(0)}
+              </span>
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -463,7 +511,7 @@ Provide insights about their ${analysisType} patterns, strengths, areas for grow
               </p>
             </div>
           </div>
-          
+
           <div className="flex space-x-2">
             <button
               onClick={() => setShowCharacterProfile(!showCharacterProfile)}
@@ -488,11 +536,15 @@ Provide insights about their ${analysisType} patterns, strengths, areas for grow
             { id: 'chat', label: 'Chat', icon: MessageCircle },
             { id: 'development', label: 'Development', icon: Brain },
             { id: 'analysis', label: 'Analysis', icon: TrendingUp },
-            { id: 'prompts', label: 'Prompts', icon: Target }
-          ].map((tab) => (
+            { id: 'prompts', label: 'Prompts', icon: Target },
+          ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() =>
+                setActiveTab(
+                  tab.id as 'chat' | 'development' | 'analysis' | 'prompts'
+                )
+              }
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                 activeTab === tab.id
                   ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
@@ -518,10 +570,14 @@ Provide insights about their ${analysisType} patterns, strengths, areas for grow
                   <p>Start a conversation with {character.name}</p>
                 </div>
               ) : (
-                chatMessages.map((message) => (
+                chatMessages.map(message => (
                   <div
                     key={message.id}
-                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${
+                      message.sender === 'user'
+                        ? 'justify-end'
+                        : 'justify-start'
+                    }`}
                   >
                     <div
                       className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
@@ -554,8 +610,8 @@ Provide insights about their ${analysisType} patterns, strengths, areas for grow
                 ref={inputRef}
                 type="text"
                 value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                onChange={e => setInputMessage(e.target.value)}
+                onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
                 placeholder={`Chat with ${character.name}...`}
                 className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 disabled={isTyping}
@@ -563,12 +619,16 @@ Provide insights about their ${analysisType} patterns, strengths, areas for grow
               <button
                 onClick={() => setIsListening(!isListening)}
                 className={`p-2 rounded-lg ${
-                  isListening 
-                    ? 'bg-red-500 text-white' 
+                  isListening
+                    ? 'bg-red-500 text-white'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
-                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                {isListening ? (
+                  <MicOff className="w-4 h-4" />
+                ) : (
+                  <Mic className="w-4 h-4" />
+                )}
               </button>
               <button
                 onClick={handleSendMessage}
@@ -586,22 +646,30 @@ Provide insights about their ${analysisType} patterns, strengths, areas for grow
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Character Stats */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Development Progress</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Development Progress
+                </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Arc Stage</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Arc Stage
+                    </span>
                     <span className="font-medium text-gray-900 dark:text-white">
                       {character.arc.currentStage}/{character.arc.stages.length}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Growth Areas</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Growth Areas
+                    </span>
                     <span className="font-medium text-gray-900 dark:text-white">
                       {character.development.growthAreas.length}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Achievements</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Achievements
+                    </span>
                     <span className="font-medium text-gray-900 dark:text-white">
                       {character.development.achievements.length}
                     </span>
@@ -611,25 +679,39 @@ Provide insights about their ${analysisType} patterns, strengths, areas for grow
 
               {/* Development Notes */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Development</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Recent Development
+                </h3>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {character.development.developmentNotes.slice(-5).map((note, index) => (
-                    <div key={index} className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-2 rounded">
-                      {note}
-                    </div>
-                  ))}
+                  {character.development.developmentNotes
+                    .slice(-5)
+                    .map((note, index) => (
+                      <div
+                        key={index}
+                        className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-2 rounded"
+                      >
+                        {note}
+                      </div>
+                    ))}
                 </div>
               </div>
             </div>
 
             {/* Growth Areas */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Growth Areas</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Growth Areas
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {character.development.growthAreas.map((area, index) => (
-                  <div key={index} className="flex items-center space-x-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center space-x-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg"
+                  >
                     <TrendingUp className="w-4 h-4 text-blue-500" />
-                    <span className="text-gray-700 dark:text-gray-300">{area}</span>
+                    <span className="text-gray-700 dark:text-gray-300">
+                      {area}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -645,11 +727,19 @@ Provide insights about their ${analysisType} patterns, strengths, areas for grow
                 { id: 'personality', label: 'Personality', icon: Brain },
                 { id: 'relationships', label: 'Relationships', icon: Users },
                 { id: 'goals', label: 'Goals', icon: Target },
-                { id: 'psychology', label: 'Psychology', icon: Heart }
-              ].map((mode) => (
+                { id: 'psychology', label: 'Psychology', icon: Heart },
+              ].map(mode => (
                 <button
                   key={mode.id}
-                  onClick={() => setAnalysisMode(mode.id as any)}
+                  onClick={() =>
+                    setAnalysisMode(
+                      mode.id as
+                        | 'personality'
+                        | 'goals'
+                        | 'relationships'
+                        | 'psychology'
+                    )
+                  }
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                     analysisMode === mode.id
                       ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
@@ -665,10 +755,12 @@ Provide insights about their ${analysisType} patterns, strengths, areas for grow
             {/* Analysis Content */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                {analysisMode.charAt(0).toUpperCase() + analysisMode.slice(1)} Analysis
+                {analysisMode.charAt(0).toUpperCase() + analysisMode.slice(1)}{' '}
+                Analysis
               </h3>
               <p className="text-gray-700 dark:text-gray-300">
-                Click "Run Analysis" to get AI-powered insights about {character.name}'s {analysisMode}.
+                Click &quot;Run Analysis&quot; to get AI-powered insights about{' '}
+                {character.name}&apos;s {analysisMode}.
               </p>
               <button
                 onClick={() => analyzeCharacter(analysisMode)}
@@ -686,32 +778,70 @@ Provide insights about their ${analysisType} patterns, strengths, areas for grow
             {/* Prompt Categories */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
-                { id: 'personality', label: 'Personality', icon: Brain, color: 'blue' },
-                { id: 'background', label: 'Background', icon: BookOpen, color: 'green' },
+                {
+                  id: 'personality',
+                  label: 'Personality',
+                  icon: Brain,
+                  color: 'blue',
+                },
+                {
+                  id: 'background',
+                  label: 'Background',
+                  icon: BookOpen,
+                  color: 'green',
+                },
                 { id: 'goals', label: 'Goals', icon: Target, color: 'purple' },
-                { id: 'relationships', label: 'Relationships', icon: Users, color: 'pink' },
-                { id: 'psychology', label: 'Psychology', icon: Heart, color: 'red' },
-                { id: 'communication', label: 'Communication', icon: MessageCircle, color: 'orange' }
-              ].map((category) => {
-                const categoryPrompts = developmentPrompts.filter(p => p.category === category.id);
-                const completedCount = categoryPrompts.filter(p => p.completed).length;
+                {
+                  id: 'relationships',
+                  label: 'Relationships',
+                  icon: Users,
+                  color: 'pink',
+                },
+                {
+                  id: 'psychology',
+                  label: 'Psychology',
+                  icon: Heart,
+                  color: 'red',
+                },
+                {
+                  id: 'communication',
+                  label: 'Communication',
+                  icon: MessageCircle,
+                  color: 'orange',
+                },
+              ].map(category => {
+                const categoryPrompts = developmentPrompts.filter(
+                  p => p.category === category.id
+                );
+                const completedCount = categoryPrompts.filter(
+                  p => p.completed
+                ).length;
                 const totalCount = categoryPrompts.length;
-                
+
                 return (
-                  <div key={category.id} className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                  <div
+                    key={category.id}
+                    className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4"
+                  >
                     <div className="flex items-center space-x-3 mb-3">
-                      <div className={`w-8 h-8 bg-${category.color}-100 dark:bg-${category.color}-900/20 rounded-full flex items-center justify-center`}>
-                        <category.icon className={`w-4 h-4 text-${category.color}-600 dark:text-${category.color}-400`} />
+                      <div
+                        className={`w-8 h-8 bg-${category.color}-100 dark:bg-${category.color}-900/20 rounded-full flex items-center justify-center`}
+                      >
+                        <category.icon
+                          className={`w-4 h-4 text-${category.color}-600 dark:text-${category.color}-400`}
+                        />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white">{category.label}</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                          {category.label}
+                        </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           {completedCount}/{totalCount} completed
                         </p>
                       </div>
                     </div>
                     <div className="space-y-2">
-                      {categoryPrompts.slice(0, 3).map((prompt) => (
+                      {categoryPrompts.slice(0, 3).map(prompt => (
                         <button
                           key={prompt.id}
                           onClick={() => setSelectedPrompt(prompt)}
@@ -723,7 +853,9 @@ Provide insights about their ${analysisType} patterns, strengths, areas for grow
                         >
                           <div className="flex items-center justify-between">
                             <span className="truncate">{prompt.question}</span>
-                            {prompt.completed && <Star className="w-3 h-3 text-green-500" />}
+                            {prompt.completed && (
+                              <Star className="w-3 h-3 text-green-500" />
+                            )}
                           </div>
                         </button>
                       ))}
@@ -796,90 +928,145 @@ Provide insights about their ${analysisType} patterns, strengths, areas for grow
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {character.name}'s Profile
+                {character.name}&apos;s Profile
               </h2>
               <button
                 onClick={() => setShowCharacterProfile(false)}
                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
-                <span className="sr-only">Close</span>
-                ×
+                <span className="sr-only">Close</span>×
               </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Personality */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Personality</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  Personality
+                </h3>
                 <div className="space-y-2">
                   <div>
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Traits:</span>
-                    <p className="text-gray-700 dark:text-gray-300">{character.personality.traits.join(', ')}</p>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Traits:
+                    </span>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {character.personality.traits.join(', ')}
+                    </p>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Strengths:</span>
-                    <p className="text-gray-700 dark:text-gray-300">{character.personality.strengths.join(', ')}</p>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Strengths:
+                    </span>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {character.personality.strengths.join(', ')}
+                    </p>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Weaknesses:</span>
-                    <p className="text-gray-700 dark:text-gray-300">{character.personality.weaknesses.join(', ')}</p>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Weaknesses:
+                    </span>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {character.personality.weaknesses.join(', ')}
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Background */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Background</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  Background
+                </h3>
                 <div className="space-y-2">
                   <div>
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Origin:</span>
-                    <p className="text-gray-700 dark:text-gray-300">{character.background.origin}</p>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Origin:
+                    </span>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {character.background.origin}
+                    </p>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Family:</span>
-                    <p className="text-gray-700 dark:text-gray-300">{character.background.family}</p>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Family:
+                    </span>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {character.background.family}
+                    </p>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Occupation:</span>
-                    <p className="text-gray-700 dark:text-gray-300">{character.background.occupation}</p>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Occupation:
+                    </span>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {character.background.occupation}
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Goals */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Goals</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  Goals
+                </h3>
                 <div className="space-y-2">
                   <div>
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Primary:</span>
-                    <p className="text-gray-700 dark:text-gray-300">{character.goals.primary}</p>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Primary:
+                    </span>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {character.goals.primary}
+                    </p>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Internal:</span>
-                    <p className="text-gray-700 dark:text-gray-300">{character.goals.internal}</p>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Internal:
+                    </span>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {character.goals.internal}
+                    </p>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">External:</span>
-                    <p className="text-gray-700 dark:text-gray-300">{character.goals.external}</p>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      External:
+                    </span>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {character.goals.external}
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Communication */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Communication</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  Communication
+                </h3>
                 <div className="space-y-2">
                   <div>
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Speaking Style:</span>
-                    <p className="text-gray-700 dark:text-gray-300">{character.communication.speakingStyle}</p>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Speaking Style:
+                    </span>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {character.communication.speakingStyle}
+                    </p>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Vocabulary:</span>
-                    <p className="text-gray-700 dark:text-gray-300">{character.communication.vocabulary}</p>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Vocabulary:
+                    </span>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {character.communication.vocabulary}
+                    </p>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Mannerisms:</span>
-                    <p className="text-gray-700 dark:text-gray-300">{character.communication.mannerisms.join(', ')}</p>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Mannerisms:
+                    </span>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {character.communication.mannerisms.join(', ')}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -889,4 +1076,4 @@ Provide insights about their ${analysisType} patterns, strengths, areas for grow
       )}
     </div>
   );
-} 
+}

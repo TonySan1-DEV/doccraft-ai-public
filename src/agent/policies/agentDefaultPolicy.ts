@@ -12,10 +12,8 @@
 
 import { AgentPrefs } from '../../types/agentPreferences';
 
-// Policy interface - same as AgentPrefs since lockedFields is already included
-export interface AgentPolicy extends AgentPrefs {
-  // All fields from AgentPrefs are inherited, including lockedFields
-}
+// Policy type alias - same as AgentPrefs since lockedFields is already included
+export type AgentPolicy = AgentPrefs;
 
 // Policy map for different user roles
 const policyMap: Record<string, AgentPolicy> = {
@@ -26,7 +24,7 @@ const policyMap: Record<string, AgentPolicy> = {
     copilotEnabled: false,
     memoryEnabled: false,
     defaultCommandView: 'list' as const,
-    lockedFields: ['copilotEnabled', 'memoryEnabled']
+    lockedFields: ['copilotEnabled', 'memoryEnabled'],
   },
 
   // Pro user - enhanced features
@@ -36,7 +34,7 @@ const policyMap: Record<string, AgentPolicy> = {
     copilotEnabled: true,
     memoryEnabled: true,
     defaultCommandView: 'list' as const,
-    lockedFields: []
+    lockedFields: [],
   },
 
   // Admin user - full access with some locked fields
@@ -46,7 +44,7 @@ const policyMap: Record<string, AgentPolicy> = {
     copilotEnabled: true,
     memoryEnabled: true,
     defaultCommandView: 'list' as const,
-    lockedFields: ['memoryEnabled', 'copilotEnabled'] // Admins can't disable core features
+    lockedFields: ['memoryEnabled', 'copilotEnabled'], // Admins can't disable core features
   },
 
   // Enterprise user - premium features
@@ -56,7 +54,7 @@ const policyMap: Record<string, AgentPolicy> = {
     copilotEnabled: true,
     memoryEnabled: true,
     defaultCommandView: 'grid' as const,
-    lockedFields: []
+    lockedFields: [],
   },
 
   // Developer role - testing configuration
@@ -66,8 +64,8 @@ const policyMap: Record<string, AgentPolicy> = {
     copilotEnabled: true,
     memoryEnabled: true,
     defaultCommandView: 'list' as const,
-    lockedFields: []
-  }
+    lockedFields: [],
+  },
 };
 
 // Fallback policy for unrecognized roles
@@ -77,7 +75,7 @@ const fallbackPolicy: AgentPolicy = {
   copilotEnabled: false,
   memoryEnabled: false,
   defaultCommandView: 'list' as const,
-  lockedFields: ['copilotEnabled', 'memoryEnabled']
+  lockedFields: ['copilotEnabled', 'memoryEnabled'],
 };
 
 /**
@@ -86,14 +84,16 @@ const fallbackPolicy: AgentPolicy = {
 export function getDefaultPolicy(role: string): AgentPolicy {
   // Normalize role to lowercase for case-insensitive matching
   const normalizedRole = role.toLowerCase();
-  
+
   // Check if role exists in policy map
   if (policyMap[normalizedRole]) {
     return { ...policyMap[normalizedRole] };
   }
 
   // Fallback to base user policy for unrecognized roles
-  console.warn(`[AgentDefaultPolicy] Unrecognized role: ${role}, using fallback policy`);
+  console.warn(
+    `[AgentDefaultPolicy] Unrecognized role: ${role}, using fallback policy`
+  );
   return { ...fallbackPolicy };
 }
 
@@ -102,11 +102,11 @@ export function getDefaultPolicy(role: string): AgentPolicy {
  */
 export function getDefaultPolicyByTier(tier: string): AgentPolicy {
   const tierMap: Record<string, string> = {
-    'Basic': 'user',
-    'Pro': 'pro',
-    'Enterprise': 'enterprise',
-    'Admin': 'admin',
-    'Developer': 'developer'
+    Basic: 'user',
+    Pro: 'pro',
+    Enterprise: 'enterprise',
+    Admin: 'admin',
+    Developer: 'developer',
   };
 
   const role = tierMap[tier] || 'user';
@@ -130,7 +130,10 @@ export function getAvailableTiers(): string[] {
 /**
  * Checks if a field is locked for a specific role
  */
-export function isFieldLockedForRole(field: keyof AgentPrefs, role: string): boolean {
+export function isFieldLockedForRole(
+  field: keyof AgentPrefs,
+  role: string
+): boolean {
   const policy = getDefaultPolicy(role);
   return policy.lockedFields?.includes(field as string) || false;
 }
@@ -147,7 +150,7 @@ export function getLockedFieldsForRole(role: string): string[] {
  * Merges user preferences with role-based defaults
  */
 export function mergeWithRoleDefaults(
-  userPrefs: Partial<AgentPrefs>, 
+  userPrefs: Partial<AgentPrefs>,
   role: string
 ): AgentPrefs {
   const roleDefaults = getDefaultPolicy(role);
@@ -159,9 +162,15 @@ export function mergeWithRoleDefaults(
   // Apply user preferences, respecting locked fields
   Object.entries(userPrefs).forEach(([key, value]) => {
     if (!lockedFields.includes(key)) {
-      (merged as any)[key] = value;
+      // Type-safe assignment using keyof and proper type checking
+      const field = key as keyof AgentPrefs;
+      if (field in merged) {
+        (merged as any)[field] = value;
+      }
     } else {
-      console.warn(`[AgentDefaultPolicy] Field ${key} is locked for role ${role}`);
+      console.warn(
+        `[AgentDefaultPolicy] Field ${key} is locked for role ${role}`
+      );
     }
   });
 
@@ -172,7 +181,7 @@ export function mergeWithRoleDefaults(
  * Validates if user preferences comply with role restrictions
  */
 export function validatePreferencesForRole(
-  prefs: AgentPrefs, 
+  prefs: AgentPrefs,
   role: string
 ): { valid: boolean; violations: string[] } {
   const lockedFields = getLockedFieldsForRole(role);
@@ -181,9 +190,10 @@ export function validatePreferencesForRole(
 
   // Check if any locked fields have been modified
   lockedFields.forEach(field => {
-    const userValue = (prefs as any)[field];
-    const defaultValue = (roleDefaults as any)[field];
-    
+    const fieldKey = field as keyof AgentPrefs;
+    const userValue = prefs[fieldKey];
+    const defaultValue = roleDefaults[fieldKey];
+
     if (userValue !== defaultValue) {
       violations.push(`Field '${field}' is locked for role '${role}'`);
     }
@@ -191,7 +201,7 @@ export function validatePreferencesForRole(
 
   return {
     valid: violations.length === 0,
-    violations
+    violations,
   };
 }
 
@@ -209,11 +219,13 @@ export function getRoleCapabilities(role: string): {
   const lockedFields = policy.lockedFields || [];
 
   return {
-    canUseCopilot: policy.copilotEnabled && !lockedFields.includes('copilotEnabled'),
-    canUseMemory: policy.memoryEnabled && !lockedFields.includes('memoryEnabled'),
+    canUseCopilot:
+      policy.copilotEnabled && !lockedFields.includes('copilotEnabled'),
+    canUseMemory:
+      policy.memoryEnabled && !lockedFields.includes('memoryEnabled'),
     canChangeTone: !lockedFields.includes('tone'),
     canChangeLanguage: !lockedFields.includes('language'),
-    canChangeCommandView: !lockedFields.includes('defaultCommandView')
+    canChangeCommandView: !lockedFields.includes('defaultCommandView'),
   };
 }
 
@@ -238,19 +250,16 @@ export function getPolicyMap(): Record<string, AgentPolicy> {
 /**
  * Updates the policy map (admin function)
  */
-export function updatePolicyMap(
-  role: string, 
-  policy: AgentPolicy
-): void {
+export function updatePolicyMap(role: string, policy: AgentPolicy): void {
   if (typeof window !== 'undefined' && (window as any).logTelemetryEvent) {
     (window as any).logTelemetryEvent('policy_map_updated', {
       role,
-      policy: Object.keys(policy)
+      policy: Object.keys(policy),
     });
   }
-  
+
   policyMap[role.toLowerCase()] = { ...policy };
 }
 
 // Export the policy map for reference
-export { policyMap }; 
+export { policyMap };

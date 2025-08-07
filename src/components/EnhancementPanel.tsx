@@ -1,29 +1,39 @@
-import { useState } from 'react'
-import { Search, Plus, Wand2 } from 'lucide-react'
-import ImageRating from './ImageRating'
-import ManualImageSelector from './ManualImageSelector'
-import { generateImageSuggestions } from '../services/imageService'
-import toast from 'react-hot-toast'
+import { useState } from 'react';
+import { Search, Plus, Wand2 } from 'lucide-react';
+import ImageRating from './ImageRating';
+import ManualImageSelector from './ManualImageSelector';
+import { generateImageSuggestions } from '../services/imageService';
+import toast from 'react-hot-toast';
 
 interface EnhancementPanelProps {
   sections: Array<{
-    id: string
-    content: string
-    topic_tags: string[]
-    tone: string
-    intent: string
-    section_order: number
-  }>
+    id: string;
+    content: string;
+    topic_tags: string[];
+    tone: string;
+    intent: string;
+    section_order: number;
+  }>;
   images: Array<{
-    id: string
-    section_id: string
-    source: 'ai' | 'stock' | 'upload'
-    source_metadata: any
-    caption: string
-    relevance_score: number
-    image_url: string
-  }>
-  onImagesUpdate: (images: any[]) => void
+    id: string;
+    section_id: string;
+    source: 'ai' | 'stock' | 'upload';
+    source_metadata: Record<string, unknown>;
+    caption: string;
+    relevance_score: number;
+    image_url: string;
+  }>;
+  onImagesUpdate: (
+    images: Array<{
+      id: string;
+      section_id: string;
+      source: 'ai' | 'stock' | 'upload';
+      source_metadata: Record<string, unknown>;
+      caption: string;
+      relevance_score: number;
+      image_url: string;
+    }>
+  ) => void;
 }
 
 export default function EnhancementPanel({
@@ -32,56 +42,71 @@ export default function EnhancementPanel({
   onImagesUpdate,
 }: EnhancementPanelProps) {
   // const ctx = useMCP("EnhancementPanel.tsx")
-  const [selectedSection, setSelectedSection] = useState<string | null>(null)
-  const [showImageSelector, setShowImageSelector] = useState(false)
-  const [generatingImages, setGeneratingImages] = useState<string | null>(null)
+  const [selectedSection, setSelectedSection] = useState<string | null>(null);
+  const [showImageSelector, setShowImageSelector] = useState(false);
+  const [generatingImages, setGeneratingImages] = useState<string | null>(null);
 
   const getImagesForSection = (sectionId: string) => {
     return images
       .filter(img => img.section_id === sectionId)
-      .sort((a, b) => b.relevance_score - a.relevance_score)
-  }
+      .sort((a, b) => b.relevance_score - a.relevance_score);
+  };
 
   const handleGenerateImages = async (sectionId: string) => {
-    const section = sections.find(s => s.id === sectionId)
-    if (!section) return
+    const section = sections.find(s => s.id === sectionId);
+    if (!section) return;
 
-    setGeneratingImages(sectionId)
+    setGeneratingImages(sectionId);
     try {
       const newImages = await generateImageSuggestions({
         id: section.id,
         content: section.content,
         topicTags: section.topic_tags,
         tone: section.tone,
-        intent: section.intent
-      })
+        intent: section.intent,
+      });
 
-      onImagesUpdate([...images, ...newImages])
-      toast.success('New images generated!')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to generate images')
+      // Convert ImageSuggestion to the expected format
+      const convertedImages = newImages.map(img => ({
+        id: img.id,
+        section_id: section.id,
+        source: img.source,
+        source_metadata: img.sourceMetadata,
+        caption: img.caption,
+        relevance_score: img.relevanceScore,
+        image_url: img.url,
+      }));
+
+      onImagesUpdate([...images, ...convertedImages]);
+      toast.success('New images generated!');
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to generate images'
+      );
     } finally {
-      setGeneratingImages(null)
+      setGeneratingImages(null);
     }
-  }
+  };
 
   const handleImageFeedback = async () => {
     try {
-      toast.success('Feedback saved!')
+      toast.success('Feedback saved!');
     } catch (error) {
-      toast.error('Failed to save feedback')
+      toast.error('Failed to save feedback');
     }
-  }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Image Enhancement</h2>
+        <h2 className="text-xl font-semibold text-gray-900">
+          Image Enhancement
+        </h2>
         <button
           onClick={() => {
             if (sections.length > 0) {
-              setSelectedSection(sections[0].id)
-              setShowImageSelector(true)
+              setSelectedSection(sections[0].id);
+              setShowImageSelector(true);
             }
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -92,12 +117,15 @@ export default function EnhancementPanel({
       </div>
 
       <div className="space-y-6">
-        {sections.map((section) => {
-          const sectionImages = getImagesForSection(section.id)
-          const isGenerating = generatingImages === section.id
+        {sections.map(section => {
+          const sectionImages = getImagesForSection(section.id);
+          const isGenerating = generatingImages === section.id;
 
           return (
-            <div key={section.id} className="border border-gray-200 rounded-lg p-4">
+            <div
+              key={section.id}
+              className="border border-gray-200 rounded-lg p-4"
+            >
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="font-medium text-gray-900">
@@ -119,7 +147,7 @@ export default function EnhancementPanel({
 
               {sectionImages.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {sectionImages.map((image) => (
+                  {sectionImages.map(image => (
                     <div key={image.id} className="relative group">
                       <img
                         src={image.image_url}
@@ -130,7 +158,9 @@ export default function EnhancementPanel({
                         <ImageRating
                           imageId={image.id}
                           sectionId={section.id}
-                          onFeedback={(_imageId, _sectionId, _feedback) => handleImageFeedback()}
+                          onFeedback={(_imageId, _sectionId, _feedback) =>
+                            handleImageFeedback()
+                          }
                         />
                       </div>
                     </div>
@@ -145,7 +175,7 @@ export default function EnhancementPanel({
                 </div>
               )}
             </div>
-          )
+          );
         })}
       </div>
 
@@ -153,12 +183,12 @@ export default function EnhancementPanel({
         <ManualImageSelector
           section={sections.find(s => s.id === selectedSection)!}
           onClose={() => setShowImageSelector(false)}
-          onImageSelect={(selectedImage) => {
-            onImagesUpdate([...images, selectedImage])
-            setShowImageSelector(false)
+          onImageSelect={selectedImage => {
+            onImagesUpdate([...images, selectedImage]);
+            setShowImageSelector(false);
           }}
         />
       )}
     </div>
-  )
+  );
 }

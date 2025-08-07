@@ -18,7 +18,7 @@ import {
   hasPreferencesInSupabase,
   getCurrentUserId,
   fetchCurrentUserPreferences,
-  syncCurrentUserPreferences
+  syncCurrentUserPreferences,
 } from '../supabasePreferencesAdapter';
 
 // Mock Supabase client
@@ -27,45 +27,45 @@ jest.mock('@supabase/supabase-js', () => ({
     from: jest.fn(() => ({
       select: jest.fn(() => ({
         eq: jest.fn(() => ({
-          single: jest.fn()
-        }))
+          single: jest.fn(),
+        })),
       })),
       upsert: jest.fn(() => ({
         onConflict: jest.fn(() => ({
-          ignoreDuplicates: jest.fn()
-        }))
+          ignoreDuplicates: jest.fn(),
+        })),
       })),
       delete: jest.fn(() => ({
-        eq: jest.fn()
-      }))
+        eq: jest.fn(),
+      })),
     })),
     auth: {
-      getUser: jest.fn()
-    }
-  }))
+      getUser: jest.fn(),
+    },
+  })),
 }));
 
 // Mock environment variables
 const mockEnv = {
   REACT_APP_SUPABASE_URL: 'https://test.supabase.co',
-  REACT_APP_SUPABASE_ANON_KEY: 'test-anon-key'
+  REACT_APP_SUPABASE_ANON_KEY: 'test-anon-key',
 };
 
 Object.defineProperty(process.env, 'REACT_APP_SUPABASE_URL', {
   value: mockEnv.REACT_APP_SUPABASE_URL,
-  writable: true
+  writable: true,
 });
 
 Object.defineProperty(process.env, 'REACT_APP_SUPABASE_ANON_KEY', {
   value: mockEnv.REACT_APP_SUPABASE_ANON_KEY,
-  writable: true
+  writable: true,
 });
 
 // Mock telemetry
 const mockLogTelemetryEvent = jest.fn();
 Object.defineProperty(window, 'logTelemetryEvent', {
   value: mockLogTelemetryEvent,
-  writable: true
+  writable: true,
 });
 
 describe('supabasePreferencesAdapter', () => {
@@ -73,8 +73,9 @@ describe('supabasePreferencesAdapter', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Get the mocked Supabase client
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { createClient } = require('@supabase/supabase-js');
     mockSupabase = createClient();
   });
@@ -87,7 +88,7 @@ describe('supabasePreferencesAdapter', () => {
       copilotEnabled: true,
       memoryEnabled: true,
       defaultCommandView: 'list',
-      lockedFields: []
+      lockedFields: [],
     };
 
     it('should return parsed preferences when available', async () => {
@@ -98,12 +99,12 @@ describe('supabasePreferencesAdapter', () => {
         copilot_enabled: true,
         memory_enabled: true,
         default_command_view: 'list',
-        locked_fields: []
+        locked_fields: [],
       };
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
         data: mockData,
-        error: null
+        error: null,
       });
 
       const result = await fetchPreferencesFromSupabase(testUserId);
@@ -111,14 +112,21 @@ describe('supabasePreferencesAdapter', () => {
       expect(result).toEqual(validPreferences);
       expect(mockSupabase.from).toHaveBeenCalledWith('user_preferences');
       expect(mockSupabase.from().select).toHaveBeenCalledWith('*');
-      expect(mockSupabase.from().select().eq).toHaveBeenCalledWith('user_id', testUserId);
+      expect(mockSupabase.from().select().eq).toHaveBeenCalledWith(
+        'user_id',
+        testUserId
+      );
     });
 
     it('should return null if record does not exist', async () => {
-      mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: null,
-        error: { code: 'PGRST116', message: 'No rows found' }
-      });
+      mockSupabase
+        .from()
+        .select()
+        .eq()
+        .single.mockResolvedValue({
+          data: null,
+          error: { code: 'PGRST116', message: 'No rows found' },
+        });
 
       const result = await fetchPreferencesFromSupabase(testUserId);
 
@@ -146,12 +154,12 @@ describe('supabasePreferencesAdapter', () => {
         copilot_enabled: 'not-boolean', // Invalid boolean
         memory_enabled: true,
         default_command_view: 'invalid-view', // Invalid view
-        locked_fields: 'not-array' // Invalid array
+        locked_fields: 'not-array', // Invalid array
       };
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
         data: invalidData,
-        error: null
+        error: null,
       });
 
       const result = await fetchPreferencesFromSupabase(testUserId);
@@ -163,7 +171,7 @@ describe('supabasePreferencesAdapter', () => {
         copilotEnabled: true, // Fallback
         memoryEnabled: true, // Valid
         defaultCommandView: 'list', // Fallback
-        lockedFields: [] // Fallback
+        lockedFields: [], // Fallback
       });
     });
 
@@ -186,7 +194,7 @@ describe('supabasePreferencesAdapter', () => {
         'preferences_fetch_supabase_error',
         {
           userId: testUserId,
-          error: 'Test error'
+          error: 'Test error',
         }
       );
     });
@@ -200,13 +208,17 @@ describe('supabasePreferencesAdapter', () => {
       copilotEnabled: false,
       memoryEnabled: true,
       defaultCommandView: 'grid',
-      lockedFields: ['copilotEnabled']
+      lockedFields: ['copilotEnabled'],
     };
 
     it('should send correct payload to Supabase upsert', async () => {
-      mockSupabase.from().upsert().onConflict().ignoreDuplicates.mockResolvedValue({
-        error: null
-      });
+      mockSupabase
+        .from()
+        .upsert()
+        .onConflict()
+        .ignoreDuplicates.mockResolvedValue({
+          error: null,
+        });
 
       await syncPreferencesToSupabase(testUserId, testPreferences);
 
@@ -219,23 +231,28 @@ describe('supabasePreferencesAdapter', () => {
           copilot_enabled: false,
           memory_enabled: true,
           default_command_view: 'grid',
-          locked_fields: ['copilotEnabled']
+          locked_fields: ['copilotEnabled'],
         }),
         expect.objectContaining({
           onConflict: 'user_id',
-          ignoreDuplicates: false
+          ignoreDuplicates: false,
         })
       );
     });
 
     it('should handle Supabase errors gracefully', async () => {
       const mockError = new Error('Database error');
-      mockSupabase.from().upsert().onConflict().ignoreDuplicates.mockResolvedValue({
-        error: mockError
-      });
+      mockSupabase
+        .from()
+        .upsert()
+        .onConflict()
+        .ignoreDuplicates.mockResolvedValue({
+          error: mockError,
+        });
 
-      await expect(syncPreferencesToSupabase(testUserId, testPreferences))
-        .rejects.toThrow('Database error');
+      await expect(
+        syncPreferencesToSupabase(testUserId, testPreferences)
+      ).rejects.toThrow('Database error');
 
       expect(console.error).toHaveBeenCalledWith(
         '[SupabaseAdapter] Sync error:',
@@ -244,12 +261,15 @@ describe('supabasePreferencesAdapter', () => {
     });
 
     it('should not throw if Supabase is unreachable', async () => {
-      mockSupabase.from().upsert().onConflict().ignoreDuplicates.mockRejectedValue(
-        new Error('Network unreachable')
-      );
+      mockSupabase
+        .from()
+        .upsert()
+        .onConflict()
+        .ignoreDuplicates.mockRejectedValue(new Error('Network unreachable'));
 
-      await expect(syncPreferencesToSupabase(testUserId, testPreferences))
-        .rejects.toThrow('Network unreachable');
+      await expect(
+        syncPreferencesToSupabase(testUserId, testPreferences)
+      ).rejects.toThrow('Network unreachable');
     });
 
     it('should validate preferences before syncing', async () => {
@@ -259,27 +279,34 @@ describe('supabasePreferencesAdapter', () => {
         copilotEnabled: true,
         memoryEnabled: true,
         defaultCommandView: 'list' as const,
-        lockedFields: []
+        lockedFields: [],
       } as AgentPrefs;
 
-      await expect(syncPreferencesToSupabase(testUserId, invalidPreferences))
-        .rejects.toThrow('Preferences failed validation');
+      await expect(
+        syncPreferencesToSupabase(testUserId, invalidPreferences)
+      ).rejects.toThrow('Preferences failed validation');
     });
 
     it('should handle null userId', async () => {
-      await expect(syncPreferencesToSupabase(null as any, testPreferences))
-        .rejects.toThrow('Invalid user ID provided');
+      await expect(
+        syncPreferencesToSupabase(null as any, testPreferences)
+      ).rejects.toThrow('Invalid user ID provided');
     });
 
     it('should handle null preferences', async () => {
-      await expect(syncPreferencesToSupabase(testUserId, null as any))
-        .rejects.toThrow('Invalid preferences object provided');
+      await expect(
+        syncPreferencesToSupabase(testUserId, null as any)
+      ).rejects.toThrow('Invalid preferences object provided');
     });
 
     it('should log telemetry on successful sync', async () => {
-      mockSupabase.from().upsert().onConflict().ignoreDuplicates.mockResolvedValue({
-        error: null
-      });
+      mockSupabase
+        .from()
+        .upsert()
+        .onConflict()
+        .ignoreDuplicates.mockResolvedValue({
+          error: null,
+        });
 
       await syncPreferencesToSupabase(testUserId, testPreferences);
 
@@ -288,9 +315,13 @@ describe('supabasePreferencesAdapter', () => {
         {
           userId: testUserId,
           fields: expect.arrayContaining([
-            'tone', 'language', 'copilotEnabled', 'memoryEnabled', 
-            'defaultCommandView', 'lockedFields'
-          ])
+            'tone',
+            'language',
+            'copilotEnabled',
+            'memoryEnabled',
+            'defaultCommandView',
+            'lockedFields',
+          ]),
         }
       );
     });
@@ -301,29 +332,34 @@ describe('supabasePreferencesAdapter', () => {
 
     it('should delete user preferences successfully', async () => {
       mockSupabase.from().delete().eq.mockResolvedValue({
-        error: null
+        error: null,
       });
 
       await deletePreferencesFromSupabase(testUserId);
 
       expect(mockSupabase.from).toHaveBeenCalledWith('user_preferences');
       expect(mockSupabase.from().delete).toHaveBeenCalled();
-      expect(mockSupabase.from().delete().eq).toHaveBeenCalledWith('user_id', testUserId);
+      expect(mockSupabase.from().delete().eq).toHaveBeenCalledWith(
+        'user_id',
+        testUserId
+      );
     });
 
     it('should handle delete errors', async () => {
       const mockError = new Error('Delete failed');
       mockSupabase.from().delete().eq.mockResolvedValue({
-        error: mockError
+        error: mockError,
       });
 
-      await expect(deletePreferencesFromSupabase(testUserId))
-        .rejects.toThrow('Delete failed');
+      await expect(deletePreferencesFromSupabase(testUserId)).rejects.toThrow(
+        'Delete failed'
+      );
     });
 
     it('should handle null userId', async () => {
-      await expect(deletePreferencesFromSupabase(null as any))
-        .rejects.toThrow('Invalid user ID provided');
+      await expect(deletePreferencesFromSupabase(null as any)).rejects.toThrow(
+        'Invalid user ID provided'
+      );
     });
   });
 
@@ -331,10 +367,14 @@ describe('supabasePreferencesAdapter', () => {
     const testUserId = 'test-user-123';
 
     it('should return true when user has preferences', async () => {
-      mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { user_id: testUserId },
-        error: null
-      });
+      mockSupabase
+        .from()
+        .select()
+        .eq()
+        .single.mockResolvedValue({
+          data: { user_id: testUserId },
+          error: null,
+        });
 
       const result = await hasPreferencesInSupabase(testUserId);
 
@@ -342,10 +382,14 @@ describe('supabasePreferencesAdapter', () => {
     });
 
     it('should return false when user has no preferences', async () => {
-      mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: null,
-        error: { code: 'PGRST116' }
-      });
+      mockSupabase
+        .from()
+        .select()
+        .eq()
+        .single.mockResolvedValue({
+          data: null,
+          error: { code: 'PGRST116' },
+        });
 
       const result = await hasPreferencesInSupabase(testUserId);
 
@@ -364,7 +408,7 @@ describe('supabasePreferencesAdapter', () => {
       const mockUser = { id: 'test-user-123' };
       mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: mockUser },
-        error: null
+        error: null,
       });
 
       const result = await getCurrentUserId();
@@ -375,7 +419,7 @@ describe('supabasePreferencesAdapter', () => {
     it('should return null when not authenticated', async () => {
       mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: null },
-        error: null
+        error: null,
       });
 
       const result = await getCurrentUserId();
@@ -386,7 +430,7 @@ describe('supabasePreferencesAdapter', () => {
     it('should return null on auth error', async () => {
       mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: null },
-        error: new Error('Auth error')
+        error: new Error('Auth error'),
       });
 
       const result = await getCurrentUserId();
@@ -404,26 +448,30 @@ describe('supabasePreferencesAdapter', () => {
         copilotEnabled: true,
         memoryEnabled: true,
         defaultCommandView: 'list',
-        lockedFields: []
+        lockedFields: [],
       };
 
       mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: mockUser },
-        error: null
+        error: null,
       });
 
-      mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: {
-          user_id: 'test-user-123',
-          tone: 'friendly',
-          language: 'en',
-          copilot_enabled: true,
-          memory_enabled: true,
-          default_command_view: 'list',
-          locked_fields: []
-        },
-        error: null
-      });
+      mockSupabase
+        .from()
+        .select()
+        .eq()
+        .single.mockResolvedValue({
+          data: {
+            user_id: 'test-user-123',
+            tone: 'friendly',
+            language: 'en',
+            copilot_enabled: true,
+            memory_enabled: true,
+            default_command_view: 'list',
+            locked_fields: [],
+          },
+          error: null,
+        });
 
       const result = await fetchCurrentUserPreferences();
 
@@ -433,7 +481,7 @@ describe('supabasePreferencesAdapter', () => {
     it('should return null when no authenticated user', async () => {
       mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: null },
-        error: null
+        error: null,
       });
 
       const result = await fetchCurrentUserPreferences();
@@ -452,20 +500,24 @@ describe('supabasePreferencesAdapter', () => {
       copilotEnabled: true,
       memoryEnabled: false,
       defaultCommandView: 'grid',
-      lockedFields: []
+      lockedFields: [],
     };
 
     it('should sync preferences for current user', async () => {
       const mockUser = { id: 'test-user-123' };
-      
+
       mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: mockUser },
-        error: null
+        error: null,
       });
 
-      mockSupabase.from().upsert().onConflict().ignoreDuplicates.mockResolvedValue({
-        error: null
-      });
+      mockSupabase
+        .from()
+        .upsert()
+        .onConflict()
+        .ignoreDuplicates.mockResolvedValue({
+          error: null,
+        });
 
       await syncCurrentUserPreferences(testPreferences);
 
@@ -473,7 +525,7 @@ describe('supabasePreferencesAdapter', () => {
         expect.objectContaining({
           user_id: 'test-user-123',
           tone: 'formal',
-          language: 'es'
+          language: 'es',
         }),
         expect.any(Object)
       );
@@ -482,23 +534,28 @@ describe('supabasePreferencesAdapter', () => {
     it('should throw error when no authenticated user', async () => {
       mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: null },
-        error: null
+        error: null,
       });
 
-      await expect(syncCurrentUserPreferences(testPreferences))
-        .rejects.toThrow('No authenticated user found');
+      await expect(syncCurrentUserPreferences(testPreferences)).rejects.toThrow(
+        'No authenticated user found'
+      );
     });
   });
 
   describe('edge cases and error handling', () => {
     it('should handle malformed database responses', async () => {
       const testUserId = 'test-user-123';
-      
+
       // Malformed data with missing fields
-      mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { user_id: testUserId }, // Missing other fields
-        error: null
-      });
+      mockSupabase
+        .from()
+        .select()
+        .eq()
+        .single.mockResolvedValue({
+          data: { user_id: testUserId }, // Missing other fields
+          error: null,
+        });
 
       const result = await fetchPreferencesFromSupabase(testUserId);
 
@@ -508,10 +565,12 @@ describe('supabasePreferencesAdapter', () => {
 
     it('should handle network timeouts', async () => {
       const testUserId = 'test-user-123';
-      
-      mockSupabase.from().select().eq().single.mockRejectedValue(
-        new Error('Request timeout')
-      );
+
+      mockSupabase
+        .from()
+        .select()
+        .eq()
+        .single.mockRejectedValue(new Error('Request timeout'));
 
       const result = await fetchPreferencesFromSupabase(testUserId);
 
@@ -520,14 +579,16 @@ describe('supabasePreferencesAdapter', () => {
 
     it('should handle database connection errors', async () => {
       const testUserId = 'test-user-123';
-      
-      mockSupabase.from().select().eq().single.mockRejectedValue(
-        new Error('Connection refused')
-      );
+
+      mockSupabase
+        .from()
+        .select()
+        .eq()
+        .single.mockRejectedValue(new Error('Connection refused'));
 
       const result = await fetchPreferencesFromSupabase(testUserId);
 
       expect(result).toBeNull();
     });
   });
-}); 
+});

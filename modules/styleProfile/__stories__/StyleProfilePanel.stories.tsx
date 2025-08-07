@@ -116,11 +116,6 @@ const WithPresetToggle: React.FC<{ profile: NarrativeStyleProfile; defaultPreset
       <StyleProfilePanel
         sceneId="storybook-scene"
         target={stylePresets[preset]}
-        // @ts-ignore chartMode is a mock prop for storybook only
-        chartMode={chartMode}
-        // Inject mock profile for storybook (simulate analysis)
-        // @ts-ignore
-        __storybookProfile={profile}
       />
     </div>
   );

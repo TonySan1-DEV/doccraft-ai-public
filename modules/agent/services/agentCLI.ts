@@ -111,7 +111,7 @@ export async function executeAgentCLI(
         }
         if (ariaAnnounce) ariaAnnounce(`Exporting report as ${format}.`);
         // Call export logic
-        const { url, fileName } = await exportReport(format);
+        const { url } = await exportReport(format);
         if (ariaAnnounce) ariaAnnounce(`Your report (${format}) is ready for download.`);
         return {
           type: "agent",

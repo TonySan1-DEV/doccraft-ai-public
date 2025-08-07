@@ -95,7 +95,7 @@ export interface ChatSession {
 export class LLMIntegrationService {
   private providers: Map<string, LLMProvider> = new Map();
   private sessions: Map<string, ChatSession> = new Map();
-  private configs: Map<string, LLMConfig> = new Map();
+  // private configs: Map<string, LLMConfig> = new Map();
 
   constructor() {
     this.initializeProviders();
@@ -120,9 +120,14 @@ export class LLMIntegrationService {
           provider: 'openai',
           contextLength: 8192,
           maxTokens: 4096,
-          capabilities: ['text-generation', 'chat', 'code-generation', 'reasoning'],
+          capabilities: [
+            'text-generation',
+            'chat',
+            'code-generation',
+            'reasoning',
+          ],
           pricing: { input: 0.03, output: 0.06, currency: 'USD' },
-          status: 'available'
+          status: 'available',
         },
         {
           id: 'gpt-4-turbo',
@@ -130,9 +135,14 @@ export class LLMIntegrationService {
           provider: 'openai',
           contextLength: 128000,
           maxTokens: 4096,
-          capabilities: ['text-generation', 'chat', 'code-generation', 'reasoning'],
+          capabilities: [
+            'text-generation',
+            'chat',
+            'code-generation',
+            'reasoning',
+          ],
           pricing: { input: 0.01, output: 0.03, currency: 'USD' },
-          status: 'available'
+          status: 'available',
         },
         {
           id: 'gpt-3.5-turbo',
@@ -142,12 +152,16 @@ export class LLMIntegrationService {
           maxTokens: 4096,
           capabilities: ['text-generation', 'chat', 'code-generation'],
           pricing: { input: 0.0015, output: 0.002, currency: 'USD' },
-          status: 'available'
-        }
+          status: 'available',
+        },
       ],
       features: ['Chat Completions', 'Function Calling', 'JSON Mode', 'Vision'],
-      pricing: { input: 'Per 1K tokens', output: 'Per 1K tokens', currency: 'USD' },
-      status: 'active'
+      pricing: {
+        input: 'Per 1K tokens',
+        output: 'Per 1K tokens',
+        currency: 'USD',
+      },
+      status: 'active',
     });
 
     // Anthropic (Claude)
@@ -165,9 +179,15 @@ export class LLMIntegrationService {
           provider: 'anthropic',
           contextLength: 200000,
           maxTokens: 4096,
-          capabilities: ['text-generation', 'chat', 'code-generation', 'reasoning', 'vision'],
+          capabilities: [
+            'text-generation',
+            'chat',
+            'code-generation',
+            'reasoning',
+            'vision',
+          ],
           pricing: { input: 0.015, output: 0.075, currency: 'USD' },
-          status: 'available'
+          status: 'available',
         },
         {
           id: 'claude-3-sonnet',
@@ -175,9 +195,15 @@ export class LLMIntegrationService {
           provider: 'anthropic',
           contextLength: 200000,
           maxTokens: 4096,
-          capabilities: ['text-generation', 'chat', 'code-generation', 'reasoning', 'vision'],
+          capabilities: [
+            'text-generation',
+            'chat',
+            'code-generation',
+            'reasoning',
+            'vision',
+          ],
           pricing: { input: 0.003, output: 0.015, currency: 'USD' },
-          status: 'available'
+          status: 'available',
         },
         {
           id: 'claude-3-haiku',
@@ -185,14 +211,28 @@ export class LLMIntegrationService {
           provider: 'anthropic',
           contextLength: 200000,
           maxTokens: 4096,
-          capabilities: ['text-generation', 'chat', 'code-generation', 'vision'],
+          capabilities: [
+            'text-generation',
+            'chat',
+            'code-generation',
+            'vision',
+          ],
           pricing: { input: 0.00025, output: 0.00125, currency: 'USD' },
-          status: 'available'
-        }
+          status: 'available',
+        },
       ],
-      features: ['Chat Completions', 'Function Calling', 'Vision', 'Long Context'],
-      pricing: { input: 'Per 1K tokens', output: 'Per 1K tokens', currency: 'USD' },
-      status: 'active'
+      features: [
+        'Chat Completions',
+        'Function Calling',
+        'Vision',
+        'Long Context',
+      ],
+      pricing: {
+        input: 'Per 1K tokens',
+        output: 'Per 1K tokens',
+        currency: 'USD',
+      },
+      status: 'active',
     });
 
     // Google (Gemini)
@@ -212,7 +252,7 @@ export class LLMIntegrationService {
           maxTokens: 2048,
           capabilities: ['text-generation', 'chat', 'code-generation'],
           pricing: { input: 0.0005, output: 0.0015, currency: 'USD' },
-          status: 'available'
+          status: 'available',
         },
         {
           id: 'gemini-pro-vision',
@@ -220,14 +260,23 @@ export class LLMIntegrationService {
           provider: 'google',
           contextLength: 32768,
           maxTokens: 2048,
-          capabilities: ['text-generation', 'chat', 'code-generation', 'vision'],
+          capabilities: [
+            'text-generation',
+            'chat',
+            'code-generation',
+            'vision',
+          ],
           pricing: { input: 0.0005, output: 0.0015, currency: 'USD' },
-          status: 'available'
-        }
+          status: 'available',
+        },
       ],
       features: ['Chat Completions', 'Vision', 'Function Calling'],
-      pricing: { input: 'Per 1K tokens', output: 'Per 1K tokens', currency: 'USD' },
-      status: 'active'
+      pricing: {
+        input: 'Per 1K tokens',
+        output: 'Per 1K tokens',
+        currency: 'USD',
+      },
+      status: 'active',
     });
 
     // Mistral AI
@@ -247,7 +296,7 @@ export class LLMIntegrationService {
           maxTokens: 4096,
           capabilities: ['text-generation', 'chat', 'code-generation'],
           pricing: { input: 0.007, output: 0.024, currency: 'EUR' },
-          status: 'available'
+          status: 'available',
         },
         {
           id: 'mistral-medium',
@@ -257,7 +306,7 @@ export class LLMIntegrationService {
           maxTokens: 4096,
           capabilities: ['text-generation', 'chat', 'code-generation'],
           pricing: { input: 0.0024, output: 0.0061, currency: 'EUR' },
-          status: 'available'
+          status: 'available',
         },
         {
           id: 'mistral-small',
@@ -267,12 +316,16 @@ export class LLMIntegrationService {
           maxTokens: 4096,
           capabilities: ['text-generation', 'chat', 'code-generation'],
           pricing: { input: 0.0006, output: 0.0018, currency: 'EUR' },
-          status: 'available'
-        }
+          status: 'available',
+        },
       ],
       features: ['Chat Completions', 'Function Calling', 'Efficient Models'],
-      pricing: { input: 'Per 1K tokens', output: 'Per 1K tokens', currency: 'EUR' },
-      status: 'active'
+      pricing: {
+        input: 'Per 1K tokens',
+        output: 'Per 1K tokens',
+        currency: 'EUR',
+      },
+      status: 'active',
     });
 
     // Cohere
@@ -292,7 +345,7 @@ export class LLMIntegrationService {
           maxTokens: 4096,
           capabilities: ['text-generation', 'chat', 'code-generation'],
           pricing: { input: 0.0015, output: 0.002, currency: 'USD' },
-          status: 'available'
+          status: 'available',
         },
         {
           id: 'command-light',
@@ -302,12 +355,16 @@ export class LLMIntegrationService {
           maxTokens: 4096,
           capabilities: ['text-generation', 'chat', 'code-generation'],
           pricing: { input: 0.0006, output: 0.0006, currency: 'USD' },
-          status: 'available'
-        }
+          status: 'available',
+        },
       ],
       features: ['Chat Completions', 'Enterprise Features', 'Custom Models'],
-      pricing: { input: 'Per 1K tokens', output: 'Per 1K tokens', currency: 'USD' },
-      status: 'active'
+      pricing: {
+        input: 'Per 1K tokens',
+        output: 'Per 1K tokens',
+        currency: 'USD',
+      },
+      status: 'active',
     });
 
     // Local Models (Ollama)
@@ -327,7 +384,7 @@ export class LLMIntegrationService {
           maxTokens: 2048,
           capabilities: ['text-generation', 'chat', 'code-generation'],
           pricing: { input: 0, output: 0, currency: 'USD' },
-          status: 'available'
+          status: 'available',
         },
         {
           id: 'codellama',
@@ -337,7 +394,7 @@ export class LLMIntegrationService {
           maxTokens: 2048,
           capabilities: ['text-generation', 'chat', 'code-generation'],
           pricing: { input: 0, output: 0, currency: 'USD' },
-          status: 'available'
+          status: 'available',
         },
         {
           id: 'mistral',
@@ -347,12 +404,12 @@ export class LLMIntegrationService {
           maxTokens: 2048,
           capabilities: ['text-generation', 'chat', 'code-generation'],
           pricing: { input: 0, output: 0, currency: 'USD' },
-          status: 'available'
-        }
+          status: 'available',
+        },
       ],
       features: ['Local Deployment', 'Free Usage', 'Custom Models'],
       pricing: { input: 'Free', output: 'Free', currency: 'USD' },
-      status: 'active'
+      status: 'active',
     });
   }
 
@@ -396,11 +453,12 @@ export class LLMIntegrationService {
     config: Partial<LLMConfig>
   ): ChatSession {
     const sessionId = `session_${Date.now()}`;
-    
+
     // Try to get API key from the API key manager if not provided
     let apiKey = config.apiKey || '';
     if (!apiKey) {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const { apiKeyManager } = require('./apiKeyManager');
         const keyConfig = apiKeyManager.getKey(provider);
         if (keyConfig) {
@@ -430,15 +488,15 @@ export class LLMIntegrationService {
         frequencyPenalty: config.frequencyPenalty || 0,
         presencePenalty: config.presencePenalty || 0,
         systemPrompt: config.systemPrompt,
-        userPrompt: config.userPrompt
+        userPrompt: config.userPrompt,
       },
       createdAt: new Date(),
       updatedAt: new Date(),
       metadata: {
         totalTokens: 0,
         totalCost: 0,
-        messageCount: 0
-      }
+        messageCount: 0,
+      },
     };
 
     this.sessions.set(sessionId, session);
@@ -462,7 +520,11 @@ export class LLMIntegrationService {
   /**
    * Add a message to a chat session
    */
-  addMessage(sessionId: string, role: 'system' | 'user' | 'assistant', content: string): ChatMessage | null {
+  addMessage(
+    sessionId: string,
+    role: 'system' | 'user' | 'assistant',
+    content: string
+  ): ChatMessage | null {
     const session = this.sessions.get(sessionId);
     if (!session) return null;
 
@@ -470,7 +532,7 @@ export class LLMIntegrationService {
       id: `msg_${Date.now()}`,
       role,
       content,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     session.messages.push(message);
@@ -483,7 +545,10 @@ export class LLMIntegrationService {
   /**
    * Send a message to the LLM and get response
    */
-  async sendMessage(sessionId: string, content: string): Promise<LLMResponse | null> {
+  async sendMessage(
+    sessionId: string,
+    content: string
+  ): Promise<LLMResponse | null> {
     const session = this.sessions.get(sessionId);
     if (!session) return null;
 
@@ -492,14 +557,17 @@ export class LLMIntegrationService {
 
     try {
       const response = await this.callLLM(session.config, session.messages);
-      
+
       if (response) {
         // Add assistant message
         this.addMessage(sessionId, 'assistant', response.content);
-        
+
         // Update session metadata
         session.metadata.totalTokens += response.usage.totalTokens;
-        session.metadata.totalCost += this.calculateCost(response, session.config);
+        session.metadata.totalCost += this.calculateCost(
+          response,
+          session.config
+        );
       }
 
       return response;
@@ -512,8 +580,11 @@ export class LLMIntegrationService {
   /**
    * Call the LLM API
    */
-  private async callLLM(config: LLMConfig, messages: ChatMessage[]): Promise<LLMResponse | null> {
-    const startTime = Date.now();
+  private async callLLM(
+    config: LLMConfig,
+    messages: ChatMessage[]
+  ): Promise<LLMResponse | null> {
+    // const startTime = Date.now();
 
     try {
       switch (config.provider) {
@@ -541,26 +612,37 @@ export class LLMIntegrationService {
   /**
    * Call OpenAI API
    */
-  private async callOpenAI(config: LLMConfig, messages: ChatMessage[]): Promise<LLMResponse> {
-    const response = await fetch(`${config.baseUrl || 'https://api.openai.com/v1'}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.apiKey}`
-      },
-      body: JSON.stringify({
-        model: config.model,
-        messages: messages.map(msg => ({ role: msg.role, content: msg.content })),
-        temperature: config.temperature,
-        max_tokens: config.maxTokens,
-        top_p: config.topP,
-        frequency_penalty: config.frequencyPenalty,
-        presence_penalty: config.presencePenalty
-      })
-    });
+  private async callOpenAI(
+    config: LLMConfig,
+    messages: ChatMessage[]
+  ): Promise<LLMResponse> {
+    const response = await fetch(
+      `${config.baseUrl || 'https://api.openai.com/v1'}/chat/completions`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${config.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: config.model,
+          messages: messages.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+          })),
+          temperature: config.temperature,
+          max_tokens: config.maxTokens,
+          top_p: config.topP,
+          frequency_penalty: config.frequencyPenalty,
+          presence_penalty: config.presencePenalty,
+        }),
+      }
+    );
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `OpenAI API error: ${response.status} ${response.statusText}`
+      );
     }
 
     const data = await response.json();
@@ -574,38 +656,49 @@ export class LLMIntegrationService {
       usage: {
         promptTokens: data.usage.prompt_tokens,
         completionTokens: data.usage.completion_tokens,
-        totalTokens: data.usage.total_tokens
+        totalTokens: data.usage.total_tokens,
       },
       metadata: {
         finishReason: data.choices[0].finish_reason,
         responseTime,
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     };
   }
 
   /**
    * Call Anthropic API
    */
-  private async callAnthropic(config: LLMConfig, messages: ChatMessage[]): Promise<LLMResponse> {
-    const response = await fetch(`${config.baseUrl || 'https://api.anthropic.com'}/v1/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': config.apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: config.model,
-        messages: messages.map(msg => ({ role: msg.role, content: msg.content })),
-        temperature: config.temperature,
-        max_tokens: config.maxTokens,
-        top_p: config.topP
-      })
-    });
+  private async callAnthropic(
+    config: LLMConfig,
+    messages: ChatMessage[]
+  ): Promise<LLMResponse> {
+    const response = await fetch(
+      `${config.baseUrl || 'https://api.anthropic.com'}/v1/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': config.apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: config.model,
+          messages: messages.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+          })),
+          temperature: config.temperature,
+          max_tokens: config.maxTokens,
+          top_p: config.topP,
+        }),
+      }
+    );
 
     if (!response.ok) {
-      throw new Error(`Anthropic API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Anthropic API error: ${response.status} ${response.statusText}`
+      );
     }
 
     const data = await response.json();
@@ -619,40 +712,48 @@ export class LLMIntegrationService {
       usage: {
         promptTokens: data.usage.input_tokens,
         completionTokens: data.usage.output_tokens,
-        totalTokens: data.usage.input_tokens + data.usage.output_tokens
+        totalTokens: data.usage.input_tokens + data.usage.output_tokens,
       },
       metadata: {
         finishReason: data.stop_reason,
         responseTime,
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     };
   }
 
   /**
    * Call Google API
    */
-  private async callGoogle(config: LLMConfig, messages: ChatMessage[]): Promise<LLMResponse> {
-    const response = await fetch(`${config.baseUrl || 'https://generativelanguage.googleapis.com'}/v1beta/models/${config.model}:generateContent?key=${config.apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        contents: messages.map(msg => ({
-          role: msg.role === 'assistant' ? 'model' : msg.role,
-          parts: [{ text: msg.content }]
-        })),
-        generationConfig: {
-          temperature: config.temperature,
-          maxOutputTokens: config.maxTokens,
-          topP: config.topP
-        }
-      })
-    });
+  private async callGoogle(
+    config: LLMConfig,
+    messages: ChatMessage[]
+  ): Promise<LLMResponse> {
+    const response = await fetch(
+      `${config.baseUrl || 'https://generativelanguage.googleapis.com'}/v1beta/models/${config.model}:generateContent?key=${config.apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: messages.map(msg => ({
+            role: msg.role === 'assistant' ? 'model' : msg.role,
+            parts: [{ text: msg.content }],
+          })),
+          generationConfig: {
+            temperature: config.temperature,
+            maxOutputTokens: config.maxTokens,
+            topP: config.topP,
+          },
+        }),
+      }
+    );
 
     if (!response.ok) {
-      throw new Error(`Google API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Google API error: ${response.status} ${response.statusText}`
+      );
     }
 
     const data = await response.json();
@@ -666,37 +767,48 @@ export class LLMIntegrationService {
       usage: {
         promptTokens: data.usageMetadata.promptTokenCount,
         completionTokens: data.usageMetadata.candidatesTokenCount,
-        totalTokens: data.usageMetadata.totalTokenCount
+        totalTokens: data.usageMetadata.totalTokenCount,
       },
       metadata: {
         finishReason: data.candidates[0].finishReason,
         responseTime,
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     };
   }
 
   /**
    * Call Mistral API
    */
-  private async callMistral(config: LLMConfig, messages: ChatMessage[]): Promise<LLMResponse> {
-    const response = await fetch(`${config.baseUrl || 'https://api.mistral.ai/v1'}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.apiKey}`
-      },
-      body: JSON.stringify({
-        model: config.model,
-        messages: messages.map(msg => ({ role: msg.role, content: msg.content })),
-        temperature: config.temperature,
-        max_tokens: config.maxTokens,
-        top_p: config.topP
-      })
-    });
+  private async callMistral(
+    config: LLMConfig,
+    messages: ChatMessage[]
+  ): Promise<LLMResponse> {
+    const response = await fetch(
+      `${config.baseUrl || 'https://api.mistral.ai/v1'}/chat/completions`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${config.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: config.model,
+          messages: messages.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+          })),
+          temperature: config.temperature,
+          max_tokens: config.maxTokens,
+          top_p: config.topP,
+        }),
+      }
+    );
 
     if (!response.ok) {
-      throw new Error(`Mistral API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Mistral API error: ${response.status} ${response.statusText}`
+      );
     }
 
     const data = await response.json();
@@ -710,37 +822,45 @@ export class LLMIntegrationService {
       usage: {
         promptTokens: data.usage.prompt_tokens,
         completionTokens: data.usage.completion_tokens,
-        totalTokens: data.usage.total_tokens
+        totalTokens: data.usage.total_tokens,
       },
       metadata: {
         finishReason: data.choices[0].finish_reason,
         responseTime,
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     };
   }
 
   /**
    * Call Cohere API
    */
-  private async callCohere(config: LLMConfig, messages: ChatMessage[]): Promise<LLMResponse> {
-    const response = await fetch(`${config.baseUrl || 'https://api.cohere.ai/v1'}/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.apiKey}`
-      },
-      body: JSON.stringify({
-        model: config.model,
-        message: messages[messages.length - 1].content,
-        temperature: config.temperature,
-        max_tokens: config.maxTokens,
-        top_p: config.topP
-      })
-    });
+  private async callCohere(
+    config: LLMConfig,
+    messages: ChatMessage[]
+  ): Promise<LLMResponse> {
+    const response = await fetch(
+      `${config.baseUrl || 'https://api.cohere.ai/v1'}/chat`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${config.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: config.model,
+          message: messages[messages.length - 1].content,
+          temperature: config.temperature,
+          max_tokens: config.maxTokens,
+          top_p: config.topP,
+        }),
+      }
+    );
 
     if (!response.ok) {
-      throw new Error(`Cohere API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Cohere API error: ${response.status} ${response.statusText}`
+      );
     }
 
     const data = await response.json();
@@ -754,38 +874,49 @@ export class LLMIntegrationService {
       usage: {
         promptTokens: data.meta.input_tokens,
         completionTokens: data.meta.output_tokens,
-        totalTokens: data.meta.input_tokens + data.meta.output_tokens
+        totalTokens: data.meta.input_tokens + data.meta.output_tokens,
       },
       metadata: {
         finishReason: 'stop',
         responseTime,
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     };
   }
 
   /**
    * Call Ollama API
    */
-  private async callOllama(config: LLMConfig, messages: ChatMessage[]): Promise<LLMResponse> {
-    const response = await fetch(`${config.baseUrl || 'http://localhost:11434'}/api/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: config.model,
-        messages: messages.map(msg => ({ role: msg.role, content: msg.content })),
-        options: {
-          temperature: config.temperature,
-          num_predict: config.maxTokens,
-          top_p: config.topP
-        }
-      })
-    });
+  private async callOllama(
+    config: LLMConfig,
+    messages: ChatMessage[]
+  ): Promise<LLMResponse> {
+    const response = await fetch(
+      `${config.baseUrl || 'http://localhost:11434'}/api/chat`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: config.model,
+          messages: messages.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+          })),
+          options: {
+            temperature: config.temperature,
+            num_predict: config.maxTokens,
+            top_p: config.topP,
+          },
+        }),
+      }
+    );
 
     if (!response.ok) {
-      throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Ollama API error: ${response.status} ${response.statusText}`
+      );
     }
 
     const data = await response.json();
@@ -799,13 +930,13 @@ export class LLMIntegrationService {
       usage: {
         promptTokens: 0, // Ollama doesn't provide token usage
         completionTokens: 0,
-        totalTokens: 0
+        totalTokens: 0,
       },
       metadata: {
         finishReason: 'stop',
         responseTime,
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     };
   }
 
@@ -816,8 +947,10 @@ export class LLMIntegrationService {
     const model = this.getModel(config.provider, config.model);
     if (!model) return 0;
 
-    const inputCost = (response.usage.promptTokens / 1000) * model.pricing.input;
-    const outputCost = (response.usage.completionTokens / 1000) * model.pricing.output;
+    const inputCost =
+      (response.usage.promptTokens / 1000) * model.pricing.input;
+    const outputCost =
+      (response.usage.completionTokens / 1000) * model.pricing.output;
 
     return inputCost + outputCost;
   }
@@ -867,4 +1000,4 @@ export class LLMIntegrationService {
 }
 
 // Export singleton instance
-export const llmIntegration = new LLMIntegrationService(); 
+export const llmIntegration = new LLMIntegrationService();

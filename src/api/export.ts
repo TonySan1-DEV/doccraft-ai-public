@@ -8,16 +8,13 @@ import {
   EPUBExportConfig,
   PPTXExportConfig,
 } from "../services/exportService";
-import {
-  ebookIntegrationService,
-  IntegratedEbookResult,
-} from "../services/ebookIntegrationService";
-import { ebookTemplateService } from "../services/ebookTemplateService";
+import { IntegratedEbookResult } from "../services/ebookIntegrationService";
+import { ebookTemplateService, EbookTemplate, FormattedContent } from "../services/ebookTemplateService";
 
 export interface ExportRequest {
   docId: string;
   format: "pdf" | "epub" | "pptx" | "docx";
-  content: any;
+  content: Record<string, unknown>;
   templateId?: string;
   options?: Partial<ExportOptions>;
   pdfConfig?: Partial<PDFExportConfig>;
@@ -95,7 +92,7 @@ export class ExportAPI {
       console.error("Export API error:", error);
       return {
         success: false,
-        error: `Export failed: ${error.message}`,
+        error: `Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -105,20 +102,22 @@ export class ExportAPI {
    */
   private static async handlePDFExport(
     request: ExportRequest,
-    template: any,
+    template: EbookTemplate | null,
     options: ExportOptions
   ): Promise<ExportResponse> {
     try {
-      // Convert content to FormattedContent format
       const formattedContent = this.convertToFormattedContent(request.content);
-
-      // Use default template if none specified
-      const finalTemplate =
-        template || (await ebookTemplateService.getTemplate("professional"));
+      
+      if (!template) {
+        return {
+          success: false,
+          error: "Template is required for PDF export",
+        };
+      }
 
       const result = await exportService.exportToPDF(
         formattedContent,
-        finalTemplate,
+        template,
         options,
         request.pdfConfig
       );
@@ -128,7 +127,7 @@ export class ExportAPI {
       console.error("PDF export error:", error);
       return {
         success: false,
-        error: `PDF export failed: ${error.message}`,
+        error: `PDF export failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -138,20 +137,22 @@ export class ExportAPI {
    */
   private static async handleEPUBExport(
     request: ExportRequest,
-    template: any,
+    template: EbookTemplate | null,
     options: ExportOptions
   ): Promise<ExportResponse> {
     try {
-      // Convert content to FormattedContent format
       const formattedContent = this.convertToFormattedContent(request.content);
-
-      // Use default template if none specified
-      const finalTemplate =
-        template || (await ebookTemplateService.getTemplate("professional"));
+      
+      if (!template) {
+        return {
+          success: false,
+          error: "Template is required for EPUB export",
+        };
+      }
 
       const result = await exportService.exportToEPUB(
         formattedContent,
-        finalTemplate,
+        template,
         options,
         request.epubConfig
       );
@@ -161,7 +162,7 @@ export class ExportAPI {
       console.error("EPUB export error:", error);
       return {
         success: false,
-        error: `EPUB export failed: ${error.message}`,
+        error: `EPUB export failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -171,20 +172,22 @@ export class ExportAPI {
    */
   private static async handlePPTXExport(
     request: ExportRequest,
-    template: any,
+    template: EbookTemplate | null,
     options: ExportOptions
   ): Promise<ExportResponse> {
     try {
-      // Convert content to FormattedContent format
       const formattedContent = this.convertToFormattedContent(request.content);
-
-      // Use default template if none specified
-      const finalTemplate =
-        template || (await ebookTemplateService.getTemplate("professional"));
+      
+      if (!template) {
+        return {
+          success: false,
+          error: "Template is required for PPTX export",
+        };
+      }
 
       const result = await exportService.exportToPPTX(
         formattedContent,
-        finalTemplate,
+        template,
         options,
         request.pptxConfig
       );
@@ -194,63 +197,24 @@ export class ExportAPI {
       console.error("PPTX export error:", error);
       return {
         success: false,
-        error: `PPTX export failed: ${error.message}`,
+        error: `PPTX export failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
 
   /**
-   * Handle DOCX export (placeholder for future implementation)
+   * Handle DOCX export
    */
   private static async handleDOCXExport(
-    request: ExportRequest,
-    template: any,
-    options: ExportOptions
+    _request: ExportRequest,
+    _template: EbookTemplate | null,
+    _options: ExportOptions
   ): Promise<ExportResponse> {
-    try {
-      // Convert content to FormattedContent format
-      const formattedContent = this.convertToFormattedContent(request.content);
-
-      // Use default template if none specified
-      const finalTemplate =
-        template || (await ebookTemplateService.getTemplate("professional"));
-
-      // Mock DOCX export for now
-      const docxBlob = new Blob(
-        [
-          `DOCX Export\nTitle: ${formattedContent.title}\nAuthor: ${
-            formattedContent.author
-          }\nContent: ${formattedContent.chapters
-            ?.map((c) => c.title)
-            .join(", ")}`,
-        ],
-        {
-          type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        }
-      );
-
-      const downloadUrl = URL.createObjectURL(docxBlob);
-
-      return {
-        success: true,
-        downloadUrl,
-        fileSize: this.formatFileSize(docxBlob.size),
-        metadata: {
-          wordCount:
-            formattedContent.chapters?.reduce(
-              (total, chapter) => total + chapter.content.split(" ").length,
-              0
-            ) || 0,
-          chapters: formattedContent.chapters?.length || 0,
-        },
-      };
-    } catch (error) {
-      console.error("DOCX export error:", error);
-      return {
-        success: false,
-        error: `DOCX export failed: ${error.message}`,
-      };
-    }
+    // DOCX export not yet implemented
+    return {
+      success: false,
+      error: "DOCX export not yet implemented",
+    };
   }
 
   /**
@@ -286,52 +250,27 @@ export class ExportAPI {
   /**
    * Convert content to FormattedContent format
    */
-  private static convertToFormattedContent(content: any): any {
-    // Handle different content formats
-    if (Array.isArray(content)) {
-      // Array of sections
-      return {
-        title: "Generated Ebook",
-        author: "DocCraft AI",
-        chapters: content.map((section, index) => ({
-          id: section.id || `chapter-${index + 1}`,
-          title: section.title || `Chapter ${index + 1}`,
-          content: section.content || "",
-          level: 1,
-        })),
-        images: [],
-      };
-    } else if (content.chapters) {
-      // Already in FormattedContent format
-      return content;
-    } else {
-      // Single content string
-      return {
-        title: content.title || "Generated Ebook",
-        author: content.author || "DocCraft AI",
-        chapters: [
-          {
-            id: "chapter-1",
-            title: "Main Content",
-            content: content.content || content,
-            level: 1,
-          },
-        ],
-        images: content.images || [],
-      };
-    }
+  private static convertToFormattedContent(content: Record<string, unknown>): FormattedContent {
+    // Convert raw content to FormattedContent structure
+    return {
+      html: (content.html as string) || "",
+      css: (content.css as string) || "",
+      metadata: {
+        title: (content.title as string) || "Untitled Document",
+        author: (content.author as string) || "Unknown Author",
+        description: (content.description as string) || "",
+        keywords: (content.keywords as string[]) || [],
+        language: (content.language as string) || "en",
+      },
+      structure: {
+        chapters: (content.chapters as Array<{ title: string; content: string; id?: string }>) || [],
+        sections: (content.sections as Array<{ title: string; content: string; id?: string }>) || [],
+        images: (content.images as Array<{ src: string; alt: string; caption?: string }>) || [],
+      },
+    };
   }
 
-  /**
-   * Format file size for display
-   */
-  private static formatFileSize(bytes: number): string {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  }
+  // TODO: Implement formatFileSize if needed for file size display
 
   /**
    * Export integrated ebook with all available formats

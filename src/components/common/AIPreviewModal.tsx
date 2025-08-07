@@ -1,13 +1,13 @@
-import { X, Check, RotateCcw } from 'lucide-react'
+import { X, Check, RotateCcw } from "lucide-react";
 
 interface AIPreviewModalProps {
-  open: boolean
-  result: string
-  originalText?: string
-  onApply: () => void
-  onCancel: () => void
-  onRegenerate?: () => void
-  loading?: boolean
+  open: boolean;
+  result: string;
+  originalText?: string;
+  onApply: () => void;
+  onCancel: () => void;
+  onRegenerate?: () => void;
+  loading?: boolean;
 }
 
 export function AIPreviewModal({
@@ -17,18 +17,21 @@ export function AIPreviewModal({
   onApply,
   onCancel,
   onRegenerate,
-  loading = false
+  loading = false,
 }: AIPreviewModalProps) {
-  if (!open) return null
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onCancel}
+        onKeyDown={(e) => e.key === "Enter" && onCancel()}
+        role="button"
+        tabIndex={0}
       />
-      
+
       {/* Modal */}
       <div className="relative w-full max-w-4xl mx-4 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700">
         {/* Header */}
@@ -82,12 +85,14 @@ export function AIPreviewModal({
                 disabled={loading}
                 className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <RotateCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                <RotateCcw
+                  className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                />
                 <span>Regenerate</span>
               </button>
             )}
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <button
               onClick={onCancel}
@@ -106,5 +111,5 @@ export function AIPreviewModal({
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

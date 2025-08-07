@@ -1,7 +1,7 @@
 // Character Relationship Dynamics Engine
 // Advanced AI-powered character relationship simulation and development
 
-import { CharacterPersona } from "../types/CharacterPersona";
+// import { CharacterPersona } from "../types/CharacterPersona";
 
 export interface CharacterRelationship {
   id: string;
@@ -115,7 +115,7 @@ export class CharacterRelationshipEngineService
   implements CharacterRelationshipEngine
 {
   private relationships: Map<string, CharacterRelationship> = new Map();
-  private relationshipEvents: Map<string, RelationshipEvent[]> = new Map();
+  // private relationshipEvents: Map<string, RelationshipEvent[]> = new Map();
 
   async createRelationship(
     characterA: string,

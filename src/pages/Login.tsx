@@ -103,9 +103,13 @@ export const Login: React.FC = () => {
       // Reset form on success
       setFormData({ email: "", password: "", confirmPassword: "" });
       setErrors({});
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An error occurred. Please try again.";
       setErrors({
-        general: error.message || "An error occurred. Please try again.",
+        general: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -125,8 +129,10 @@ export const Login: React.FC = () => {
 
       toast.success("Password reset email sent! Check your inbox.");
       setMode("login");
-    } catch (err: any) {
-      throw new Error(err.message || "Failed to send reset email");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to send reset email";
+      throw new Error(errorMessage);
     }
   };
 
@@ -343,7 +349,7 @@ export const Login: React.FC = () => {
               {mode === "login" && (
                 <>
                   <p className="text-gray-600 dark:text-gray-300">
-                    Don't have an account?{" "}
+                    Don&apos;t have an account?{" "}
                     <Link
                       to="/signup"
                       className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
@@ -402,7 +408,7 @@ export const Login: React.FC = () => {
                     </button>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-500">
-                    We'll send you a link to reset your password
+                    We&apos;ll send you a link to reset your password
                   </p>
                 </>
               )}

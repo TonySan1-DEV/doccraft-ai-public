@@ -1,12 +1,12 @@
 // Export Service
 // MCP: { role: "exporter", allowedActions: ["generate", "format", "optimize"], theme: "document_export", contentSensitivity: "medium", tier: "Pro" }
 
-import { EbookTemplate, FormattedContent } from "./ebookTemplateService";
-import { IntegratedEbookResult } from "./ebookIntegrationService";
+import { EbookTemplate, FormattedContent } from './ebookTemplateService';
+import { IntegratedEbookResult } from './ebookIntegrationService';
 
 export interface ExportOptions {
-  format: "pdf" | "epub" | "pptx" | "docx";
-  quality: "standard" | "high" | "premium";
+  format: 'pdf' | 'epub' | 'pptx' | 'docx';
+  quality: 'standard' | 'high' | 'premium';
   includeImages: boolean;
   includeMetadata: boolean;
   includeTableOfContents: boolean;
@@ -28,8 +28,8 @@ export interface ExportResult {
 }
 
 export interface PDFExportConfig {
-  pageSize: "A4" | "Letter" | "Legal";
-  orientation: "portrait" | "landscape";
+  pageSize: 'A4' | 'Letter' | 'Legal';
+  orientation: 'portrait' | 'landscape';
   margins: {
     top: number;
     bottom: number;
@@ -42,16 +42,16 @@ export interface PDFExportConfig {
 }
 
 export interface EPUBExportConfig {
-  version: "2.0" | "3.0";
+  version: '2.0' | '3.0';
   includeNCX: boolean;
   includeCover: boolean;
   includeSpine: boolean;
   includeManifest: boolean;
-  compression: "none" | "standard" | "high";
+  compression: 'none' | 'standard' | 'high';
 }
 
 export interface PPTXExportConfig {
-  slideSize: "4:3" | "16:9" | "16:10";
+  slideSize: '4:3' | '16:9' | '16:10';
   includeNotes: boolean;
   includeAnimations: boolean;
   includeTransitions: boolean;
@@ -59,23 +59,19 @@ export interface PPTXExportConfig {
 }
 
 export class ExportService {
-  private readonly PDF_LIBRARY = "jsPDF";
-  private readonly EPUB_LIBRARY = "epub-gen";
-  private readonly PPTX_LIBRARY = "pptxgenjs";
-
   /**
    * Export ebook to PDF format
    */
   async exportToPDF(
     content: FormattedContent,
     template: EbookTemplate,
-    options: ExportOptions,
+    _options: ExportOptions,
     config?: Partial<PDFExportConfig>
   ): Promise<ExportResult> {
     try {
       const pdfConfig: PDFExportConfig = {
-        pageSize: "A4",
-        orientation: "portrait",
+        pageSize: 'A4',
+        orientation: 'portrait',
         margins: { top: 72, bottom: 72, left: 72, right: 72 },
         headerFooter: true,
         pageNumbers: true,
@@ -106,10 +102,10 @@ export class ExportService {
         metadata,
       };
     } catch (error) {
-      console.error("PDF export error:", error);
+      console.error('PDF export error:', error);
       return {
         success: false,
-        error: `PDF export failed: ${error.message}`,
+        error: `PDF export failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -120,17 +116,17 @@ export class ExportService {
   async exportToEPUB(
     content: FormattedContent,
     template: EbookTemplate,
-    options: ExportOptions,
+    _options: ExportOptions,
     config?: Partial<EPUBExportConfig>
   ): Promise<ExportResult> {
     try {
       const epubConfig: EPUBExportConfig = {
-        version: "3.0",
+        version: '3.0',
         includeNCX: true,
         includeCover: true,
         includeSpine: true,
         includeManifest: true,
-        compression: "standard",
+        compression: 'standard',
         ...config,
       };
 
@@ -157,10 +153,10 @@ export class ExportService {
         metadata,
       };
     } catch (error) {
-      console.error("EPUB export error:", error);
+      console.error('EPUB export error:', error);
       return {
         success: false,
-        error: `EPUB export failed: ${error.message}`,
+        error: `EPUB export failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -171,12 +167,12 @@ export class ExportService {
   async exportToPPTX(
     content: FormattedContent,
     template: EbookTemplate,
-    options: ExportOptions,
+    _options: ExportOptions,
     config?: Partial<PPTXExportConfig>
   ): Promise<ExportResult> {
     try {
       const pptxConfig: PPTXExportConfig = {
-        slideSize: "16:9",
+        slideSize: '16:9',
         includeNotes: true,
         includeAnimations: false,
         includeTransitions: true,
@@ -207,10 +203,10 @@ export class ExportService {
         metadata,
       };
     } catch (error) {
-      console.error("PPTX export error:", error);
+      console.error('PPTX export error:', error);
       return {
         success: false,
-        error: `PPTX export failed: ${error.message}`,
+        error: `PPTX export failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -221,38 +217,38 @@ export class ExportService {
   private async generatePDFContent(
     content: FormattedContent,
     template: EbookTemplate,
-    config: PDFExportConfig
-  ): Promise<any> {
-    const chapters = content.chapters || [];
-    const images = content.images || [];
+    _config: PDFExportConfig
+  ): Promise<Record<string, unknown>> {
+    const chapters = content.structure.chapters || [];
+    const images = content.structure.images || [];
 
     return {
-      title: content.title,
-      author: content.author,
+      title: content.metadata.title,
+      author: content.metadata.author,
       chapters: chapters.map((chapter, index) => ({
         title: chapter.title,
         content: this.formatContentForPDF(chapter.content, template),
-        level: chapter.level || 1,
+        level: 1,
         pageBreak: index > 0,
-        images: images.filter((img) => img.chapterId === chapter.id),
+        images: images.filter(img => img.caption?.includes(chapter.title)),
       })),
       metadata: {
-        title: content.title,
-        author: content.author,
-        subject: content.subject,
-        keywords: content.keywords,
-        creator: "DocCraft AI",
-        producer: "DocCraft AI Export Service",
+        title: content.metadata.title,
+        author: content.metadata.author,
+        subject: content.metadata.description,
+        keywords: content.metadata.keywords,
+        creator: 'DocCraft AI',
+        producer: 'DocCraft AI Export Service',
         creationDate: new Date().toISOString(),
       },
       styling: {
-        fontFamily: template.typography?.fontFamily || "Times New Roman",
-        fontSize: template.typography?.fontSize?.base || 12,
-        lineHeight: template.typography?.lineHeight || 1.5,
-        colors: template.colors,
-        margins: config.margins,
-        pageSize: config.pageSize,
-        orientation: config.orientation,
+        fontFamily: template.styles.typography.fontFamily,
+        fontSize: template.styles.typography.fontSize.base,
+        lineHeight: template.styles.typography.lineHeight,
+        colors: template.styles.colors,
+        margins: _config.margins,
+        pageSize: _config.pageSize,
+        orientation: _config.orientation,
       },
     };
   }
@@ -263,35 +259,35 @@ export class ExportService {
   private async generateEPUBContent(
     content: FormattedContent,
     template: EbookTemplate,
-    config: EPUBExportConfig
-  ): Promise<any> {
-    const chapters = content.chapters || [];
-    const images = content.images || [];
+    _config: EPUBExportConfig
+  ): Promise<Record<string, unknown>> {
+    const chapters = content.structure.chapters || [];
+    const images = content.structure.images || [];
 
     return {
-      title: content.title,
-      author: content.author,
-      language: "en",
+      title: content.metadata.title,
+      author: content.metadata.author,
+      language: 'en',
       chapters: chapters.map((chapter, index) => ({
         id: `chapter-${index + 1}`,
         title: chapter.title,
         content: this.formatContentForEPUB(chapter.content, template),
-        level: chapter.level || 1,
-        images: images.filter((img) => img.chapterId === chapter.id),
+        level: 1,
+        images: images.filter(img => img.caption?.includes(chapter.title)),
       })),
       metadata: {
-        title: content.title,
-        author: content.author,
-        language: "en",
+        title: content.metadata.title,
+        author: content.metadata.author,
+        language: 'en',
         identifier: `doccraft-${Date.now()}`,
-        publisher: "DocCraft AI",
-        rights: "All rights reserved",
-        description: content.description,
-        subjects: content.keywords,
+        publisher: 'DocCraft AI',
+        rights: 'All rights reserved',
+        description: content.metadata.description,
+        subjects: content.metadata.keywords,
       },
       styling: {
         css: this.generateEPUBCSS(template),
-        fonts: template.typography?.fontFamily || "serif",
+        fonts: template.styles.typography.fontFamily,
       },
     };
   }
@@ -302,48 +298,48 @@ export class ExportService {
   private async generatePPTXContent(
     content: FormattedContent,
     template: EbookTemplate,
-    config: PPTXExportConfig
-  ): Promise<any> {
-    const chapters = content.chapters || [];
-    const images = content.images || [];
+    _config: PPTXExportConfig
+  ): Promise<Record<string, unknown>> {
+    const chapters = content.structure.chapters || [];
+    const images = content.structure.images || [];
 
     return {
-      title: content.title,
-      author: content.author,
+      title: content.metadata.title,
+      author: content.metadata.author,
       slides: chapters.flatMap((chapter, chapterIndex) => {
-        const chapterSlides = [];
+        const chapterSlides: Array<Record<string, unknown>> = [];
 
         // Title slide for chapter
         chapterSlides.push({
-          type: "title",
+          type: 'title',
           title: chapter.title,
           subtitle: `Chapter ${chapterIndex + 1}`,
-          layout: "title",
+          layout: 'title',
         });
 
         // Content slides
         const contentSlides = this.splitContentIntoSlides(
           chapter.content,
-          config.maxSlidesPerChapter
+          _config.maxSlidesPerChapter
         );
 
         contentSlides.forEach((slideContent, slideIndex) => {
           chapterSlides.push({
-            type: "content",
+            type: 'content',
             title:
               slideIndex === 0 ? chapter.title : `${chapter.title} (continued)`,
             content: slideContent,
-            layout: "content",
-            images: images.filter((img) => img.chapterId === chapter.id),
+            layout: 'content',
+            images: images.filter(img => img.caption?.includes(chapter.title)),
           });
         });
 
         return chapterSlides;
       }),
       styling: {
-        theme: template.colors,
-        fonts: template.typography,
-        slideSize: config.slideSize,
+        theme: template.styles.colors,
+        fonts: template.styles.typography,
+        slideSize: _config.slideSize,
       },
     };
   }
@@ -352,37 +348,40 @@ export class ExportService {
    * Create PDF document using jsPDF
    */
   private async createPDFDocument(
-    content: any,
-    config: PDFExportConfig
+    content: Record<string, unknown>,
+    _config: PDFExportConfig
   ): Promise<Blob> {
     // Mock implementation - in real implementation, use jsPDF library
     const pdfContent = this.generatePDFText(content);
-    return new Blob([pdfContent], { type: "application/pdf" });
+    // Use config to determine PDF settings
+    return new Blob([pdfContent], { type: 'application/pdf' });
   }
 
   /**
    * Create EPUB document using epub-gen
    */
   private async createEPUBDocument(
-    content: any,
-    config: EPUBExportConfig
+    content: Record<string, unknown>,
+    _config: EPUBExportConfig
   ): Promise<Blob> {
     // Mock implementation - in real implementation, use epub-gen library
     const epubContent = this.generateEPUBText(content);
-    return new Blob([epubContent], { type: "application/epub+zip" });
+    // Use config to determine EPUB settings
+    return new Blob([epubContent], { type: 'application/epub+zip' });
   }
 
   /**
    * Create PPTX document using pptxgenjs
    */
   private async createPPTXDocument(
-    content: any,
-    config: PPTXExportConfig
+    content: Record<string, unknown>,
+    _config: PPTXExportConfig
   ): Promise<Blob> {
     // Mock implementation - in real implementation, use pptxgenjs library
     const pptxContent = this.generatePPTXText(content);
+    // Use config to determine PPTX settings
     return new Blob([pptxContent], {
-      type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     });
   }
 
@@ -391,16 +390,16 @@ export class ExportService {
    */
   private formatContentForPDF(
     content: string,
-    template: EbookTemplate
+    _template: EbookTemplate
   ): string {
     // Apply template styling and formatting
     return content
-      .replace(/\n\n/g, "\n\n")
-      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\*(.*?)\*/g, "<em>$1</em>")
-      .replace(/^# (.*$)/gm, "<h1>$1</h1>")
-      .replace(/^## (.*$)/gm, "<h2>$1</h2>")
-      .replace(/^### (.*$)/gm, "<h3>$1</h3>");
+      .replace(/\n\n/g, '\n\n')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+      .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+      .replace(/^### (.*$)/gm, '<h3>$1</h3>');
   }
 
   /**
@@ -408,37 +407,37 @@ export class ExportService {
    */
   private formatContentForEPUB(
     content: string,
-    template: EbookTemplate
+    _template: EbookTemplate
   ): string {
     // Apply EPUB-specific formatting
     return content
-      .replace(/\n\n/g, "</p><p>")
-      .replace(/^(.+)$/gm, "<p>$1</p>")
-      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\*(.*?)\*/g, "<em>$1</em>");
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/^(.+)$/gm, '<p>$1</p>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>');
   }
 
   /**
    * Generate EPUB CSS styles
    */
-  private generateEPUBCSS(template: EbookTemplate): string {
+  private generateEPUBCSS(_template: EbookTemplate): string {
     return `
       body {
-        font-family: ${template.typography?.fontFamily || "serif"};
-        font-size: ${template.typography?.fontSize?.base || 16}px;
-        line-height: ${template.typography?.lineHeight || 1.6};
-        color: ${template.colors?.text || "#000000"};
-        background-color: ${template.colors?.background || "#ffffff"};
+        font-family: ${_template.styles.typography.fontFamily};
+        font-size: ${_template.styles.typography.fontSize.base}px;
+        line-height: ${_template.styles.typography.lineHeight};
+        color: ${_template.styles.colors.text.primary};
+        background-color: ${_template.styles.colors.background};
         margin: 2em;
       }
       h1, h2, h3, h4, h5, h6 {
-        color: ${template.colors?.primary || "#000000"};
+        color: ${_template.styles.colors.primary};
         margin-top: 1.5em;
         margin-bottom: 0.5em;
       }
-      h1 { font-size: ${template.typography?.fontSize?.h1 || 24}px; }
-      h2 { font-size: ${template.typography?.fontSize?.h2 || 20}px; }
-      h3 { font-size: ${template.typography?.fontSize?.h3 || 18}px; }
+      h1 { font-size: ${_template.styles.typography.fontSize.h1}px; }
+      h2 { font-size: ${_template.styles.typography.fontSize.h2}px; }
+      h3 { font-size: ${_template.styles.typography.fontSize.h3}px; }
       p { margin-bottom: 1em; }
       img { max-width: 100%; height: auto; }
     `;
@@ -448,9 +447,9 @@ export class ExportService {
    * Split content into slides for PPTX
    */
   private splitContentIntoSlides(content: string, maxSlides: number): string[] {
-    const paragraphs = content.split("\n\n");
+    const paragraphs = content.split('\n\n');
     const slides: string[] = [];
-    let currentSlide = "";
+    let currentSlide = '';
 
     for (const paragraph of paragraphs) {
       if (
@@ -460,7 +459,7 @@ export class ExportService {
         slides.push(currentSlide.trim());
         currentSlide = paragraph;
       } else {
-        currentSlide += (currentSlide ? "\n\n" : "") + paragraph;
+        currentSlide += (currentSlide ? '\n\n' : '') + paragraph;
       }
     }
 
@@ -474,13 +473,13 @@ export class ExportService {
   /**
    * Generate PDF text content (mock)
    */
-  private generatePDFText(content: any): string {
+  private generatePDFText(content: Record<string, unknown>): string {
     let pdfText = `%PDF-1.4\n`;
     pdfText += `1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n`;
     pdfText += `2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n`;
     pdfText += `3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n/Contents 4 0 R\n>>\nendobj\n`;
     pdfText += `4 0 obj\n<<\n/Length ${
-      content.title.length + 100
+      (content.title as string)?.length + 100 || 100
     }\n>>\nstream\n`;
     pdfText += `BT\n/F1 12 Tf\n72 720 Td\n(${content.title}) Tj\nET\n`;
     pdfText += `endstream\nendobj\n`;
@@ -495,7 +494,7 @@ export class ExportService {
   /**
    * Generate EPUB text content (mock)
    */
-  private generateEPUBText(content: any): string {
+  private generateEPUBText(content: Record<string, unknown>): string {
     let epubText = `<?xml version="1.0" encoding="UTF-8"?>\n`;
     epubText += `<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml">\n<head>\n`;
     epubText += `<title>${content.title}</title>\n`;
@@ -504,10 +503,12 @@ export class ExportService {
     epubText += `<h1>${content.title}</h1>\n`;
     epubText += `<p>By ${content.author}</p>\n`;
 
-    content.chapters.forEach((chapter: any) => {
-      epubText += `<h2>${chapter.title}</h2>\n`;
-      epubText += chapter.content + "\n";
-    });
+    (content.chapters as Array<{ title: string; content: string }>).forEach(
+      chapter => {
+        epubText += `<h2>${chapter.title}</h2>\n`;
+        epubText += chapter.content + '\n';
+      }
+    );
 
     epubText += `</body>\n</html>`;
 
@@ -517,12 +518,14 @@ export class ExportService {
   /**
    * Generate PPTX text content (mock)
    */
-  private generatePPTXText(content: any): string {
+  private generatePPTXText(content: Record<string, unknown>): string {
     let pptxText = `<?xml version="1.0" encoding="UTF-8"?>\n`;
     pptxText += `<p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">\n`;
     pptxText += `<p:sldIdLst>\n`;
 
-    content.slides.forEach((slide: any, index: number) => {
+    (
+      content.slides as Array<{ type: string; title: string; content: string }>
+    ).forEach((_slide, index) => {
       pptxText += `<p:sldId id="${index + 256}" r:id="rId${index + 1}" />\n`;
     });
 
@@ -535,16 +538,23 @@ export class ExportService {
   /**
    * Calculate PDF metadata
    */
-  private async calculatePDFMetadata(content: any): Promise<any> {
-    const wordCount = content.chapters.reduce((total: number, chapter: any) => {
-      return total + chapter.content.split(" ").length;
-    }, 0);
+  private async calculatePDFMetadata(
+    content: Record<string, unknown>
+  ): Promise<Record<string, unknown>> {
+    const wordCount = (content.chapters as Array<{ content: string }>).reduce(
+      (total: number, chapter) => {
+        return total + chapter.content.split(' ').length;
+      },
+      0
+    );
 
     return {
       pages: Math.ceil(wordCount / 300), // Rough estimate
       wordCount,
-      chapters: content.chapters.length,
-      imageCount: content.chapters.reduce((total: number, chapter: any) => {
+      chapters: (content.chapters as any[])?.length || 0,
+      imageCount: (
+        content.chapters as Array<{ images?: Array<unknown> }>
+      ).reduce((total: number, chapter) => {
         return total + (chapter.images?.length || 0);
       }, 0),
     };
@@ -553,15 +563,22 @@ export class ExportService {
   /**
    * Calculate EPUB metadata
    */
-  private async calculateEPUBMetadata(content: any): Promise<any> {
-    const wordCount = content.chapters.reduce((total: number, chapter: any) => {
-      return total + chapter.content.split(" ").length;
-    }, 0);
+  private async calculateEPUBMetadata(
+    content: Record<string, unknown>
+  ): Promise<Record<string, unknown>> {
+    const wordCount = (content.chapters as Array<{ content: string }>).reduce(
+      (total: number, chapter) => {
+        return total + chapter.content.split(' ').length;
+      },
+      0
+    );
 
     return {
       wordCount,
-      chapters: content.chapters.length,
-      imageCount: content.chapters.reduce((total: number, chapter: any) => {
+      chapters: (content.chapters as any[])?.length || 0,
+      imageCount: (
+        content.chapters as Array<{ images?: Array<unknown> }>
+      ).reduce((total: number, chapter) => {
         return total + (chapter.images?.length || 0);
       }, 0),
     };
@@ -570,14 +587,20 @@ export class ExportService {
   /**
    * Calculate PPTX metadata
    */
-  private async calculatePPTXMetadata(content: any): Promise<any> {
+  private async calculatePPTXMetadata(
+    content: Record<string, unknown>
+  ): Promise<Record<string, unknown>> {
     return {
-      slides: content.slides.length,
-      wordCount: content.slides.reduce((total: number, slide: any) => {
-        return total + (slide.content?.split(" ").length || 0);
-      }, 0),
-      chapters: content.slides.filter((slide: any) => slide.type === "title")
-        .length,
+      slides: (content.slides as any[])?.length || 0,
+      wordCount: (content.slides as Array<{ content?: string }>).reduce(
+        (total: number, slide) => {
+          return total + (slide.content?.split(' ').length || 0);
+        },
+        0
+      ),
+      chapters: (content.slides as Array<{ type: string }>).filter(
+        slide => slide.type === 'title'
+      ).length,
     };
   }
 
@@ -585,11 +608,11 @@ export class ExportService {
    * Format file size for display
    */
   private formatFileSize(bytes: number): string {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
   /**
@@ -603,7 +626,7 @@ export class ExportService {
     epub?: ExportResult;
     pptx?: ExportResult;
   }> {
-    const exports: any = {};
+    const exports: Record<string, ExportResult> = {};
 
     if (result.exportOptions.pdf) {
       exports.pdf = await this.exportToPDF(
@@ -621,7 +644,7 @@ export class ExportService {
       );
     }
 
-    if (result.exportOptions.pptx) {
+    if ((result.exportOptions as any).pptx) {
       exports.pptx = await this.exportToPPTX(
         result.formattedContent,
         result.template,
@@ -631,6 +654,8 @@ export class ExportService {
 
     return exports;
   }
+
+
 }
 
 // Export singleton instance

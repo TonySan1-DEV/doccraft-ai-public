@@ -1,85 +1,88 @@
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
-import Collaboration from '@tiptap/extension-collaboration'
-import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
-import { getCollabProvider } from '../lib/collaboration/yjsProvider'
-import { generateUserAvatar } from '../lib/collaboration/presenceColors'
-import { 
-  Bold, 
-  Italic, 
-  Underline as UnderlineIcon, 
-  List, 
-  ListOrdered, 
-  Undo, 
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
+import Collaboration from '@tiptap/extension-collaboration';
+import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
+import { getCollabProvider } from '../lib/collaboration/yjsProvider';
+import { generateUserAvatar } from '../lib/collaboration/presenceColors';
+import {
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  List,
+  ListOrdered,
+  Undo,
   Redo,
   Save,
-  Users
-} from 'lucide-react'
+  Users,
+} from 'lucide-react';
 
 interface EditorPanelProps {
-  content?: string
-  onContentChange?: (content: string) => void
-  onEditorReady?: (editor: any) => void
-  placeholder?: string
-  className?: string
+  content?: string;
+  onContentChange?: (content: string) => void;
+  onEditorReady?: (editor: Record<string, unknown>) => void;
+  placeholder?: string;
+  className?: string;
   // Collaboration props
-  docId?: string
-  userId?: string
-  userName?: string
-  enableCollaboration?: boolean
+  docId?: string;
+  userId?: string;
+  userName?: string;
+  enableCollaboration?: boolean;
 }
 
-export function EditorPanel({ 
-  content = '', 
-  onContentChange, 
+export function EditorPanel({
+  content = '',
+  onContentChange,
   onEditorReady,
   placeholder = 'Start writing your document here...',
   className = '',
   docId = 'default-doc',
   userId = 'user-1',
   userName = 'Anonymous',
-  enableCollaboration = false
+  enableCollaboration = false,
 }: EditorPanelProps) {
   // Get collaboration provider if collaboration is enabled
-  const collabProvider = enableCollaboration ? getCollabProvider(docId) : null
-  const userAvatar = generateUserAvatar(userId, userName)
+  const collabProvider = enableCollaboration ? getCollabProvider(docId) : null;
+  const userAvatar = generateUserAvatar(userId, userName);
 
   const editor = useEditor({
     extensions: [
       StarterKit,
       Underline,
       // Add collaboration extensions if enabled
-      ...(enableCollaboration && collabProvider ? [
-        Collaboration.configure({
-          document: collabProvider.ydoc,
-        }),
-        CollaborationCursor.configure({
-          provider: collabProvider.provider,
-          user: {
-            id: userId,
-            name: userName,
-            color: userAvatar.color,
-          },
-        }),
-      ] : []),
+      ...(enableCollaboration && collabProvider
+        ? [
+            Collaboration.configure({
+              document: collabProvider.ydoc,
+            }),
+            CollaborationCursor.configure({
+              provider: collabProvider.provider,
+              user: {
+                id: userId,
+                name: userName,
+                color: userAvatar.color,
+              },
+            }),
+          ]
+        : []),
     ],
     content: enableCollaboration ? undefined : content, // Don't set content for collaborative docs
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none',
+        class:
+          'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none',
       },
     },
     onUpdate: ({ editor }) => {
-      onContentChange?.(editor.getHTML())
+      onContentChange?.(editor.getHTML());
     },
     onCreate: ({ editor }) => {
-      onEditorReady?.(editor)
+      onEditorReady?.(editor as unknown as Record<string, unknown>);
     },
-  })
+  });
 
   if (!editor) {
-    return null
+    return null;
   }
 
   const MenuBar = () => {
@@ -98,7 +101,7 @@ export function EditorPanel({
             >
               <Bold className="h-4 w-4" />
             </button>
-            
+
             <button
               onClick={() => editor.chain().focus().toggleItalic().run()}
               disabled={!editor.can().chain().focus().toggleItalic().run()}
@@ -110,7 +113,7 @@ export function EditorPanel({
             >
               <Italic className="h-4 w-4" />
             </button>
-            
+
             <button
               onClick={() => editor.chain().focus().toggleUnderline().run()}
               disabled={!editor.can().chain().focus().toggleUnderline().run()}
@@ -122,9 +125,9 @@ export function EditorPanel({
             >
               <UnderlineIcon className="h-4 w-4" />
             </button>
-            
+
             <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-2"></div>
-            
+
             <button
               onClick={() => editor.chain().focus().toggleBulletList().run()}
               disabled={!editor.can().chain().focus().toggleBulletList().run()}
@@ -136,7 +139,7 @@ export function EditorPanel({
             >
               <List className="h-4 w-4" />
             </button>
-            
+
             <button
               onClick={() => editor.chain().focus().toggleOrderedList().run()}
               disabled={!editor.can().chain().focus().toggleOrderedList().run()}
@@ -149,16 +152,18 @@ export function EditorPanel({
               <ListOrdered className="h-4 w-4" />
             </button>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {/* Collaboration indicator */}
             {enableCollaboration && (
               <div className="flex items-center space-x-2 px-3 py-1 bg-green-100 dark:bg-green-900/30 rounded-lg">
                 <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
-                <span className="text-xs text-green-700 dark:text-green-300">Live</span>
+                <span className="text-xs text-green-700 dark:text-green-300">
+                  Live
+                </span>
               </div>
             )}
-            
+
             <button
               onClick={() => editor.chain().focus().undo().run()}
               disabled={!editor.can().chain().focus().undo().run()}
@@ -166,7 +171,7 @@ export function EditorPanel({
             >
               <Undo className="h-4 w-4" />
             </button>
-            
+
             <button
               onClick={() => editor.chain().focus().redo().run()}
               disabled={!editor.can().chain().focus().redo().run()}
@@ -174,24 +179,26 @@ export function EditorPanel({
             >
               <Redo className="h-4 w-4" />
             </button>
-            
+
             <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-2"></div>
-            
+
             <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-600 dark:text-gray-400">
               <Save className="h-4 w-4" />
             </button>
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   return (
-    <div className={`flex flex-col h-full bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden ${className}`}>
+    <div
+      className={`flex flex-col h-full bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden ${className}`}
+    >
       <MenuBar />
       <div className="flex-1 p-6 overflow-y-auto">
-        <EditorContent 
-          editor={editor} 
+        <EditorContent
+          editor={editor}
           className="min-h-[400px] prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none text-gray-900 dark:text-white"
         />
         {!content && !enableCollaboration && (
@@ -201,5 +208,5 @@ export function EditorPanel({
         )}
       </div>
     </div>
-  )
-} 
+  );
+}

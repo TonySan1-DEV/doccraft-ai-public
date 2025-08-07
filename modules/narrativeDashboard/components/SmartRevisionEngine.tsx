@@ -344,7 +344,6 @@ const SmartRevisionEngine: React.FC<SmartRevisionEngineProps> = ({ sceneId, sugg
                       className={`px-2 py-1 rounded text-xs ${diffFilter === f.key ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
                       onClick={() => setDiffFilter(f.key)}
                       aria-pressed={diffFilter === f.key}
-                      role="tab"
                     >{f.label}</button>
                   ))}
                 </div>
@@ -375,7 +374,6 @@ const SmartRevisionEngine: React.FC<SmartRevisionEngineProps> = ({ sceneId, sugg
                           ? `Theme-based addition: ${seg.themeTag || ''}`
                           : seg.type !== 'unchanged' ? seg.type : undefined
                       }
-                      tabIndex={seg.semanticTag === 'theme' ? 0 : undefined}
                       title={
                         seg.semanticTag === 'theme'
                           ? `📘 Theme Reinforcement${seg.themeExplanation ? ': ' + seg.themeExplanation : ''}`
@@ -462,7 +460,6 @@ const SmartRevisionEngine: React.FC<SmartRevisionEngineProps> = ({ sceneId, sugg
                 value={editableText}
                 onChange={e => setEditableText(e.target.value)}
                 aria-label="Edit revised text"
-                autoFocus
               />
               <div className="flex gap-2 mt-2">
                 <button

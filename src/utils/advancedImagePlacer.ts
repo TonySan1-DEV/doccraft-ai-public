@@ -7,7 +7,7 @@ export interface ImageConfig {
   aspectRatio: number;
   maxWidth: number;
   maxHeight: number;
-  objectFit: "cover" | "contain" | "fill" | "scale-down";
+  objectFit: 'cover' | 'contain' | 'fill' | 'scale-down';
   borderRadius: number;
   shadow: string;
   margin: {
@@ -27,14 +27,14 @@ export interface ResponsiveConfig {
 
 export interface PlacementStrategy {
   position:
-    | "top"
-    | "inline"
-    | "end"
-    | "full-width"
-    | "sidebar"
-    | "hero"
-    | "gallery";
-  size: "thumbnail" | "small" | "medium" | "large" | "hero" | "full";
+    | 'top'
+    | 'inline'
+    | 'end'
+    | 'full-width'
+    | 'sidebar'
+    | 'hero'
+    | 'gallery';
+  size: 'thumbnail' | 'small' | 'medium' | 'large' | 'hero' | 'full';
   responsive: ResponsiveConfig;
   context: {
     readingFlow: boolean;
@@ -45,8 +45,8 @@ export interface PlacementStrategy {
   performance: {
     lazyLoad: boolean;
     preload: boolean;
-    compression: "low" | "medium" | "high";
-    format: "webp" | "jpg" | "png" | "svg";
+    compression: 'low' | 'medium' | 'high';
+    format: 'webp' | 'jpg' | 'png' | 'svg';
   };
 }
 
@@ -58,8 +58,8 @@ export interface ContentStructure {
   blockquoteCount: number;
   codeBlockCount: number;
   averageParagraphLength: number;
-  readingLevel: "beginner" | "intermediate" | "advanced";
-  contentType: "narrative" | "technical" | "academic" | "creative" | "business";
+  readingLevel: 'beginner' | 'intermediate' | 'advanced';
+  contentType: 'narrative' | 'technical' | 'academic' | 'creative' | 'business';
 }
 
 export class AdvancedImagePlacer {
@@ -80,7 +80,10 @@ export class AdvancedImagePlacer {
   /**
    * Calculates optimal image placement based on content and context
    */
-  calculateOptimalPlacement(content: string, image: any): PlacementStrategy {
+  calculateOptimalPlacement(
+    content: string,
+    image: Record<string, unknown>
+  ): PlacementStrategy {
     const contentStructure = this.analyzeContentStructure(content);
     const readingFlow = this.assessReadingFlow(contentStructure);
     const visualHierarchy = this.determineVisualHierarchy(contentStructure);
@@ -88,7 +91,13 @@ export class AdvancedImagePlacer {
 
     const position = this.determinePosition(contentStructure, readingFlow);
     const size = this.determineSize(contentStructure, visualHierarchy);
-    const responsive = this.generateResponsiveConfig(size, deviceContext);
+    const responsive = this.generateResponsiveLayout({
+      position,
+      size,
+      responsive: {} as ResponsiveConfig,
+      context: {} as PlacementStrategy['context'],
+      performance: {} as PlacementStrategy['performance'],
+    });
     const context = this.assessContext(contentStructure, readingFlow);
     const performance = this.optimizePerformance(image, deviceContext);
 
@@ -105,7 +114,7 @@ export class AdvancedImagePlacer {
    * Generates responsive configuration for different devices
    */
   generateResponsiveLayout(strategy: PlacementStrategy): ResponsiveConfig {
-    const { size, responsive } = strategy;
+    const { size } = strategy;
 
     // Base configuration
     const baseConfig = this.getBaseImageConfig(size);
@@ -126,17 +135,17 @@ export class AdvancedImagePlacer {
     const { position, context } = placement;
 
     // Check if placement disrupts reading flow
-    if (position === "inline" && !context.readingFlow) {
+    if (position === 'inline' && !context.readingFlow) {
       return false;
     }
 
     // Validate visual break placement
-    if (position === "full-width" && !context.visualBreak) {
+    if (position === 'full-width' && !context.visualBreak) {
       return false;
     }
 
     // Check emphasis placement
-    if (position === "hero" && !context.emphasis) {
+    if (position === 'hero' && !context.emphasis) {
       return false;
     }
 
@@ -150,7 +159,7 @@ export class AdvancedImagePlacer {
     const words = content.trim().split(/\s+/);
     const paragraphs = content
       .split(/\n\s*\n/)
-      .filter((p) => p.trim().length > 0);
+      .filter(p => p.trim().length > 0);
     const headings = content.match(/^#{1,6}\s+.+$/gm) || [];
     const lists = content.match(/^[\s]*[-*+]\s+.+$/gm) || [];
     const blockquotes = content.match(/^>\s+.+$/gm) || [];
@@ -185,16 +194,16 @@ export class AdvancedImagePlacer {
     naturalFlow: boolean;
     visualBreaks: number;
     emphasisPoints: number;
-    distractionLevel: "low" | "medium" | "high";
+    distractionLevel: 'low' | 'medium' | 'high';
   } {
     const naturalFlow =
       structure.paragraphCount > 2 && structure.averageParagraphLength > 20;
     const visualBreaks = structure.headingCount + structure.listCount;
     const emphasisPoints = structure.blockquoteCount + structure.codeBlockCount;
 
-    let distractionLevel: "low" | "medium" | "high" = "low";
-    if (structure.wordCount < 100) distractionLevel = "high";
-    else if (structure.wordCount < 500) distractionLevel = "medium";
+    let distractionLevel: 'low' | 'medium' | 'high' = 'low';
+    if (structure.wordCount < 100) distractionLevel = 'high';
+    else if (structure.wordCount < 500) distractionLevel = 'medium';
 
     return {
       naturalFlow,
@@ -231,32 +240,37 @@ export class AdvancedImagePlacer {
    */
   private determinePosition(
     structure: ContentStructure,
-    readingFlow: any
-  ): PlacementStrategy["position"] {
+    _readingFlow: {
+      naturalFlow: boolean;
+      visualBreaks: number;
+      emphasisPoints: number;
+      distractionLevel: 'low' | 'medium' | 'high';
+    }
+  ): PlacementStrategy['position'] {
     // Short content → top placement
-    if (structure.wordCount < 100) return "top";
+    if (structure.wordCount < 100) return 'top';
 
     // Content with many headings → inline for structure
-    if (structure.headingCount > 2) return "inline";
+    if (structure.headingCount > 2) return 'inline';
 
     // Long content with few breaks → inline for visual relief
     if (structure.wordCount > 500 && structure.paragraphCount > 3)
-      return "inline";
+      return 'inline';
 
     // Content with lists → inline to break monotony
-    if (structure.listCount > 0) return "inline";
+    if (structure.listCount > 0) return 'inline';
 
     // Very long content → end as conclusion
-    if (structure.wordCount > 1000) return "end";
+    if (structure.wordCount > 1000) return 'end';
 
     // Content with blockquotes → sidebar for emphasis
-    if (structure.blockquoteCount > 0) return "sidebar";
+    if (structure.blockquoteCount > 0) return 'sidebar';
 
     // Technical content → inline for context
-    if (structure.codeBlockCount > 0) return "inline";
+    if (structure.codeBlockCount > 0) return 'inline';
 
     // Default to inline for medium content
-    return "inline";
+    return 'inline';
   }
 
   /**
@@ -264,22 +278,26 @@ export class AdvancedImagePlacer {
    */
   private determineSize(
     structure: ContentStructure,
-    hierarchy: any
-  ): PlacementStrategy["size"] {
+    _hierarchy: {
+      needsEmphasis: boolean;
+      needsBreaks: boolean;
+      needsStructure: boolean;
+    }
+  ): PlacementStrategy['size'] {
     // Hero content needs large images
-    if (structure.wordCount < 200) return "hero";
+    if (structure.wordCount < 200) return 'hero';
 
     // Technical content needs medium for clarity
-    if (structure.codeBlockCount > 0) return "medium";
+    if (structure.codeBlockCount > 0) return 'medium';
 
     // Long content can use smaller images
-    if (structure.wordCount > 1000) return "small";
+    if (structure.wordCount > 1000) return 'small';
 
     // Content with many images should use thumbnails
-    if (structure.headingCount > 5) return "thumbnail";
+    if (structure.headingCount > 5) return 'thumbnail';
 
     // Default to medium for balanced presentation
-    return "medium";
+    return 'medium';
   }
 
   /**
@@ -287,14 +305,19 @@ export class AdvancedImagePlacer {
    */
   private assessContext(
     structure: ContentStructure,
-    readingFlow: any
-  ): PlacementStrategy["context"] {
+    readingFlow: {
+      naturalFlow: boolean;
+      visualBreaks: number;
+      emphasisPoints: number;
+      distractionLevel: 'low' | 'medium' | 'high';
+    }
+  ): PlacementStrategy['context'] {
     return {
       readingFlow: readingFlow.naturalFlow,
       visualBreak: readingFlow.visualBreaks > 0,
       emphasis: structure.blockquoteCount > 0 || structure.headingCount === 0,
       accessibility:
-        structure.readingLevel === "beginner" || structure.wordCount < 300,
+        structure.readingLevel === 'beginner' || structure.wordCount < 300,
     };
   }
 
@@ -302,17 +325,22 @@ export class AdvancedImagePlacer {
    * Optimizes performance settings
    */
   private optimizePerformance(
-    image: any,
-    deviceContext: any
-  ): PlacementStrategy["performance"] {
+    _image: Record<string, unknown>,
+    deviceContext: {
+      screenWidth: number;
+      screenHeight: number;
+      connectionSpeed: 'fast' | 'medium' | 'slow';
+      deviceType: 'mobile' | 'tablet' | 'desktop';
+    }
+  ): PlacementStrategy['performance'] {
     const isMobile = deviceContext.screenWidth < this.BREAKPOINTS.mobile;
-    const isSlowConnection = deviceContext.connectionSpeed === "slow";
+    const isSlowConnection = deviceContext.connectionSpeed === 'slow';
 
     return {
       lazyLoad: true,
       preload: !isMobile && !isSlowConnection,
-      compression: isMobile || isSlowConnection ? "high" : "medium",
-      format: isMobile ? "webp" : "jpg",
+      compression: isMobile || isSlowConnection ? 'high' : 'medium',
+      format: isMobile ? 'webp' : 'jpg',
     };
   }
 
@@ -322,21 +350,21 @@ export class AdvancedImagePlacer {
   private getDeviceContext(): {
     screenWidth: number;
     screenHeight: number;
-    connectionSpeed: "fast" | "medium" | "slow";
-    deviceType: "mobile" | "tablet" | "desktop";
+    connectionSpeed: 'fast' | 'medium' | 'slow';
+    deviceType: 'mobile' | 'tablet' | 'desktop';
   } {
     // In a real implementation, this would get actual device info
     const screenWidth = window.innerWidth || 1024;
     const screenHeight = window.innerHeight || 768;
 
-    let deviceType: "mobile" | "tablet" | "desktop" = "desktop";
-    if (screenWidth < this.BREAKPOINTS.mobile) deviceType = "mobile";
-    else if (screenWidth < this.BREAKPOINTS.tablet) deviceType = "tablet";
+    let deviceType: 'mobile' | 'tablet' | 'desktop' = 'desktop';
+    if (screenWidth < this.BREAKPOINTS.mobile) deviceType = 'mobile';
+    else if (screenWidth < this.BREAKPOINTS.tablet) deviceType = 'tablet';
 
     return {
       screenWidth,
       screenHeight,
-      connectionSpeed: "medium", // Would be detected in real implementation
+      connectionSpeed: 'medium', // Would be detected in real implementation
       deviceType,
     };
   }
@@ -344,7 +372,7 @@ export class AdvancedImagePlacer {
   /**
    * Gets base image configuration for size
    */
-  private getBaseImageConfig(size: PlacementStrategy["size"]): ImageConfig {
+  private getBaseImageConfig(size: PlacementStrategy['size']): ImageConfig {
     const configs = {
       thumbnail: {
         width: 150,
@@ -352,9 +380,9 @@ export class AdvancedImagePlacer {
         aspectRatio: this.ASPECT_RATIOS.square,
         maxWidth: 200,
         maxHeight: 200,
-        objectFit: "cover" as const,
+        objectFit: 'cover' as const,
         borderRadius: 8,
-        shadow: "0 2px 4px rgba(0,0,0,0.1)",
+        shadow: '0 2px 4px rgba(0,0,0,0.1)',
         margin: { top: 8, bottom: 8, left: 0, right: 0 },
       },
       small: {
@@ -363,9 +391,9 @@ export class AdvancedImagePlacer {
         aspectRatio: this.ASPECT_RATIOS.landscape,
         maxWidth: 400,
         maxHeight: 300,
-        objectFit: "cover" as const,
+        objectFit: 'cover' as const,
         borderRadius: 12,
-        shadow: "0 4px 8px rgba(0,0,0,0.15)",
+        shadow: '0 4px 8px rgba(0,0,0,0.15)',
         margin: { top: 16, bottom: 16, left: 0, right: 0 },
       },
       medium: {
@@ -374,9 +402,9 @@ export class AdvancedImagePlacer {
         aspectRatio: this.ASPECT_RATIOS.landscape,
         maxWidth: 600,
         maxHeight: 400,
-        objectFit: "cover" as const,
+        objectFit: 'cover' as const,
         borderRadius: 16,
-        shadow: "0 8px 16px rgba(0,0,0,0.2)",
+        shadow: '0 8px 16px rgba(0,0,0,0.2)',
         margin: { top: 24, bottom: 24, left: 0, right: 0 },
       },
       large: {
@@ -385,9 +413,9 @@ export class AdvancedImagePlacer {
         aspectRatio: this.ASPECT_RATIOS.landscape,
         maxWidth: 900,
         maxHeight: 600,
-        objectFit: "cover" as const,
+        objectFit: 'cover' as const,
         borderRadius: 20,
-        shadow: "0 12px 24px rgba(0,0,0,0.25)",
+        shadow: '0 12px 24px rgba(0,0,0,0.25)',
         margin: { top: 32, bottom: 32, left: 0, right: 0 },
       },
       hero: {
@@ -396,9 +424,9 @@ export class AdvancedImagePlacer {
         aspectRatio: this.ASPECT_RATIOS.wide,
         maxWidth: 1400,
         maxHeight: 700,
-        objectFit: "cover" as const,
+        objectFit: 'cover' as const,
         borderRadius: 24,
-        shadow: "0 16px 32px rgba(0,0,0,0.3)",
+        shadow: '0 16px 32px rgba(0,0,0,0.3)',
         margin: { top: 40, bottom: 40, left: 0, right: 0 },
       },
       full: {
@@ -407,9 +435,9 @@ export class AdvancedImagePlacer {
         aspectRatio: this.ASPECT_RATIOS.landscape,
         maxWidth: 100,
         maxHeight: 100,
-        objectFit: "cover" as const,
+        objectFit: 'cover' as const,
         borderRadius: 0,
-        shadow: "none",
+        shadow: 'none',
         margin: { top: 0, bottom: 0, left: 0, right: 0 },
       },
     };
@@ -422,7 +450,7 @@ export class AdvancedImagePlacer {
    */
   private optimizeForMobile(
     baseConfig: ImageConfig,
-    strategy: PlacementStrategy
+    _strategy: PlacementStrategy
   ): ImageConfig {
     return {
       ...baseConfig,
@@ -445,7 +473,7 @@ export class AdvancedImagePlacer {
    */
   private optimizeForTablet(
     baseConfig: ImageConfig,
-    strategy: PlacementStrategy
+    _strategy: PlacementStrategy
   ): ImageConfig {
     return {
       ...baseConfig,
@@ -467,7 +495,7 @@ export class AdvancedImagePlacer {
    */
   private optimizeForDesktop(
     baseConfig: ImageConfig,
-    strategy: PlacementStrategy
+    _strategy: PlacementStrategy
   ): ImageConfig {
     return baseConfig; // Use full configuration for desktop
   }
@@ -477,11 +505,11 @@ export class AdvancedImagePlacer {
    */
   private optimizeForPrint(
     baseConfig: ImageConfig,
-    strategy: PlacementStrategy
+    _strategy: PlacementStrategy
   ): ImageConfig {
     return {
       ...baseConfig,
-      shadow: "none",
+      shadow: 'none',
       borderRadius: 0,
       margin: {
         top: 16,
@@ -497,7 +525,7 @@ export class AdvancedImagePlacer {
    */
   private assessReadingLevel(
     content: string
-  ): ContentStructure["readingLevel"] {
+  ): ContentStructure['readingLevel'] {
     const words = content.split(/\s+/);
     const sentences = content.split(/[.!?]+/).length;
     const syllables = this.countSyllables(content);
@@ -509,9 +537,9 @@ export class AdvancedImagePlacer {
     const fleschScore =
       206.835 - 1.015 * avgWordsPerSentence - 84.6 * avgSyllablesPerWord;
 
-    if (fleschScore > 80) return "beginner";
-    if (fleschScore > 60) return "intermediate";
-    return "advanced";
+    if (fleschScore > 80) return 'beginner';
+    if (fleschScore > 60) return 'intermediate';
+    return 'advanced';
   }
 
   /**
@@ -519,39 +547,39 @@ export class AdvancedImagePlacer {
    */
   private determineContentType(
     content: string
-  ): ContentStructure["contentType"] {
+  ): ContentStructure['contentType'] {
     const textLower = content.toLowerCase();
 
     if (
-      textLower.includes("function") ||
-      textLower.includes("code") ||
-      textLower.includes("system")
+      textLower.includes('function') ||
+      textLower.includes('code') ||
+      textLower.includes('system')
     ) {
-      return "technical";
+      return 'technical';
     }
     if (
-      textLower.includes("research") ||
-      textLower.includes("study") ||
-      textLower.includes("analysis")
+      textLower.includes('research') ||
+      textLower.includes('study') ||
+      textLower.includes('analysis')
     ) {
-      return "academic";
+      return 'academic';
     }
     if (
-      textLower.includes("creative") ||
-      textLower.includes("artistic") ||
-      textLower.includes("imaginative")
+      textLower.includes('creative') ||
+      textLower.includes('artistic') ||
+      textLower.includes('imaginative')
     ) {
-      return "creative";
+      return 'creative';
     }
     if (
-      textLower.includes("business") ||
-      textLower.includes("corporate") ||
-      textLower.includes("professional")
+      textLower.includes('business') ||
+      textLower.includes('corporate') ||
+      textLower.includes('professional')
     ) {
-      return "business";
+      return 'business';
     }
 
-    return "narrative";
+    return 'narrative';
   }
 
   /**

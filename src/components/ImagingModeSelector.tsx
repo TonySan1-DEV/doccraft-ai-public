@@ -4,9 +4,9 @@
  * MCP Actions: adjust, configure
  */
 
-import React, { useState } from 'react';
-import { useImagingMode } from '../hooks/useImagingMode';
-import { ImagingMode } from '../state/imagingMode';
+import React, { useState } from "react";
+import { useImagingMode } from "../hooks/useImagingMode";
+import { ImagingMode } from "../state/imagingMode";
 
 interface ModeOption {
   value: ImagingMode;
@@ -20,60 +20,68 @@ const modeOptions: ModeOption[] = [
     value: "manual",
     label: "Manual Selection",
     description: "Full manual control - you select all images and placements",
-    icon: "🎯"
+    icon: "🎯",
   },
   {
     value: "hybrid",
     label: "Hybrid (AI + Manual)",
     description: "AI suggests images and placements, you have final approval",
-    icon: "🤝"
+    icon: "🤝",
   },
   {
     value: "auto",
     label: "Automatic",
     description: "Fully automatic - AI handles everything with minimal input",
-    icon: "⚡"
+    icon: "⚡",
   },
   {
     value: "ai-generated",
     label: "AI Generated",
-    description: "AI creates and places images automatically with no manual intervention",
-    icon: "🤖"
-  }
+    description:
+      "AI creates and places images automatically with no manual intervention",
+    icon: "🤖",
+  },
 ];
 
 interface TooltipProps {
   children: React.ReactNode;
   content: string;
-  position?: 'top' | 'bottom' | 'left' | 'right';
+  position?: "top" | "bottom" | "left" | "right";
 }
 
-function Tooltip({ children, content, position = 'top' }: TooltipProps) {
+function Tooltip({ children, content, position = "top" }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   const positionClasses = {
-    top: 'bottom-full left-1/2 transform -translate-x-1/2 mb-2',
-    bottom: 'top-full left-1/2 transform -translate-x-1/2 mt-2',
-    left: 'right-full top-1/2 transform -translate-y-1/2 mr-2',
-    right: 'left-full top-1/2 transform -translate-y-1/2 ml-2'
+    top: "bottom-full left-1/2 transform -translate-x-1/2 mb-2",
+    bottom: "top-full left-1/2 transform -translate-x-1/2 mt-2",
+    left: "right-full top-1/2 transform -translate-y-1/2 mr-2",
+    right: "left-full top-1/2 transform -translate-y-1/2 ml-2",
   };
 
   return (
-    <div 
+    <div
       className="relative inline-block"
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
     >
       {children}
       {isVisible && (
-        <div className={`absolute z-50 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg shadow-lg whitespace-nowrap ${positionClasses[position]}`}>
+        <div
+          className={`absolute z-50 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg shadow-lg whitespace-nowrap ${positionClasses[position]}`}
+        >
           {content}
-          <div className={`absolute w-2 h-2 bg-gray-900 transform rotate-45 ${
-            position === 'top' ? 'top-full left-1/2 -translate-x-1/2' :
-            position === 'bottom' ? 'bottom-full left-1/2 -translate-x-1/2' :
-            position === 'left' ? 'left-full top-1/2 -translate-y-1/2' :
-            'right-full top-1/2 -translate-y-1/2'
-          }`} />
+          <div
+            className={`absolute w-2 h-2 bg-gray-900 transform rotate-45 ${
+              position === "top"
+                ? "top-full left-1/2 -translate-x-1/2"
+                : position === "bottom"
+                ? "bottom-full left-1/2 -translate-x-1/2"
+                : position === "left"
+                ? "left-full top-1/2 -translate-y-1/2"
+                : "right-full top-1/2 -translate-y-1/2"
+            }`}
+          />
         </div>
       )}
     </div>
@@ -81,11 +89,10 @@ function Tooltip({ children, content, position = 'top' }: TooltipProps) {
 }
 
 export function ImagingModeSelector() {
-  try {
-    const { mode, setMode } = useImagingMode();
-    const [isOpen, setIsOpen] = useState(false);
+  const { mode, setMode } = useImagingMode();
+  const [isOpen, setIsOpen] = useState(false);
 
-    const currentOption = modeOptions.find(option => option.value === mode);
+  const currentOption = modeOptions.find((option) => option.value === mode);
 
   const handleModeChange = (newMode: ImagingMode) => {
     setMode(newMode);
@@ -128,7 +135,7 @@ export function ImagingModeSelector() {
             </div>
             <svg
               className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${
-                isOpen ? 'transform rotate-180' : ''
+                isOpen ? "transform rotate-180" : ""
               }`}
               fill="none"
               stroke="currentColor"
@@ -158,8 +165,8 @@ export function ImagingModeSelector() {
                     onClick={() => handleModeChange(option.value)}
                     className={`w-full px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors duration-150 ${
                       option.value === mode
-                        ? 'bg-blue-50 border-l-4 border-blue-500'
-                        : ''
+                        ? "bg-blue-50 border-l-4 border-blue-500"
+                        : ""
                     }`}
                     role="option"
                     aria-selected={option.value === mode}
@@ -167,9 +174,13 @@ export function ImagingModeSelector() {
                     <div className="flex items-center space-x-3">
                       <span className="text-lg">{option.icon}</span>
                       <div className="flex-1">
-                        <div className={`font-medium ${
-                          option.value === mode ? 'text-blue-900' : 'text-gray-900'
-                        }`}>
+                        <div
+                          className={`font-medium ${
+                            option.value === mode
+                              ? "text-blue-900"
+                              : "text-gray-900"
+                          }`}
+                        >
                           {option.label}
                         </div>
                         <div className="text-sm text-gray-500">
@@ -210,14 +221,6 @@ export function ImagingModeSelector() {
       </div>
     </div>
   );
-  } catch (error) {
-    console.error('Error in ImagingModeSelector:', error);
-    return (
-      <div className="w-full p-4 bg-red-50 border border-red-200 rounded-lg">
-        <p className="text-sm text-red-700">Imaging mode selector unavailable</p>
-      </div>
-    );
-  }
 }
 
-export default ImagingModeSelector; 
+export default ImagingModeSelector;

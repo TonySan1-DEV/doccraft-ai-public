@@ -5,10 +5,10 @@ export interface CharacterPersona {
   story_id?: string;
   name: string;
   archetype: string;
-  goals: string;
+  goals: string; // Legacy field - kept for backwards compatibility
   voiceStyle: string;
   worldview: string;
-  personality: string; // e.g. Big Five traits or summary
+  personality: string; // Legacy field - kept for backwards compatibility
   knownConnections: Array<{
     name: string;
     relationship: string;
@@ -19,5 +19,30 @@ export interface CharacterPersona {
   memory?: Record<string, any>;
   created_at?: string;
   updated_at?: string;
-  // Optionally, add avatar or other fields as needed
+
+  // TODO: Confirm this field structure with upstream schema
+  // Extended fields to match actual usage patterns
+  personalityDetails?: {
+    traits: string[];
+    strengths: string[];
+    weaknesses: string[];
+    fears: string[];
+    desires: string[];
+  };
+
+  goalsDetails?: {
+    primary: string;
+    secondary: string[];
+    internal: string;
+    external: string;
+  };
+
+  relationships?: Array<{
+    name: string;
+    relationship: string;
+    description?: string;
+  }>;
+
+  // TODO: Add developmentNotes field to match Character interface usage
+  developmentNotes?: string[];
 }

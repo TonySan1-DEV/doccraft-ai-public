@@ -1,123 +1,59 @@
 // LLM Chat Interface Component
 // MCP: { role: "admin", allowedActions: ["analyze", "process", "enhance"], theme: "llm_integration", contentSensitivity: "medium", tier: "Pro" }
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  Send,
-  Plus,
-  Settings,
-  Download,
-  Upload,
-  Trash2,
-  Copy,
-  Edit3,
-  MessageSquare,
-  Bot,
-  User,
-  Zap,
-  DollarSign,
-  Clock,
-  AlertCircle,
-  CheckCircle,
-  X,
-  ChevronDown,
-  ChevronUp,
-  Play,
-  Pause,
-  RotateCcw,
-  Save,
-  Share,
-  Star,
-  Bookmark,
-  MoreHorizontal,
-  Search,
-  Filter,
-  Grid,
-  List,
-  Eye,
-  EyeOff,
-  Key,
-  Globe,
-  Cpu,
-  Database,
-  Shield,
-  Activity,
-  BarChart3,
-  TrendingUp,
+  Send as SendIcon,
   DollarSign as DollarSignIcon,
-  Clock as ClockIcon,
   MessageSquare as MessageSquareIcon,
   Bot as BotIcon,
   User as UserIcon,
-  Zap as ZapIcon,
   Settings as SettingsIcon,
   Download as DownloadIcon,
-  Upload as UploadIcon,
-  Trash2 as Trash2Icon,
   Copy as CopyIcon,
-  Edit3 as Edit3Icon,
   Plus as PlusIcon,
-  X as XIcon,
   ChevronDown as ChevronDownIcon,
   ChevronUp as ChevronUpIcon,
-  Play as PlayIcon,
-  Pause as PauseIcon,
-  RotateCcw as RotateCcwIcon,
-  Save as SaveIcon,
-  Share as ShareIcon,
-  Star as StarIcon,
-  Bookmark as BookmarkIcon,
-  MoreHorizontal as MoreHorizontalIcon,
   Search as SearchIcon,
-  Filter as FilterIcon,
   Grid as GridIcon,
   List as ListIcon,
   Eye as EyeIcon,
   EyeOff as EyeOffIcon,
-  Key as KeyIcon,
-  Globe as GlobeIcon,
-  Cpu as CpuIcon,
-  Database as DatabaseIcon,
-  Shield as ShieldIcon,
   Activity as ActivityIcon,
-  BarChart3 as BarChart3Icon,
-  TrendingUp as TrendingUpIcon,
-} from "lucide-react";
-import { toast } from "react-hot-toast";
+  Trash2 as Trash2Icon,
+} from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import {
   llmIntegration,
-  LLMProvider,
-  LLMModel,
-  LLMConfig,
   ChatSession,
-  ChatMessage,
-  LLMResponse,
-} from "../services/llmIntegrationService";
+  LLMModel,
+  LLMProvider,
+} from '../services/llmIntegrationService';
 
 interface LLMChatInterfaceProps {
   className?: string;
 }
 
 export default function LLMChatInterface({
-  className = "",
+  className = '',
 }: LLMChatInterfaceProps) {
   const [activeSession, setActiveSession] = useState<ChatSession | null>(null);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [providers, setProviders] = useState<LLMProvider[]>([]);
-  const [selectedProvider, setSelectedProvider] = useState<string>("");
-  const [selectedModel, setSelectedModel] = useState<string>("");
+  const [selectedProvider, setSelectedProvider] = useState<string>('');
+  const [selectedModel, setSelectedModel] = useState<string>('');
   const [models, setModels] = useState<LLMModel[]>([]);
-  const [inputMessage, setInputMessage] = useState("");
+  const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showSessionList, setShowSessionList] = useState(true);
-  const [apiKey, setApiKey] = useState("");
+  const [apiKey, setApiKey] = useState('');
   const [temperature, setTemperature] = useState(0.7);
   const [maxTokens, setMaxTokens] = useState(2048);
   const [topP, setTopP] = useState(1);
-  const [systemPrompt, setSystemPrompt] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [systemPrompt, setSystemPrompt] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [searchTerm, setSearchTerm] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -141,7 +77,7 @@ export default function LLMChatInterface({
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeSession?.messages]);
 
   const handleProviderChange = useCallback((providerId: string) => {
@@ -157,7 +93,7 @@ export default function LLMChatInterface({
 
   const handleCreateSession = useCallback(() => {
     if (!selectedProvider || !selectedModel) {
-      toast.error("Please select a provider and model");
+      toast.error('Please select a provider and model');
       return;
     }
 
@@ -174,9 +110,9 @@ export default function LLMChatInterface({
       }
     );
 
-    setSessions((prev) => [...prev, session]);
+    setSessions(prev => [...prev, session]);
     setActiveSession(session);
-    toast.success("New chat session created");
+    toast.success('New chat session created');
   }, [
     selectedProvider,
     selectedModel,
@@ -191,7 +127,7 @@ export default function LLMChatInterface({
     if (!activeSession || !inputMessage.trim()) return;
 
     setIsLoading(true);
-    setInputMessage("");
+    setInputMessage('');
 
     try {
       const response = await llmIntegration.sendMessage(
@@ -210,13 +146,13 @@ export default function LLMChatInterface({
           setActiveSession(updatedSession);
         }
 
-        toast.success("Message sent successfully");
+        toast.success('Message sent successfully');
       } else {
-        toast.error("Failed to send message");
+        toast.error('Failed to send message');
       }
     } catch (error) {
-      console.error("Error sending message:", error);
-      toast.error("Error sending message");
+      console.error('Error sending message:', error);
+      toast.error('Error sending message');
     } finally {
       setIsLoading(false);
     }
@@ -229,11 +165,11 @@ export default function LLMChatInterface({
   const handleDeleteSession = useCallback(
     (sessionId: string) => {
       if (llmIntegration.deleteChatSession(sessionId)) {
-        setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+        setSessions(prev => prev.filter(s => s.id !== sessionId));
         if (activeSession?.id === sessionId) {
           setActiveSession(null);
         }
-        toast.success("Session deleted");
+        toast.success('Session deleted');
       }
     },
     [activeSession]
@@ -242,57 +178,32 @@ export default function LLMChatInterface({
   const handleExportSession = useCallback((sessionId: string) => {
     const sessionData = llmIntegration.exportSession(sessionId);
     if (sessionData) {
-      const blob = new Blob([sessionData], { type: "application/json" });
+      const blob = new Blob([sessionData], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
       a.download = `chat-session-${sessionId}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success("Session exported");
+      toast.success('Session exported');
     }
   }, []);
 
-  const handleImportSession = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const content = e.target?.result as string;
-          const session = llmIntegration.importSession(content);
-          if (session) {
-            setSessions((prev) => [...prev, session]);
-            toast.success("Session imported");
-          } else {
-            toast.error("Failed to import session");
-          }
-        };
-        reader.readAsText(file);
-      }
-    },
-    []
-  );
-
   const handleCopyMessage = useCallback((content: string) => {
     navigator.clipboard.writeText(content);
-    toast.success("Message copied to clipboard");
+    toast.success('Message copied to clipboard');
   }, []);
 
   const filteredSessions = sessions.filter(
-    (session) =>
+    session =>
       session.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       session.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
       session.model.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getProviderLogo = (providerId: string) => {
-    const provider = providers.find((p) => p.id === providerId);
-    return provider?.logo || "/logos/default.svg";
-  };
-
-  const getModelInfo = (providerId: string, modelId: string) => {
-    return llmIntegration.getModel(providerId, modelId);
+    const provider = providers.find(p => p.id === providerId);
+    return provider?.logo || '/logos/default.svg';
   };
 
   const formatCost = (cost: number) => {
@@ -358,11 +269,11 @@ export default function LLMChatInterface({
                 <div className="flex items-center space-x-1">
                   <button
                     onClick={() =>
-                      setViewMode(viewMode === "grid" ? "list" : "grid")
+                      setViewMode(viewMode === 'grid' ? 'list' : 'grid')
                     }
                     className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                   >
-                    {viewMode === "grid" ? (
+                    {viewMode === 'grid' ? (
                       <ListIcon className="w-4 h-4" />
                     ) : (
                       <GridIcon className="w-4 h-4" />
@@ -378,7 +289,7 @@ export default function LLMChatInterface({
                   type="text"
                   placeholder="Search sessions..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
                 />
               </div>
@@ -405,15 +316,20 @@ export default function LLMChatInterface({
                 </div>
               ) : (
                 <div className="space-y-1 p-2">
-                  {filteredSessions.map((session) => (
+                  {filteredSessions.map(session => (
                     <div
                       key={session.id}
                       className={`p-3 rounded-lg cursor-pointer transition-colors ${
                         activeSession?.id === session.id
-                          ? "bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700"
-                          : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                          ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700'
+                          : 'hover:bg-gray-50 dark:hover:bg-gray-700'
                       }`}
                       onClick={() => handleSelectSession(session)}
+                      onKeyDown={e =>
+                        e.key === 'Enter' && handleSelectSession(session)
+                      }
+                      role="button"
+                      tabIndex={0}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
@@ -428,7 +344,7 @@ export default function LLMChatInterface({
                         </div>
                         <div className="flex items-center space-x-1">
                           <button
-                            onClick={(e) => {
+                            onClick={e => {
                               e.stopPropagation();
                               handleExportSession(session.id);
                             }}
@@ -437,7 +353,7 @@ export default function LLMChatInterface({
                             <DownloadIcon className="w-3 h-3" />
                           </button>
                           <button
-                            onClick={(e) => {
+                            onClick={e => {
                               e.stopPropagation();
                               handleDeleteSession(session.id);
                             }}
@@ -510,22 +426,22 @@ export default function LLMChatInterface({
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {activeSession.messages.map((message) => (
+                {activeSession.messages.map(message => (
                   <div
                     key={message.id}
                     className={`flex ${
-                      message.role === "user" ? "justify-end" : "justify-start"
+                      message.role === 'user' ? 'justify-end' : 'justify-start'
                     }`}
                   >
                     <div
                       className={`max-w-3xl rounded-lg p-3 ${
-                        message.role === "user"
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
+                        message.role === 'user'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
                       }`}
                     >
                       <div className="flex items-start space-x-2">
-                        {message.role === "user" ? (
+                        {message.role === 'user' ? (
                           <UserIcon className="w-5 h-5 mt-0.5 flex-shrink-0" />
                         ) : (
                           <BotIcon className="w-5 h-5 mt-0.5 flex-shrink-0" />
@@ -565,9 +481,9 @@ export default function LLMChatInterface({
                   <div className="flex-1">
                     <textarea
                       value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
+                      onChange={e => setInputMessage(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault();
                           handleSendMessage();
                         }
@@ -625,15 +541,19 @@ export default function LLMChatInterface({
               </h4>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="provider-select"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Provider
                   </label>
                   <select
+                    id="provider-select"
                     value={selectedProvider}
-                    onChange={(e) => handleProviderChange(e.target.value)}
+                    onChange={e => handleProviderChange(e.target.value)}
                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
-                    {providers.map((provider) => (
+                    {providers.map(provider => (
                       <option key={provider.id} value={provider.id}>
                         {provider.name}
                       </option>
@@ -642,15 +562,19 @@ export default function LLMChatInterface({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="model-select"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Model
                   </label>
                   <select
+                    id="model-select"
                     value={selectedModel}
-                    onChange={(e) => setSelectedModel(e.target.value)}
+                    onChange={e => setSelectedModel(e.target.value)}
                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
-                    {models.map((model) => (
+                    {models.map(model => (
                       <option key={model.id} value={model.id}>
                         {model.name}
                       </option>
@@ -659,14 +583,18 @@ export default function LLMChatInterface({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="api-key-input"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     API Key
                   </label>
                   <div className="relative">
                     <input
-                      type={showApiKey ? "text" : "password"}
+                      id="api-key-input"
+                      type={showApiKey ? 'text' : 'password'}
                       value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
+                      onChange={e => setApiKey(e.target.value)}
                       placeholder="Enter your API key"
                       className="w-full p-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
@@ -692,57 +620,73 @@ export default function LLMChatInterface({
               </h4>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="temperature-range"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Temperature: {temperature}
                   </label>
                   <input
+                    id="temperature-range"
                     type="range"
                     min="0"
                     max="2"
                     step="0.1"
                     value={temperature}
-                    onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                    onChange={e => setTemperature(parseFloat(e.target.value))}
                     className="w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="max-tokens-range"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Max Tokens: {maxTokens}
                   </label>
                   <input
+                    id="max-tokens-range"
                     type="range"
                     min="1"
                     max="4096"
                     step="1"
                     value={maxTokens}
-                    onChange={(e) => setMaxTokens(parseInt(e.target.value))}
+                    onChange={e => setMaxTokens(parseInt(e.target.value))}
                     className="w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="top-p-range"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Top P: {topP}
                   </label>
                   <input
+                    id="top-p-range"
                     type="range"
                     min="0"
                     max="1"
                     step="0.1"
                     value={topP}
-                    onChange={(e) => setTopP(parseFloat(e.target.value))}
+                    onChange={e => setTopP(parseFloat(e.target.value))}
                     className="w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="system-prompt"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     System Prompt
                   </label>
                   <textarea
+                    id="system-prompt"
                     value={systemPrompt}
-                    onChange={(e) => setSystemPrompt(e.target.value)}
+                    onChange={e => setSystemPrompt(e.target.value)}
                     placeholder="Enter system prompt..."
                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     rows={3}

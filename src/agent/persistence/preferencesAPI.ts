@@ -11,17 +11,35 @@
 */
 
 import { AgentPrefs } from '../../types/agentPreferences';
-import { useMCP } from '../../useMCP';
+
+// AbortController and AbortSignal are available in modern environments
+// We'll use them directly without global declarations
+
+// AbortSignal polyfill for older environments
+const AbortSignalPolyfill = {
+  timeout: (ms: number) => {
+    // eslint-disable-next-line no-undef
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), ms);
+    return controller.signal;
+  },
+};
+
+// Use AbortSignal.timeout if available, otherwise use polyfill
+// AbortSignal.timeout is a newer API that may not be available in all environments
+const AbortSignalWithTimeout =
+  // eslint-disable-next-line no-undef
+  (AbortSignal as any).timeout || AbortSignalPolyfill.timeout;
 
 // API configuration
 const API_CONFIG = {
   baseUrl: process.env.REACT_APP_API_BASE_URL || '/api',
   endpoints: {
     preferences: '/user/preferences',
-    adminDefaults: '/admin/defaults'
+    adminDefaults: '/admin/defaults',
   },
   timeout: 10000, // 10 seconds
-  retryAttempts: 3
+  retryAttempts: 3,
 };
 
 // Response validation schema
@@ -30,7 +48,7 @@ const PREFERENCES_SCHEMA = {
   language: ['en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'zh'],
   copilotEnabled: 'boolean',
   memoryEnabled: 'boolean',
-  defaultCommandView: ['list', 'grid']
+  defaultCommandView: ['list', 'grid'],
 };
 
 // Validation utilities
@@ -59,7 +77,9 @@ function validatePreferences(data: any): AgentPrefs | null {
     }
 
     // Validate command view
-    if (!PREFERENCES_SCHEMA.defaultCommandView.includes(data.defaultCommandView)) {
+    if (
+      !PREFERENCES_SCHEMA.defaultCommandView.includes(data.defaultCommandView)
+    ) {
       data.defaultCommandView = 'list';
     }
 
@@ -78,20 +98,26 @@ function validatePreferences(data: any): AgentPrefs | null {
 // Authentication utilities
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   };
 
   try {
-    // Get MCP context for role-based headers
-    const mcp = useMCP?.('preferencesAPI.ts') || { role: 'user', tier: 'Basic', allowedActions: [] };
-    
+    // Create a mock MCP context for non-React usage
+    const mcp = {
+      role: 'user',
+      tier: 'Basic',
+      allowedActions: [],
+    };
+
     // Add MCP context to headers for server-side validation
     headers['X-MCP-Role'] = mcp.role;
     headers['X-MCP-Tier'] = mcp.tier || 'Basic';
     headers['X-MCP-Actions'] = mcp.allowedActions.join(',');
-    
+
     // Add session token if available
-    const token = localStorage.getItem('authToken') || sessionStorage.getItem('sessionToken');
+    const token =
+      localStorage.getItem('authToken') ||
+      sessionStorage.getItem('sessionToken');
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -109,7 +135,7 @@ function logTelemetryEvent(event: string, data: any): void {
     (window as any).logTelemetryEvent(event, {
       ...data,
       timestamp: Date.now(),
-      source: 'preferencesAPI'
+      source: 'preferencesAPI',
     });
   }
 }
@@ -121,20 +147,27 @@ function logTelemetryEvent(event: string, data: any): void {
 export async function fetchPreferencesFromServer(): Promise<AgentPrefs | null> {
   try {
     const headers = await getAuthHeaders();
-    
-    const response = await fetch(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.preferences}`, {
-      method: 'GET',
-      headers,
-      signal: AbortSignal.timeout(API_CONFIG.timeout)
-    });
+
+    const response = await fetch(
+      `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.preferences}`,
+      {
+        method: 'GET',
+        headers,
+        signal: AbortSignalWithTimeout(API_CONFIG.timeout),
+      }
+    );
 
     if (!response.ok) {
       if (response.status === 401) {
-        logTelemetryEvent('preferences_fetch_unauthorized', { status: response.status });
+        logTelemetryEvent('preferences_fetch_unauthorized', {
+          status: response.status,
+        });
         return null; // Unauthorized - fallback to local
       }
       if (response.status === 404) {
-        logTelemetryEvent('preferences_fetch_not_found', { status: response.status });
+        logTelemetryEvent('preferences_fetch_not_found', {
+          status: response.status,
+        });
         return null; // No server prefs - fallback to local
       }
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -146,18 +179,17 @@ export async function fetchPreferencesFromServer(): Promise<AgentPrefs | null> {
     if (validatedPrefs) {
       logTelemetryEvent('preferences_fetch_success', {
         hasServerPrefs: true,
-        prefsCount: Object.keys(validatedPrefs).length
+        prefsCount: Object.keys(validatedPrefs).length,
       });
       return validatedPrefs;
     } else {
       logTelemetryEvent('preferences_fetch_invalid', { rawData: data });
       return null;
     }
-
   } catch (error) {
     console.error('[PreferencesAPI] Fetch error:', error);
     logTelemetryEvent('preferences_fetch_error', {
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
     return null;
   }
@@ -167,51 +199,62 @@ export async function fetchPreferencesFromServer(): Promise<AgentPrefs | null> {
  * Sync preferences to server
  * Logs error but does not crash if sync fails
  */
-export async function syncPreferencesToServer(updatedPrefs: AgentPrefs): Promise<boolean> {
+export async function syncPreferencesToServer(
+  updatedPrefs: AgentPrefs
+): Promise<boolean> {
   try {
     // Validate preferences before sending
     const validatedPrefs = validatePreferences(updatedPrefs);
     if (!validatedPrefs) {
-      console.error('[PreferencesAPI] Invalid preferences for sync:', updatedPrefs);
+      console.error(
+        '[PreferencesAPI] Invalid preferences for sync:',
+        updatedPrefs
+      );
       logTelemetryEvent('preferences_sync_invalid', { prefs: updatedPrefs });
       return false;
     }
 
     const headers = await getAuthHeaders();
-    
-    const response = await fetch(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.preferences}`, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify(validatedPrefs),
-      signal: AbortSignal.timeout(API_CONFIG.timeout)
-    });
+
+    const response = await fetch(
+      `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.preferences}`,
+      {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(validatedPrefs),
+        signal: AbortSignalWithTimeout(API_CONFIG.timeout),
+      }
+    );
 
     if (!response.ok) {
       if (response.status === 401) {
-        logTelemetryEvent('preferences_sync_unauthorized', { status: response.status });
+        logTelemetryEvent('preferences_sync_unauthorized', {
+          status: response.status,
+        });
         return false;
       }
       if (response.status === 403) {
-        logTelemetryEvent('preferences_sync_forbidden', { status: response.status });
+        logTelemetryEvent('preferences_sync_forbidden', {
+          status: response.status,
+        });
         return false;
       }
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
     const result = await response.json();
-    
+
     logTelemetryEvent('preferences_sync_success', {
       syncedFields: Object.keys(validatedPrefs),
-      serverResponse: result
+      serverResponse: result,
     });
 
     return true;
-
   } catch (error) {
     console.error('[PreferencesAPI] Sync error:', error);
     logTelemetryEvent('preferences_sync_error', {
       error: error instanceof Error ? error.message : 'Unknown error',
-      prefs: updatedPrefs
+      prefs: updatedPrefs,
     });
     return false;
   }
@@ -224,15 +267,21 @@ export async function syncPreferencesToServer(updatedPrefs: AgentPrefs): Promise
 export async function fetchAdminDefaults(): Promise<AgentPrefs | null> {
   try {
     const headers = await getAuthHeaders();
-    
-    const response = await fetch(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.adminDefaults}`, {
-      method: 'GET',
-      headers,
-      signal: AbortSignal.timeout(API_CONFIG.timeout)
-    });
+
+    const response = await fetch(
+      `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.adminDefaults}`,
+      {
+        method: 'GET',
+        headers,
+        signal: AbortSignalWithTimeout(API_CONFIG.timeout),
+      }
+    );
 
     if (!response.ok) {
-      console.warn('[PreferencesAPI] Admin defaults not available:', response.status);
+      console.warn(
+        '[PreferencesAPI] Admin defaults not available:',
+        response.status
+      );
       return null;
     }
 
@@ -242,17 +291,16 @@ export async function fetchAdminDefaults(): Promise<AgentPrefs | null> {
     if (validatedPrefs) {
       logTelemetryEvent('admin_defaults_fetch_success', {
         hasDefaults: true,
-        defaultFields: Object.keys(validatedPrefs)
+        defaultFields: Object.keys(validatedPrefs),
       });
       return validatedPrefs;
     }
 
     return null;
-
   } catch (error) {
     console.error('[PreferencesAPI] Admin defaults error:', error);
     logTelemetryEvent('admin_defaults_fetch_error', {
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
     return null;
   }
@@ -262,7 +310,10 @@ export async function fetchAdminDefaults(): Promise<AgentPrefs | null> {
  * Merge server preferences with local preferences
  * Server preferences take priority, but local prefs fill gaps
  */
-export function mergePreferences(serverPrefs: AgentPrefs | null, localPrefs: AgentPrefs): AgentPrefs {
+export function mergePreferences(
+  serverPrefs: AgentPrefs | null,
+  localPrefs: AgentPrefs
+): AgentPrefs {
   if (!serverPrefs) {
     return localPrefs;
   }
@@ -271,7 +322,7 @@ export function mergePreferences(serverPrefs: AgentPrefs | null, localPrefs: Age
     ...localPrefs,
     ...serverPrefs,
     // Ensure lockedFields from server are preserved
-    lockedFields: serverPrefs.lockedFields || localPrefs.lockedFields
+    lockedFields: serverPrefs.lockedFields || localPrefs.lockedFields,
   };
 }
 
@@ -282,12 +333,15 @@ export function mergePreferences(serverPrefs: AgentPrefs | null, localPrefs: Age
 export async function hasServerPreferences(): Promise<boolean> {
   try {
     const headers = await getAuthHeaders();
-    
-    const response = await fetch(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.preferences}`, {
-      method: 'HEAD',
-      headers,
-      signal: AbortSignal.timeout(5000) // Shorter timeout for HEAD
-    });
+
+    const response = await fetch(
+      `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.preferences}`,
+      {
+        method: 'HEAD',
+        headers,
+        signal: AbortSignalWithTimeout(5000), // Shorter timeout for HEAD
+      }
+    );
 
     return response.ok;
   } catch (error) {
@@ -310,13 +364,15 @@ async function withRetry<T>(
       return await operation();
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      
+
       if (attempt === maxAttempts) {
         throw lastError;
       }
 
       // Exponential backoff
-      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      await new Promise(resolve =>
+        setTimeout(resolve, Math.pow(2, attempt) * 1000)
+      );
     }
   }
 
@@ -335,11 +391,13 @@ export async function fetchPreferencesWithRetry(): Promise<AgentPrefs | null> {
 /**
  * Enhanced sync with retry logic
  */
-export async function syncPreferencesWithRetry(updatedPrefs: AgentPrefs): Promise<boolean> {
+export async function syncPreferencesWithRetry(
+  updatedPrefs: AgentPrefs
+): Promise<boolean> {
   return withRetry(async () => {
     return await syncPreferencesToServer(updatedPrefs);
   });
 }
 
 // Export configuration for testing
-export { API_CONFIG, PREFERENCES_SCHEMA }; 
+export { API_CONFIG, PREFERENCES_SCHEMA };

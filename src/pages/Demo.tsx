@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   FileText,
   Sparkles,
@@ -16,10 +16,10 @@ import {
   Palette,
   MessageCircle,
   Lightbulb,
-} from "lucide-react";
-import { useDocCraftAgent } from "../contexts/AgentContext";
-import DocCraftAgentChat from "../../modules/agent/components/DocCraftAgentChat";
-import { useMCP } from "../useMCP";
+} from 'lucide-react';
+import { useDocCraftAgent } from '../contexts/AgentContext';
+// import DocCraftAgentChat from "../../modules/agent/components/DocCraftAgentChat";
+// import { useMCP } from "../useMCP"; // Available for future MCP integration
 
 interface DemoStep {
   id: string;
@@ -27,7 +27,20 @@ interface DemoStep {
   description: string;
   icon: React.ReactNode;
   duration: number;
-  status: "pending" | "active" | "completed" | "error";
+  status: 'pending' | 'active' | 'completed' | 'error';
+}
+
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  color: string;
+  size: number;
+  rotation: number;
+  rotationSpeed: number;
+  shape: 'circle' | 'square' | 'triangle' | 'star';
 }
 
 // Confetti Explosion Component
@@ -43,14 +56,14 @@ const ConfettiExplosion = () => {
       size: number;
       rotation: number;
       rotationSpeed: number;
-      shape: "circle" | "square" | "triangle" | "star";
+      shape: 'circle' | 'square' | 'triangle' | 'star';
     }>
   >([]);
 
   useEffect(() => {
     // Get the demo section element to confine confetti to that area
     const demoSection = document.querySelector(
-      ".lg\\:col-span-2"
+      '.lg\\:col-span-2'
     ) as HTMLElement;
     if (!demoSection) return;
 
@@ -68,44 +81,44 @@ const ConfettiExplosion = () => {
         vx: (Math.random() - 0.5) * 4, // Slower horizontal spread
         vy: Math.random() * 2 + 1.5, // Slower upward explosion then gentle fall
         color: [
-          "#ff6b6b",
-          "#4ecdc4",
-          "#45b7d1",
-          "#96ceb4",
-          "#feca57",
-          "#ff9ff3",
-          "#54a0ff",
-          "#5f27cd",
-          "#ff9f43",
-          "#00d2d3",
-          "#ff6348",
-          "#2ed573",
-          "#1e90ff",
-          "#ffa502",
-          "#ff4757",
+          '#ff6b6b',
+          '#4ecdc4',
+          '#45b7d1',
+          '#96ceb4',
+          '#feca57',
+          '#ff9ff3',
+          '#54a0ff',
+          '#5f27cd',
+          '#ff9f43',
+          '#00d2d3',
+          '#ff6348',
+          '#2ed573',
+          '#1e90ff',
+          '#ffa502',
+          '#ff4757',
         ][Math.floor(Math.random() * 15)],
         size: Math.random() * 8 + 4, // Reverted to original size
         rotation: Math.random() * 360,
         rotationSpeed: (Math.random() - 0.5) * 6, // Slower rotation
-        shape: ["circle", "square", "triangle", "star"][
+        shape: ['circle', 'square', 'triangle', 'star'][
           Math.floor(Math.random() * 4)
-        ] as "circle" | "square" | "triangle" | "star",
+        ] as 'circle' | 'square' | 'triangle' | 'star',
       };
     });
     setParticles(newParticles);
 
     // Animate confetti with explosion effect then gentle fall
     const interval = setInterval(() => {
-      setParticles((prev) =>
+      setParticles(prev =>
         prev
-          .map((particle) => ({
+          .map(particle => ({
             ...particle,
             x: particle.x + particle.vx,
             y: particle.y + particle.vy,
             vy: particle.vy + 0.08, // Gentler gravity for slower fall
             rotation: particle.rotation + particle.rotationSpeed,
           }))
-          .filter((particle) => particle.y < window.innerHeight + 50)
+          .filter(particle => particle.y < window.innerHeight + 50)
       );
     }, 24); // Slower animation (was 16)
 
@@ -120,7 +133,7 @@ const ConfettiExplosion = () => {
     };
   }, []);
 
-  const renderParticle = (particle: any) => {
+  const renderParticle = (particle: Particle) => {
     const baseStyle = {
       left: particle.x,
       top: particle.y,
@@ -128,11 +141,11 @@ const ConfettiExplosion = () => {
       height: particle.size,
       backgroundColor: particle.color,
       transform: `rotate(${particle.rotation}deg)`,
-      position: "absolute" as const,
+      position: 'absolute' as const,
     };
 
     switch (particle.shape) {
-      case "circle":
+      case 'circle':
         return (
           <div
             key={particle.id}
@@ -140,22 +153,22 @@ const ConfettiExplosion = () => {
             style={baseStyle}
           />
         );
-      case "square":
+      case 'square':
         return (
           <div key={particle.id} className="animate-spin" style={baseStyle} />
         );
-      case "triangle":
+      case 'triangle':
         return (
           <div
             key={particle.id}
             className="animate-pulse"
             style={{
               ...baseStyle,
-              clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
+              clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
             }}
           />
         );
-      case "star":
+      case 'star':
         return (
           <div
             key={particle.id}
@@ -163,7 +176,7 @@ const ConfettiExplosion = () => {
             style={{
               ...baseStyle,
               clipPath:
-                "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
+                'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
             }}
           />
         );
@@ -187,17 +200,17 @@ const ConfettiExplosion = () => {
 
 export default function Demo() {
   const navigate = useNavigate();
-  
+
   /* MCP: { role: "curator", allowedActions: ["refactor", "animate", "style", "organize", "present"] } */
-  const ctx = useMCP("Demo.tsx");
+  // const ctx = useMCP("Demo.tsx"); // MCP context available for future use
 
   // Add error handling for the agent context
-  let sendAgentGreeting: any = () => {};
+  let sendAgentGreeting: (message: string) => void = () => {};
   try {
     const agentContext = useDocCraftAgent();
     sendAgentGreeting = agentContext.sendAgentGreeting || (() => {});
   } catch (error) {
-    console.warn("Agent context not available:", error);
+    console.warn('Agent context not available:', error);
   }
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -219,8 +232,8 @@ export default function Demo() {
       setAgentOpen(customEvent.detail.isOpen);
     };
 
-    window.addEventListener("agent-toggle", handleAgentToggle);
-    return () => window.removeEventListener("agent-toggle", handleAgentToggle);
+    window.addEventListener('agent-toggle', handleAgentToggle);
+    return () => window.removeEventListener('agent-toggle', handleAgentToggle);
   }, []);
 
   // Auto-open AI agent after reading time
@@ -228,78 +241,81 @@ export default function Demo() {
     const timer = setTimeout(() => {
       if (!agentActivated) {
         setAgentActivated(true);
-        console.log("Agent activated - will auto-open with welcome message");
+        console.log('Agent activated - will auto-open with welcome message');
       }
     }, 30000); // 30 seconds - adequate time for average to slow readers
 
     return () => clearTimeout(timer);
   }, [agentActivated]);
 
-  const demoSteps: DemoStep[] = [
-    {
-      id: "document-upload",
-      title: "Document Upload & Analysis",
-      description:
-        "Upload your document and watch AI analyze its structure, tone, and content",
-      icon: <FileText className="w-6 h-6" />,
-      duration: 15000, // 15 seconds - extended for reading time
-      status: "pending",
-    },
-    {
-      id: "ai-enhancement",
-      title: "AI-Powered Enhancement",
-      description:
-        "See how AI improves your content with intelligent suggestions and corrections",
-      icon: <Sparkles className="w-6 h-6" />,
-      duration: 12000, // 12 seconds - extended for reading time
-      status: "pending",
-    },
-    {
-      id: "ebook-analysis",
-      title: "Ebook Analysis & Creation",
-      description:
-        "Analyze existing ebooks and create compelling new content with AI assistance",
-      icon: <BookOpen className="w-6 h-6" />,
-      duration: 14000, // 14 seconds - extended for reading time
-      status: "pending",
-    },
-    {
-      id: "character-development",
-      title: "Character Development",
-      description:
-        "Create rich, multi-dimensional characters with AI-powered development tools",
-      icon: <Brain className="w-6 h-6" />,
-      duration: 12000, // 12 seconds - extended for reading time
-      status: "pending",
-    },
-    {
-      id: "collaboration",
-      title: "Real-Time Collaboration",
-      description:
-        "Work together seamlessly with real-time editing and feedback integration",
-      icon: <Users className="w-6 h-6" />,
-      duration: 10000, // 10 seconds - extended for reading time
-      status: "pending",
-    },
-    {
-      id: "analytics",
-      title: "Advanced Analytics",
-      description:
-        "Track performance and engagement with comprehensive analytics and insights",
-      icon: <BarChart3 className="w-6 h-6" />,
-      duration: 12000, // 12 seconds - extended for reading time
-      status: "pending",
-    },
-    {
-      id: "personalization",
-      title: "Personalized Experience",
-      description:
-        "AI adapts to your unique writing style and preferences for optimal results",
-      icon: <Settings className="w-6 h-6" />,
-      duration: 10000, // 10 seconds - extended for reading time
-      status: "pending",
-    },
-  ];
+  const demoSteps: DemoStep[] = useMemo(
+    () => [
+      {
+        id: 'document-upload',
+        title: 'Document Upload & Analysis',
+        description:
+          'Upload your document and watch AI analyze its structure, tone, and content',
+        icon: <FileText className="w-6 h-6" />,
+        duration: 15000, // 15 seconds - extended for reading time
+        status: 'pending',
+      },
+      {
+        id: 'ai-enhancement',
+        title: 'AI-Powered Enhancement',
+        description:
+          'See how AI improves your content with intelligent suggestions and corrections',
+        icon: <Sparkles className="w-6 h-6" />,
+        duration: 12000, // 12 seconds - extended for reading time
+        status: 'pending',
+      },
+      {
+        id: 'ebook-analysis',
+        title: 'Ebook Analysis & Creation',
+        description:
+          'Analyze existing ebooks and create compelling new content with AI assistance',
+        icon: <BookOpen className="w-6 h-6" />,
+        duration: 14000, // 14 seconds - extended for reading time
+        status: 'pending',
+      },
+      {
+        id: 'character-development',
+        title: 'Character Development',
+        description:
+          'Create rich, multi-dimensional characters with AI-powered development tools',
+        icon: <Brain className="w-6 h-6" />,
+        duration: 12000, // 12 seconds - extended for reading time
+        status: 'pending',
+      },
+      {
+        id: 'collaboration',
+        title: 'Real-Time Collaboration',
+        description:
+          'Work together seamlessly with real-time editing and feedback integration',
+        icon: <Users className="w-6 h-6" />,
+        duration: 10000, // 10 seconds - extended for reading time
+        status: 'pending',
+      },
+      {
+        id: 'analytics',
+        title: 'Advanced Analytics',
+        description:
+          'Track performance and engagement with comprehensive analytics and insights',
+        icon: <BarChart3 className="w-6 h-6" />,
+        duration: 12000, // 12 seconds - extended for reading time
+        status: 'pending',
+      },
+      {
+        id: 'personalization',
+        title: 'AI Personalization',
+        description:
+          'Experience personalized content recommendations and adaptive AI responses',
+        icon: <Settings className="w-6 h-6" />,
+        duration: 10000, // 10 seconds - extended for reading time
+        status: 'pending',
+      },
+    ],
+    []
+  );
 
   // Auto-activate AI assistant on page load
   useEffect(() => {
@@ -328,7 +344,7 @@ export default function Demo() {
 
     // Stop auto-progression when user manually clicks a step
     if (isPlaying) {
-      console.log("Stopping auto-progression due to manual step selection");
+      console.log('Stopping auto-progression due to manual step selection');
       setIsPlaying(false);
     }
 
@@ -343,13 +359,13 @@ export default function Demo() {
     if (stepGuidance) {
       console.log(
         `User clicked step ${stepIndex + 1}:`,
-        stepGuidance.substring(0, 100) + "..."
+        stepGuidance.substring(0, 100) + '...'
       );
       try {
         sendAgentGreeting(stepGuidance);
-        console.log("Agent guidance sent successfully");
+        console.log('Agent guidance sent successfully');
       } catch (error) {
-        console.error("Failed to send agent guidance:", error);
+        console.error('Failed to send agent guidance:', error);
       }
     }
 
@@ -387,19 +403,19 @@ export default function Demo() {
           setTimeout(() => {
             console.log(
               `Auto-advancing to step ${nextStep + 1}:`,
-              stepGuidance.substring(0, 100) + "..."
+              stepGuidance.substring(0, 100) + '...'
             );
             try {
               sendAgentGreeting(stepGuidance);
-              console.log("Agent guidance sent successfully");
+              console.log('Agent guidance sent successfully');
             } catch (error) {
-              console.error("Failed to send agent guidance:", error);
+              console.error('Failed to send agent guidance:', error);
             }
           }, 500); // Small delay to let the step transition complete
         }
       } else {
         // Demo completed
-        console.log("Demo completed - all steps finished");
+        console.log('Demo completed - all steps finished');
         setIsPlaying(false);
         setShowResults(true);
         setShowConfetti(true); // Trigger confetti explosion
@@ -429,7 +445,7 @@ Do you have any questions about what you've seen or how DocCraft-AI can help wit
       console.log(`Clearing timer for step ${currentStep + 1}`);
       clearTimeout(stepTimer);
     };
-  }, [isPlaying, currentStep, demoSteps.length]);
+  }, [isPlaying, currentStep, demoSteps]);
 
   // Progress calculation
   useEffect(() => {
@@ -445,7 +461,7 @@ Do you have any questions about what you've seen or how DocCraft-AI can help wit
     }, 100);
 
     return () => clearInterval(interval);
-  }, [isPlaying, currentStep, demoSteps.length]);
+  }, [isPlaying, currentStep, demoSteps]);
 
   const handlePlay = () => {
     setIsPlaying(true);
@@ -458,14 +474,14 @@ Do you have any questions about what you've seen or how DocCraft-AI can help wit
       const stepGuidance = getStepGuidance(0);
       if (stepGuidance) {
         console.log(
-          "Sending initial Step 1 guidance:",
-          stepGuidance.substring(0, 100) + "..."
+          'Sending initial Step 1 guidance:',
+          stepGuidance.substring(0, 100) + '...'
         );
         try {
           sendAgentGreeting(stepGuidance);
-          console.log("Initial agent guidance sent successfully");
+          console.log('Initial agent guidance sent successfully');
         } catch (error) {
-          console.error("Failed to send initial agent guidance:", error);
+          console.error('Failed to send initial agent guidance:', error);
         }
       }
     }, 1000); // 1 second delay to let the demo start
@@ -473,25 +489,25 @@ Do you have any questions about what you've seen or how DocCraft-AI can help wit
     // Auto-scroll to progress bar after a short delay
     setTimeout(() => {
       // Specifically target the Demo Progress section
-      const progressSection = document.getElementById("demo-progress");
+      const progressSection = document.getElementById('demo-progress');
       if (progressSection) {
         progressSection.scrollIntoView({
-          behavior: "smooth",
-          block: "start", // Position at top of viewing area
-          inline: "nearest",
+          behavior: 'smooth',
+          block: 'start', // Position at top of viewing area
+          inline: 'nearest',
         });
       } else {
         // Fallback: look for any element containing "Demo Progress" text
-        const elements = document.querySelectorAll("*");
+        const elements = document.querySelectorAll('*');
         for (const element of elements) {
           if (
             element.textContent &&
-            element.textContent.includes("Demo Progress")
+            element.textContent.includes('Demo Progress')
           ) {
             element.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-              inline: "nearest",
+              behavior: 'smooth',
+              block: 'start',
+              inline: 'nearest',
             });
             break;
           }
@@ -514,24 +530,25 @@ Do you have any questions about what you've seen or how DocCraft-AI can help wit
   const getStepStatus = (index: number) => {
     // If demo is completed (showResults is true), all steps should be accessible
     if (showResults) {
-      if (index === currentStep) return "active";
-      return "completed"; // All steps are considered completed but clickable
+      if (index === currentStep) return 'active';
+      return 'completed'; // All steps are considered completed but clickable
     }
-    
+
     // During demo progression
-    if (index < currentStep) return "completed";
-    if (index === currentStep) return "active";
-    return "pending";
+    if (index < currentStep) return 'completed';
+    if (index === currentStep) return 'active';
+    return 'pending';
   };
 
   // Enhanced step highlighting with animation states
   const getStepHighlightClass = (index: number) => {
     const status = getStepStatus(index);
-    const baseClasses = "transition-all duration-500 ease-in-out transform cursor-pointer hover:scale-105";
+    const baseClasses =
+      'transition-all duration-500 ease-in-out transform cursor-pointer hover:scale-105';
 
-    if (status === "active") {
+    if (status === 'active') {
       return `${baseClasses} scale-105 shadow-lg ring-2 ring-blue-400 ring-opacity-50 animate-pulse`;
-    } else if (status === "completed") {
+    } else if (status === 'completed') {
       return `${baseClasses} scale-100 shadow-md hover:shadow-lg`;
     } else {
       return `${baseClasses} scale-95 opacity-75 hover:opacity-100`;
@@ -540,11 +557,11 @@ Do you have any questions about what you've seen or how DocCraft-AI can help wit
 
   const getStepIconClass = (index: number) => {
     const status = getStepStatus(index);
-    const baseClasses = "transition-all duration-300 ease-in-out";
+    const baseClasses = 'transition-all duration-300 ease-in-out';
 
-    if (status === "active") {
+    if (status === 'active') {
       return `${baseClasses} text-blue-600 dark:text-blue-400 animate-bounce`;
-    } else if (status === "completed") {
+    } else if (status === 'completed') {
       return `${baseClasses} text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300`;
     } else {
       return `${baseClasses} text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400`;
@@ -681,14 +698,14 @@ Do you have any questions about the personalized AI experience?`,
         {/* Header */}
         <div
           className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 transition-all duration-300 ${
-            agentOpen ? "mr-80 md:mr-96" : ""
+            agentOpen ? 'mr-80 md:mr-96' : ''
           }`}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
               <div className="flex items-center space-x-4">
                 <button
-                  onClick={() => navigate("/")}
+                  onClick={() => navigate('/')}
                   className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
                   ← Back to Home
@@ -728,7 +745,7 @@ Do you have any questions about the personalized AI experience?`,
 
         <div
           className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-all duration-300 ${
-            agentOpen ? "mr-80 md:mr-96" : ""
+            agentOpen ? 'mr-80 md:mr-96' : ''
           }`}
         >
           {/* Agent Status Indicator */}
@@ -755,23 +772,23 @@ Do you have any questions about the personalized AI experience?`,
                   Welcome to the DocCraft-AI Demo! 🤖
                 </h2>
                 <div className="space-y-3 text-gray-700 dark:text-gray-300">
-                  <p className="text-base">
-                    This interactive demo showcases the powerful features of
-                    DocCraft-AI. Here's how to get the most out of it:
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Welcome to DocCraft-AI. Here&apos;s how to get the most out
+                    of it:
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div className="flex items-start space-x-2">
                       <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
                       <p className="text-sm">
-                        Click <strong>"Start Demo"</strong> to begin the
-                        automated walkthrough
+                        Click <strong>&quot;Start Demo&quot;</strong> to begin
+                        the automated walkthrough
                       </p>
                     </div>
                     <div className="flex items-start space-x-2">
                       <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
                       <p className="text-sm">
-                        Use <strong>"Pause"</strong> and{" "}
-                        <strong>"Restart"</strong> to control the demo
+                        Use <strong>&quot;Pause&quot;</strong> and{' '}
+                        <strong>&quot;Restart&quot;</strong> to control the demo
                       </p>
                     </div>
                     <div className="flex items-start space-x-2">
@@ -831,8 +848,8 @@ Do you have any questions about the personalized AI experience?`,
                     key={index}
                     className={`w-2 h-2 rounded-full transition-all duration-300 ${
                       index <= currentStep
-                        ? "bg-white shadow-sm"
-                        : "bg-gray-400 dark:bg-gray-600"
+                        ? 'bg-white shadow-sm'
+                        : 'bg-gray-400 dark:bg-gray-600'
                     }`}
                   />
                 ))}
@@ -869,9 +886,9 @@ Do you have any questions about the personalized AI experience?`,
                         <div className="flex justify-center relative z-10">
                           <div
                             className={`p-6 rounded-full transition-all duration-500 ease-in-out transform ${
-                              getStepStatus(currentStep) === "active"
-                                ? "bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-800 dark:to-purple-800 text-blue-600 dark:text-blue-400 shadow-lg ring-4 ring-blue-200 dark:ring-blue-700 scale-110 animate-pulse"
-                                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                              getStepStatus(currentStep) === 'active'
+                                ? 'bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-800 dark:to-purple-800 text-blue-600 dark:text-blue-400 shadow-lg ring-4 ring-blue-200 dark:ring-blue-700 scale-110 animate-pulse'
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                             }`}
                           >
                             {demoSteps[currentStep].icon}
@@ -978,20 +995,28 @@ Do you have any questions about the personalized AI experience?`,
                     <div
                       key={step.id}
                       onClick={() => handleStepClick(index)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleStepClick(index);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
                       className={`flex items-center space-x-3 p-4 rounded-lg transition-all duration-500 ease-in-out transform cursor-pointer hover:scale-105 ${getStepHighlightClass(
                         index
                       )} ${
-                        getStepStatus(index) === "completed"
-                          ? "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200 dark:border-green-800 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-800/30 dark:hover:to-emerald-800/30"
-                          : getStepStatus(index) === "active"
-                          ? "bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-800 hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-800/30 dark:hover:to-purple-800/30"
-                          : "bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                        getStepStatus(index) === 'completed'
+                          ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200 dark:border-green-800 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-800/30 dark:hover:to-emerald-800/30'
+                          : getStepStatus(index) === 'active'
+                            ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-800 hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-800/30 dark:hover:to-purple-800/30'
+                            : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                       }`}
                     >
                       <div
                         className={`flex-shrink-0 ${getStepIconClass(index)}`}
                       >
-                        {getStepStatus(index) === "completed" ? (
+                        {getStepStatus(index) === 'completed' ? (
                           <CheckCircle className="w-6 h-6" />
                         ) : (
                           <div className="w-6 h-6">{step.icon}</div>
@@ -1000,27 +1025,27 @@ Do you have any questions about the personalized AI experience?`,
                       <div className="flex-1 min-w-0">
                         <p
                           className={`text-sm font-medium transition-colors duration-300 ${
-                            getStepStatus(index) === "completed"
-                              ? "text-green-800 dark:text-green-200"
-                              : getStepStatus(index) === "active"
-                              ? "text-blue-800 dark:text-blue-200"
-                              : "text-gray-700 dark:text-gray-300"
+                            getStepStatus(index) === 'completed'
+                              ? 'text-green-800 dark:text-green-200'
+                              : getStepStatus(index) === 'active'
+                                ? 'text-blue-800 dark:text-blue-200'
+                                : 'text-gray-700 dark:text-gray-300'
                           }`}
                         >
                           {step.title}
                         </p>
                         <p
                           className={`text-xs transition-colors duration-300 ${
-                            getStepStatus(index) === "completed"
-                              ? "text-green-600 dark:text-green-400"
-                              : getStepStatus(index) === "active"
-                              ? "text-blue-600 dark:text-blue-400"
-                              : "text-gray-500 dark:text-gray-400"
+                            getStepStatus(index) === 'completed'
+                              ? 'text-green-600 dark:text-green-400'
+                              : getStepStatus(index) === 'active'
+                                ? 'text-blue-600 dark:text-blue-400'
+                                : 'text-gray-500 dark:text-gray-400'
                           }`}
                         >
                           {step.description}
                         </p>
-                        {getStepStatus(index) === "active" && (
+                        {getStepStatus(index) === 'active' && (
                           <div className="mt-2 flex items-center space-x-1">
                             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                             <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
@@ -1029,14 +1054,15 @@ Do you have any questions about the personalized AI experience?`,
                           </div>
                         )}
                         {/* Show "Click to Review" for completed steps after demo completion */}
-                        {showResults && getStepStatus(index) === "completed" && (
-                          <div className="mt-2 flex items-center space-x-1">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-xs text-green-600 dark:text-green-400 font-medium">
-                              Click to Review
-                            </span>
-                          </div>
-                        )}
+                        {showResults &&
+                          getStepStatus(index) === 'completed' && (
+                            <div className="mt-2 flex items-center space-x-1">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                                Click to Review
+                              </span>
+                            </div>
+                          )}
                       </div>
                     </div>
                   ))}
@@ -1058,14 +1084,14 @@ Do you have any questions about the personalized AI experience?`,
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
-                  onClick={() => navigate("/signup")}
+                  onClick={() => navigate('/signup')}
                   className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
                 >
                   Get Started Free
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </button>
                 <button
-                  onClick={() => navigate("/login")}
+                  onClick={() => navigate('/login')}
                   className="inline-flex items-center px-8 py-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 border border-gray-200 dark:border-gray-600"
                 >
                   Sign In
@@ -1076,7 +1102,7 @@ Do you have any questions about the personalized AI experience?`,
         </div>
 
         {/* AI Assistant */}
-        <DocCraftAgentChat autoOpen={agentActivated} />
+        {/* <DocCraftAgentChat autoOpen={agentActivated} /> */}
         {showConfetti && <ConfettiExplosion />}
       </div>
     </div>
@@ -1097,11 +1123,11 @@ const DocumentUploadDemo = () => (
       <div className="w-full bg-blue-200 dark:bg-blue-700 rounded-full h-2 mb-4">
         <div
           className="bg-blue-500 h-2 rounded-full animate-pulse"
-          style={{ width: "85%" }}
+          style={{ width: '85%' }}
         ></div>
       </div>
       <p className="text-sm text-blue-600 dark:text-blue-300">
-        "The Great Gatsby" - 45,000 words
+        &quot;The Great Gatsby&quot; - 45,000 words
       </p>
     </div>
 
@@ -1205,7 +1231,7 @@ const AIEnhancementDemo = () => (
       </h4>
       <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
         <p className="text-gray-700 dark:text-gray-300 text-sm italic">
-          "The quick brown fox jumps over the lazy dog."
+          &quot;The quick brown fox jumps over the lazy dog.&quot;
         </p>
         <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
           Basic sentence - needs enhancement
@@ -1253,7 +1279,8 @@ const AIEnhancementDemo = () => (
       </h4>
       <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-green-200 dark:border-green-600">
         <p className="text-green-800 dark:text-green-200 text-sm font-medium">
-          "The swift brown fox leaps gracefully over the slumbering canine."
+          &quot;The swift brown fox leaps gracefully over the slumbering
+          canine.&quot;
         </p>
         <div className="mt-3 space-y-2">
           <div className="flex items-center space-x-2">
@@ -1318,8 +1345,8 @@ const EbookAnalysisDemo = () => (
   <div className="space-y-4">
     <div className="bg-purple-50 dark:bg-purple-900/30 rounded-lg p-4">
       <p className="text-purple-800 dark:text-purple-200 text-sm">
-        "This ebook has a strong narrative arc and engaging characters. The plot
-        twists are well-executed and the pacing is perfect."
+        &quot;This ebook has a strong narrative arc and engaging characters. The
+        plot twists are well-executed and the pacing is perfect.&quot;
       </p>
     </div>
     <div className="flex justify-center">
@@ -1327,8 +1354,8 @@ const EbookAnalysisDemo = () => (
     </div>
     <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
       <p className="text-blue-800 dark:text-blue-200 text-sm">
-        "The analysis reveals a clear structure, excellent pacing, and a
-        compelling plot. The character development is particularly strong."
+        &quot;The analysis reveals a clear structure, excellent pacing, and a
+        compelling plot. The character development is particularly strong.&quot;
       </p>
     </div>
   </div>
@@ -1338,9 +1365,9 @@ const CharacterDevelopmentDemo = () => (
   <div className="space-y-4">
     <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-lg p-4">
       <p className="text-indigo-800 dark:text-indigo-200 text-sm">
-        "The protagonist is a complex, multi-dimensional character with a clear
-        backstory and a well-defined personality. The antagonist is equally
-        compelling."
+        &quot;The protagonist is a complex, multi-dimensional character with a
+        clear backstory and a well-defined personality. The antagonist is
+        equally compelling.&quot;
       </p>
     </div>
     <div className="flex justify-center">
@@ -1348,9 +1375,9 @@ const CharacterDevelopmentDemo = () => (
     </div>
     <div className="bg-pink-50 dark:bg-pink-900/30 rounded-lg p-4">
       <p className="text-pink-800 dark:text-pink-200 text-sm">
-        "The AI has successfully developed a character that resonates with
+        &quot;The AI has successfully developed a character that resonates with
         readers, capturing their attention and making them care about their
-        journey."
+        journey.&quot;
       </p>
     </div>
   </div>
@@ -1371,7 +1398,7 @@ const CollaborationDemo = () => (
     <div className="flex items-center space-x-4 justify-end">
       <div className="flex-1 bg-green-50 dark:bg-green-900/30 rounded-lg p-3 text-right">
         <p className="text-green-800 dark:text-green-200 text-sm">
-          Thanks! I'll implement that.
+          Thanks! I&apos;ll implement that.
         </p>
       </div>
       <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
@@ -1412,19 +1439,19 @@ const AnalyticsDemo = () => (
     <div className="h-20 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-end justify-around p-2">
       <div
         className="w-4 bg-blue-500 rounded-t"
-        style={{ height: "60%" }}
+        style={{ height: '60%' }}
       ></div>
       <div
         className="w-4 bg-green-500 rounded-t"
-        style={{ height: "80%" }}
+        style={{ height: '80%' }}
       ></div>
       <div
         className="w-4 bg-purple-500 rounded-t"
-        style={{ height: "40%" }}
+        style={{ height: '40%' }}
       ></div>
       <div
         className="w-4 bg-yellow-500 rounded-t"
-        style={{ height: "90%" }}
+        style={{ height: '90%' }}
       ></div>
     </div>
   </div>
@@ -1463,7 +1490,7 @@ const DemoResults = () => {
   const navigate = useNavigate();
 
   const handleStartHere = () => {
-    navigate("/signup");
+    navigate('/signup');
   };
 
   return (
@@ -1483,8 +1510,8 @@ const DemoResults = () => {
             You have completed the DocCraft-AI Demo!
           </h3>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            You've just witnessed the full power of AI-driven content creation.
-            Ready to transform your writing experience?
+            You&apos;ve just witnessed the full power of AI-driven content
+            creation. Ready to transform your writing experience?
           </p>
         </div>
       </div>
@@ -1561,7 +1588,7 @@ const DemoResults = () => {
       {/* Additional CTA */}
       <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6 border border-gray-200 dark:border-gray-600">
         <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          What's Next?
+          What&apos;s Next?
         </h4>
         <p className="text-gray-600 dark:text-gray-300 text-sm">
           Create your account and start experiencing the future of AI-powered

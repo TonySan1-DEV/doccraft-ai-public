@@ -242,7 +242,7 @@ export const Support: React.FC = () => {
                 Customer Support
               </h1>
               <p className="text-gray-600 dark:text-gray-300">
-                Get help with DocCraft-AI. We're here to assist you 24/7.
+                Get help with DocCraft-AI. We&apos;re here to assist you 24/7.
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -266,7 +266,11 @@ export const Support: React.FC = () => {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
+                    onClick={() =>
+                      setActiveTab(
+                        tab.id as "overview" | "create" | "tickets" | "faq"
+                      )
+                    }
                     className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                       activeTab === tab.id
                         ? "border-blue-500 text-blue-600 dark:text-blue-400"

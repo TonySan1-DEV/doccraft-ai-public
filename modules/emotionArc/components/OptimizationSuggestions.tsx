@@ -91,9 +91,9 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
               {getTypeIcon(suggestion.type)}
             </span>
             <div className="flex-1">
-              <h4 
+              <button 
                 id={`suggestion-title-${suggestion.id}`}
-                className="text-sm font-semibold text-gray-900 cursor-pointer hover:text-blue-600"
+                className="text-sm font-semibold text-gray-900 cursor-pointer hover:text-blue-600 text-left w-full"
                 onClick={() => onClick(suggestion)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -101,13 +101,11 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
                     onClick(suggestion);
                   }
                 }}
-                tabIndex={0}
-                role="button"
                 aria-expanded={isExpanded}
                 aria-controls={`suggestion-details-${suggestion.id}`}
               >
                 {suggestion.title}
-              </h4>
+              </button>
               <p className="text-sm text-gray-600 mt-1">{suggestion.description}</p>
             </div>
           </div>
@@ -302,17 +300,19 @@ export default function OptimizationSuggestions({
     }
     
     switch (sortBy) {
-      case 'priority':
+      case 'priority': {
         const priorityOrder = { high: 3, medium: 2, low: 1 };
         suggestions.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
         break;
+      }
       case 'impact':
         suggestions.sort((a, b) => b.expectedImpact.engagementChange - a.expectedImpact.engagementChange);
         break;
-      case 'difficulty':
+      case 'difficulty': {
         const difficultyOrder = { easy: 1, medium: 2, hard: 3 };
         suggestions.sort((a, b) => difficultyOrder[a.implementationDifficulty] - difficultyOrder[b.implementationDifficulty]);
         break;
+      }
     }
     
     return suggestions;

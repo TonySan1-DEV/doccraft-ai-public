@@ -134,7 +134,7 @@ export async function analyzeSceneEmotions(
   const characterSections = splitSceneByCharacter(sceneText, characterIds);
   
   // Analyze each character's emotional state
-  for (const [characterId, section] of characterSections) {
+  for (const [characterId, section] of Array.from(characterSections)) {
     const emotionResult = await analyzeEmotion(section);
     characterEmotions.set(characterId, emotionResult);
   }

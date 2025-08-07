@@ -1,26 +1,28 @@
-import React, { useEffect, useState } from 'react'
-import { useAuth } from '../contexts/AuthContext'
-import { supabase } from '../lib/supabase'
-import { AlertTriangle, Clock, UserX, CheckCircle } from 'lucide-react'
-import toast from 'react-hot-toast'
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
+import { AlertTriangle, Clock, UserX, CheckCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface AccountStatus {
-  account_status: string
-  pause_start_date?: string
-  pause_end_date?: string
-  closed_date?: string
+  account_status: string;
+  pause_start_date?: string;
+  pause_end_date?: string;
+  closed_date?: string;
 }
 
 export const AccountStatusBanner: React.FC = () => {
-  const { user } = useAuth()
-  const [accountStatus, setAccountStatus] = useState<AccountStatus | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { user } = useAuth();
+  const [accountStatus, setAccountStatus] = useState<AccountStatus | null>(
+    null
+  );
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
-      fetchAccountStatus()
+      fetchAccountStatus();
     }
-  }, [user])
+  }, [user]);
 
   const fetchAccountStatus = async () => {
     try {
@@ -28,16 +30,16 @@ export const AccountStatusBanner: React.FC = () => {
         .from('writer_profiles')
         .select('account_status, pause_start_date, pause_end_date, closed_date')
         .eq('user_id', user?.id)
-        .single()
+        .single();
 
-      if (error) throw error
-      setAccountStatus(data)
+      if (error) throw error;
+      setAccountStatus(data);
     } catch (error) {
-      console.error('Error fetching account status:', error)
+      console.error('Error fetching account status:', error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleReactivate = async () => {
     try {
@@ -47,35 +49,41 @@ export const AccountStatusBanner: React.FC = () => {
           account_status: 'active',
           pause_start_date: null,
           pause_end_date: null,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id);
 
-      if (error) throw error
+      if (error) throw error;
 
-      toast.success('Account reactivated successfully!')
-      fetchAccountStatus()
+      toast.success('Account reactivated successfully!');
+      fetchAccountStatus();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to reactivate account')
+      toast.error(error.message || 'Failed to reactivate account');
     }
-  }
+  };
 
-  if (isLoading) return null
+  if (isLoading) return null;
 
   if (!accountStatus || accountStatus.account_status === 'active') {
-    return null
+    return null;
   }
 
   const getStatusInfo = () => {
     switch (accountStatus.account_status) {
-      case 'paused':
-        const pauseEndDate = accountStatus.pause_end_date ? new Date(accountStatus.pause_end_date) : null
-        const isExpired = pauseEndDate && pauseEndDate <= new Date()
-        
+      case 'paused': {
+        const pauseEndDate = accountStatus.pause_end_date
+          ? new Date(accountStatus.pause_end_date)
+          : null;
+        const isExpired = pauseEndDate && pauseEndDate <= new Date();
+
         return {
-          icon: isExpired ? <CheckCircle className="w-5 h-5" /> : <Clock className="w-5 h-5" />,
+          icon: isExpired ? (
+            <CheckCircle className="w-5 h-5" />
+          ) : (
+            <Clock className="w-5 h-5" />
+          ),
           title: isExpired ? 'Account Pause Expired' : 'Account Paused',
-          message: isExpired 
+          message: isExpired
             ? 'Your account pause period has ended. You can now reactivate your account.'
             : `Your account is paused until ${pauseEndDate?.toLocaleDateString()}.`,
           color: isExpired ? 'bg-green-500' : 'bg-orange-500',
@@ -86,37 +94,44 @@ export const AccountStatusBanner: React.FC = () => {
             >
               Reactivate Account
             </button>
-          ) : null
-        }
-      
-      case 'closed':
+          ) : null,
+        };
+      }
+
+      case 'closed': {
         return {
           icon: <UserX className="w-5 h-5" />,
           title: 'Account Closed',
-          message: 'Your account has been permanently closed. Please contact support if you need assistance.',
+          message:
+            'Your account has been permanently closed. Please contact support if you need assistance.',
           color: 'bg-red-500',
-          action: null
-        }
-      
-      case 'suspended':
+          action: null,
+        };
+      }
+
+      case 'suspended': {
         return {
           icon: <AlertTriangle className="w-5 h-5" />,
           title: 'Account Suspended',
-          message: 'Your account has been suspended. Please contact support for more information.',
+          message:
+            'Your account has been suspended. Please contact support for more information.',
           color: 'bg-red-500',
-          action: null
-        }
-      
-      default:
-        return null
-    }
-  }
+          action: null,
+        };
+      }
 
-  const statusInfo = getStatusInfo()
-  if (!statusInfo) return null
+      default:
+        return null;
+    }
+  };
+
+  const statusInfo = getStatusInfo();
+  if (!statusInfo) return null;
 
   return (
-    <div className={`${statusInfo.color} text-white p-4 mb-4 rounded-lg shadow-lg`}>
+    <div
+      className={`${statusInfo.color} text-white p-4 mb-4 rounded-lg shadow-lg`}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           {statusInfo.icon}
@@ -126,13 +141,11 @@ export const AccountStatusBanner: React.FC = () => {
           </div>
         </div>
         {statusInfo.action && (
-          <div className="flex items-center space-x-3">
-            {statusInfo.action}
-          </div>
+          <div className="flex items-center space-x-3">{statusInfo.action}</div>
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AccountStatusBanner 
+export default AccountStatusBanner;

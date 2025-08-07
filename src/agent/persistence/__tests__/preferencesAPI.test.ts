@@ -19,19 +19,19 @@ import {
   fetchPreferencesWithRetry,
   syncPreferencesWithRetry,
   API_CONFIG,
-  PREFERENCES_SCHEMA
+  PREFERENCES_SCHEMA,
 } from '../preferencesAPI';
 
 // Mock dependencies
 jest.mock('../../useMCP', () => ({
-  useMCP: jest.fn()
+  useMCP: jest.fn(),
 }));
 
 // Mock telemetry
 const mockLogTelemetryEvent = jest.fn();
 Object.defineProperty(window, 'logTelemetryEvent', {
   value: mockLogTelemetryEvent,
-  writable: true
+  writable: true,
 });
 
 // Mock localStorage and sessionStorage
@@ -39,22 +39,22 @@ const mockLocalStorage = {
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
-  clear: jest.fn()
+  clear: jest.fn(),
 };
 
 const mockSessionStorage = {
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
-  clear: jest.fn()
+  clear: jest.fn(),
 };
 
 Object.defineProperty(window, 'localStorage', {
-  value: mockLocalStorage
+  value: mockLocalStorage,
 });
 
 Object.defineProperty(window, 'sessionStorage', {
-  value: mockSessionStorage
+  value: mockSessionStorage,
 });
 
 // Test data
@@ -64,7 +64,7 @@ const validPreferences = {
   copilotEnabled: true,
   memoryEnabled: true,
   defaultCommandView: 'list' as const,
-  lockedFields: []
+  lockedFields: [],
 };
 
 const invalidPreferences = {
@@ -73,12 +73,12 @@ const invalidPreferences = {
   copilotEnabled: 'not-a-boolean' as any,
   memoryEnabled: 'not-a-boolean' as any,
   defaultCommandView: 'invalid-view' as any,
-  lockedFields: 'not-an-array' as any
+  lockedFields: 'not-an-array' as any,
 };
 
 const partialPreferences = {
   tone: 'formal',
-  language: 'es'
+  language: 'es',
   // Missing other fields
 };
 
@@ -90,13 +90,13 @@ describe('preferencesAPI', () => {
     mockLogTelemetryEvent.mockImplementation(() => {});
     mockLocalStorage.getItem.mockReturnValue(null);
     mockSessionStorage.getItem.mockReturnValue(null);
-    
+
     // Mock fetch
-    fetchSpy = jest.spyOn(global, 'fetch').mockImplementation(() => 
+    fetchSpy = jest.spyOn(global, 'fetch').mockImplementation(() =>
       Promise.resolve({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(validPreferences)
+        json: () => Promise.resolve(validPreferences),
       } as Response)
     );
   });
@@ -110,7 +110,7 @@ describe('preferencesAPI', () => {
       fetchSpy.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(validPreferences)
+        json: () => Promise.resolve(validPreferences),
       } as Response);
 
       const result = await fetchPreferencesFromServer();
@@ -121,8 +121,8 @@ describe('preferencesAPI', () => {
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
-            'Content-Type': 'application/json'
-          })
+            'Content-Type': 'application/json',
+          }),
         })
       );
     });
@@ -130,14 +130,14 @@ describe('preferencesAPI', () => {
     it('should handle missing fields with default fallback', async () => {
       const incompletePrefs = {
         tone: 'formal',
-        language: 'es'
+        language: 'es',
         // Missing other required fields
       };
 
       fetchSpy.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(incompletePrefs)
+        json: () => Promise.resolve(incompletePrefs),
       } as Response);
 
       const result = await fetchPreferencesFromServer();
@@ -146,9 +146,9 @@ describe('preferencesAPI', () => {
         tone: 'formal',
         language: 'es',
         copilotEnabled: true, // Default fallback
-        memoryEnabled: true,   // Default fallback
+        memoryEnabled: true, // Default fallback
         defaultCommandView: 'list', // Default fallback
-        lockedFields: [] // Default fallback
+        lockedFields: [], // Default fallback
       });
     });
 
@@ -156,7 +156,7 @@ describe('preferencesAPI', () => {
       fetchSpy.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        statusText: 'Not Found'
+        statusText: 'Not Found',
       } as Response);
 
       const result = await fetchPreferencesFromServer();
@@ -172,7 +172,7 @@ describe('preferencesAPI', () => {
       fetchSpy.mockResolvedValueOnce({
         ok: false,
         status: 401,
-        statusText: 'Unauthorized'
+        statusText: 'Unauthorized',
       } as Response);
 
       const result = await fetchPreferencesFromServer();
@@ -188,7 +188,7 @@ describe('preferencesAPI', () => {
       fetchSpy.mockResolvedValueOnce({
         ok: false,
         status: 500,
-        statusText: 'Internal Server Error'
+        statusText: 'Internal Server Error',
       } as Response);
 
       const result = await fetchPreferencesFromServer();
@@ -197,7 +197,7 @@ describe('preferencesAPI', () => {
       expect(mockLogTelemetryEvent).toHaveBeenCalledWith(
         'preferences_fetch_error',
         expect.objectContaining({
-          error: 'HTTP 500: Internal Server Error'
+          error: 'HTTP 500: Internal Server Error',
         })
       );
     });
@@ -211,7 +211,7 @@ describe('preferencesAPI', () => {
       expect(mockLogTelemetryEvent).toHaveBeenCalledWith(
         'preferences_fetch_error',
         expect.objectContaining({
-          error: 'Network error'
+          error: 'Network error',
         })
       );
     });
@@ -220,7 +220,7 @@ describe('preferencesAPI', () => {
       fetchSpy.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.reject(new Error('Invalid JSON'))
+        json: () => Promise.reject(new Error('Invalid JSON')),
       } as Response);
 
       const result = await fetchPreferencesFromServer();
@@ -229,7 +229,7 @@ describe('preferencesAPI', () => {
       expect(mockLogTelemetryEvent).toHaveBeenCalledWith(
         'preferences_fetch_error',
         expect.objectContaining({
-          error: 'Invalid JSON'
+          error: 'Invalid JSON',
         })
       );
     });
@@ -243,7 +243,7 @@ describe('preferencesAPI', () => {
       expect(mockLogTelemetryEvent).toHaveBeenCalledWith(
         'preferences_fetch_error',
         expect.objectContaining({
-          error: 'Timeout'
+          error: 'Timeout',
         })
       );
     });
@@ -254,7 +254,7 @@ describe('preferencesAPI', () => {
       fetchSpy.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ success: true })
+        json: () => Promise.resolve({ success: true }),
       } as Response);
 
       const result = await syncPreferencesToServer(validPreferences);
@@ -265,9 +265,9 @@ describe('preferencesAPI', () => {
         expect.objectContaining({
           method: 'PUT',
           headers: expect.objectContaining({
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           }),
-          body: JSON.stringify(validPreferences)
+          body: JSON.stringify(validPreferences),
         })
       );
     });
@@ -276,7 +276,7 @@ describe('preferencesAPI', () => {
       fetchSpy.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ success: true })
+        json: () => Promise.resolve({ success: true }),
       } as Response);
 
       await syncPreferencesToServer(validPreferences);
@@ -296,7 +296,7 @@ describe('preferencesAPI', () => {
       fetchSpy.mockResolvedValueOnce({
         ok: false,
         status: 403,
-        statusText: 'Forbidden'
+        statusText: 'Forbidden',
       } as Response);
 
       const result = await syncPreferencesToServer(validPreferences);
@@ -312,7 +312,7 @@ describe('preferencesAPI', () => {
       fetchSpy.mockResolvedValueOnce({
         ok: false,
         status: 401,
-        statusText: 'Unauthorized'
+        statusText: 'Unauthorized',
       } as Response);
 
       const result = await syncPreferencesToServer(validPreferences);
@@ -334,7 +334,7 @@ describe('preferencesAPI', () => {
         'preferences_sync_error',
         expect.objectContaining({
           error: 'Network error',
-          prefs: validPreferences
+          prefs: validPreferences,
         })
       );
     });
@@ -356,13 +356,13 @@ describe('preferencesAPI', () => {
       const responseWithExtraFields = {
         ...validPreferences,
         unexpectedField: 'should-be-removed',
-        maliciousField: '<script>alert("xss")</script>'
+        maliciousField: '<script>alert("xss")</script>',
       };
 
       fetchSpy.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(responseWithExtraFields)
+        json: () => Promise.resolve(responseWithExtraFields),
       } as Response);
 
       const result = await fetchPreferencesFromServer();
@@ -375,13 +375,13 @@ describe('preferencesAPI', () => {
     it('should validate tone values before applying', async () => {
       const invalidToneResponse = {
         ...validPreferences,
-        tone: 'invalid-tone' as any
+        tone: 'invalid-tone' as any,
       };
 
       fetchSpy.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(invalidToneResponse)
+        json: () => Promise.resolve(invalidToneResponse),
       } as Response);
 
       const result = await fetchPreferencesFromServer();
@@ -392,13 +392,13 @@ describe('preferencesAPI', () => {
     it('should validate language values before applying', async () => {
       const invalidLanguageResponse = {
         ...validPreferences,
-        language: 'invalid-lang' as any
+        language: 'invalid-lang' as any,
       };
 
       fetchSpy.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(invalidLanguageResponse)
+        json: () => Promise.resolve(invalidLanguageResponse),
       } as Response);
 
       const result = await fetchPreferencesFromServer();
@@ -417,7 +417,7 @@ describe('preferencesAPI', () => {
       fetchSpy.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(partialPreferences)
+        json: () => Promise.resolve(partialPreferences),
       } as Response);
 
       const result = await fetchPreferencesFromServer();
@@ -425,9 +425,9 @@ describe('preferencesAPI', () => {
       expect(result).toEqual({
         ...partialPreferences,
         copilotEnabled: true, // Default
-        memoryEnabled: true,  // Default
+        memoryEnabled: true, // Default
         defaultCommandView: 'list', // Default
-        lockedFields: [] // Default
+        lockedFields: [], // Default
       });
     });
   });
@@ -437,7 +437,7 @@ describe('preferencesAPI', () => {
       fetchSpy.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(validPreferences)
+        json: () => Promise.resolve(validPreferences),
       } as Response);
 
       const result = await fetchAdminDefaults();
@@ -453,7 +453,7 @@ describe('preferencesAPI', () => {
       fetchSpy.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        statusText: 'Not Found'
+        statusText: 'Not Found',
       } as Response);
 
       const result = await fetchAdminDefaults();
@@ -470,7 +470,7 @@ describe('preferencesAPI', () => {
         copilotEnabled: false,
         memoryEnabled: true,
         defaultCommandView: 'grid' as const,
-        lockedFields: ['tone']
+        lockedFields: ['tone'],
       };
 
       const localPrefs = {
@@ -479,18 +479,18 @@ describe('preferencesAPI', () => {
         copilotEnabled: true,
         memoryEnabled: false,
         defaultCommandView: 'list' as const,
-        lockedFields: []
+        lockedFields: [],
       };
 
       const result = mergePreferences(serverPrefs, localPrefs);
 
       expect(result).toEqual({
         tone: 'formal', // Server takes priority
-        language: 'es',  // Server takes priority
+        language: 'es', // Server takes priority
         copilotEnabled: false, // Server takes priority
-        memoryEnabled: true,   // Server takes priority
+        memoryEnabled: true, // Server takes priority
         defaultCommandView: 'grid', // Server takes priority
-        lockedFields: ['tone'] // Server takes priority
+        lockedFields: ['tone'], // Server takes priority
       });
     });
 
@@ -506,7 +506,7 @@ describe('preferencesAPI', () => {
     it('should return true when server has preferences', async () => {
       fetchSpy.mockResolvedValueOnce({
         ok: true,
-        status: 200
+        status: 200,
       } as Response);
 
       const result = await hasServerPreferences();
@@ -515,7 +515,7 @@ describe('preferencesAPI', () => {
       expect(fetchSpy).toHaveBeenCalledWith(
         `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.preferences}`,
         expect.objectContaining({
-          method: 'HEAD'
+          method: 'HEAD',
         })
       );
     });
@@ -523,7 +523,7 @@ describe('preferencesAPI', () => {
     it('should return false when server has no preferences', async () => {
       fetchSpy.mockResolvedValueOnce({
         ok: false,
-        status: 404
+        status: 404,
       } as Response);
 
       const result = await hasServerPreferences();
@@ -540,7 +540,7 @@ describe('preferencesAPI', () => {
       fetchSpy.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(validPreferences)
+        json: () => Promise.resolve(validPreferences),
       } as Response);
 
       const result = await fetchPreferencesWithRetry();
@@ -556,7 +556,7 @@ describe('preferencesAPI', () => {
       fetchSpy.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ success: true })
+        json: () => Promise.resolve({ success: true }),
       } as Response);
 
       const result = await syncPreferencesWithRetry(validPreferences);
@@ -568,17 +568,18 @@ describe('preferencesAPI', () => {
 
   describe('Authentication headers', () => {
     it('should include MCP context in headers', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const mockUseMCP = require('../../useMCP').useMCP;
       mockUseMCP.mockReturnValue({
         role: 'admin',
         tier: 'Pro',
-        allowedActions: ['updatePrefs', 'readPrefs']
+        allowedActions: ['updatePrefs', 'readPrefs'],
       });
 
       fetchSpy.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(validPreferences)
+        json: () => Promise.resolve(validPreferences),
       } as Response);
 
       await fetchPreferencesFromServer();
@@ -597,7 +598,7 @@ describe('preferencesAPI', () => {
       fetchSpy.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(validPreferences)
+        json: () => Promise.resolve(validPreferences),
       } as Response);
 
       await fetchPreferencesFromServer();
@@ -611,7 +612,9 @@ describe('preferencesAPI', () => {
 
   describe('Configuration', () => {
     it('should use correct API configuration', () => {
-      expect(API_CONFIG.baseUrl).toBe(process.env.REACT_APP_API_BASE_URL || '/api');
+      expect(API_CONFIG.baseUrl).toBe(
+        process.env.REACT_APP_API_BASE_URL || '/api'
+      );
       expect(API_CONFIG.endpoints.preferences).toBe('/user/preferences');
       expect(API_CONFIG.endpoints.adminDefaults).toBe('/admin/defaults');
       expect(API_CONFIG.timeout).toBe(10000);
@@ -619,7 +622,11 @@ describe('preferencesAPI', () => {
     });
 
     it('should have correct preferences schema', () => {
-      expect(PREFERENCES_SCHEMA.tone).toEqual(['friendly', 'formal', 'concise']);
+      expect(PREFERENCES_SCHEMA.tone).toEqual([
+        'friendly',
+        'formal',
+        'concise',
+      ]);
       expect(PREFERENCES_SCHEMA.language).toContain('en');
       expect(PREFERENCES_SCHEMA.language).toContain('es');
       expect(PREFERENCES_SCHEMA.copilotEnabled).toBe('boolean');
@@ -627,4 +634,4 @@ describe('preferencesAPI', () => {
       expect(PREFERENCES_SCHEMA.defaultCommandView).toEqual(['list', 'grid']);
     });
   });
-}); 
+});

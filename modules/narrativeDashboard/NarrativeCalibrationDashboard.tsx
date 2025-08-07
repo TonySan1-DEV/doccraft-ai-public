@@ -22,7 +22,9 @@ const OptimizationTab = lazy(() => import('./tabs/OptimizationTab'));
 // Core dashboard controls (placeholders for now)
 const SceneInspectorPanel = lazy(() => import('./SceneInspectorPanel'));
 const NarrativeScoreSummary = lazy(() => import('./NarrativeScoreSummary'));
-const NarrativeOverlaySelector = lazy(() => import('./NarrativeOverlaySelector'));
+const NarrativeOverlaySelector = lazy(
+  () => import('./NarrativeOverlaySelector')
+);
 
 const TAB_CONFIG = [
   { id: 'plot', label: 'Plot View', Component: PlotViewTab },
@@ -46,7 +48,6 @@ export const NarrativeCalibrationDashboard: React.FC = () => {
     <main
       aria-label="Narrative Calibration Dashboard"
       className="w-full h-full flex flex-col bg-white dark:bg-neutral-900"
-      tabIndex={0}
     >
       {/* Overlay selector and export controls */}
       <div className="flex flex-wrap items-center justify-between gap-2 p-2 border-b bg-neutral-50 dark:bg-neutral-800">
@@ -55,12 +56,13 @@ export const NarrativeCalibrationDashboard: React.FC = () => {
         </Suspense>
       </div>
       {/* Accessible Tabs */}
-      <nav role="tablist" aria-label="Dashboard Views" className="flex border-b mb-2">
+      <nav
+        aria-label="Dashboard Views"
+        className="flex border-b mb-2"
+      >
         {TAB_CONFIG.map(tab => (
           <button
             key={tab.id}
-            role="tab"
-            aria-selected={activeTab === tab.id}
             aria-controls={`tab-panel-${tab.id}`}
             id={`tab-${tab.id}`}
             tabIndex={activeTab === tab.id ? 0 : -1}
@@ -72,14 +74,26 @@ export const NarrativeCalibrationDashboard: React.FC = () => {
         ))}
       </nav>
       {/* Tab Panels */}
-      <section className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 p-4" aria-live="polite">
-        <div className="md:col-span-2" id={`tab-panel-${activeTab}`} role="tabpanel" aria-labelledby={`tab-${activeTab}`}> 
+      <section
+        className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 p-4"
+        aria-live="polite"
+      >
+        <div
+          className="md:col-span-2"
+          id={`tab-panel-${activeTab}`}
+        >
           <Suspense fallback={<div>Loading view...</div>}>
             {TAB_CONFIG.find(tab => tab.id === activeTab)?.Component &&
-              React.createElement(TAB_CONFIG.find(tab => tab.id === activeTab)!.Component, { narrativeSync })}
+              React.createElement(
+                TAB_CONFIG.find(tab => tab.id === activeTab)!.Component,
+                { narrativeSync }
+              )}
           </Suspense>
         </div>
-        <aside className="md:col-span-1 flex flex-col gap-4" aria-label="Scene Inspector and Score">
+        <aside
+          className="md:col-span-1 flex flex-col gap-4"
+          aria-label="Scene Inspector and Score"
+        >
           <Suspense fallback={<div>Loading scene inspector...</div>}>
             <SceneInspectorPanel narrativeSync={narrativeSync} />
           </Suspense>
@@ -98,7 +112,6 @@ export const NarrativeCalibrationDashboard: React.FC = () => {
             className="mt-2 px-4 py-2 rounded bg-green-200 text-green-900 text-sm font-semibold shadow"
             role="status"
             aria-live="polite"
-            tabIndex={0}
           >
             {exportAnnounce}
           </div>
@@ -108,4 +121,4 @@ export const NarrativeCalibrationDashboard: React.FC = () => {
   );
 };
 
-export default NarrativeCalibrationDashboard; 
+export default NarrativeCalibrationDashboard;

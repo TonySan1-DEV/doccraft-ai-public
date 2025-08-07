@@ -142,7 +142,7 @@ export const Footer: React.FC<FooterProps> = ({
             <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
               <div className="flex flex-col sm:flex-row items-center justify-between">
                 <div className="text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-0">
-                  Need help? We're here to assist you with any questions or
+                  Need help? We&apos;re here to assist you with any questions or
                   issues.
                 </div>
                 <div className="flex space-x-3">

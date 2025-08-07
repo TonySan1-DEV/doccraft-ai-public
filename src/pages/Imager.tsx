@@ -1,52 +1,52 @@
-import { useState } from 'react'
-import { useMCP } from '../useMCP'
-import { AccessWarning } from '../components/AccessWarning'
-import { ImagingModeSelector } from '../components/ImagingModeSelector'
-import DocumentUpload from '../components/DocumentUpload'
-import { ImageSuggestions } from '../components/ImageSuggestions'
+import { useState } from 'react';
+import { useMCP } from '../useMCP';
+import { AccessWarning } from '../components/AccessWarning';
+import { ImagingModeSelector } from '../components/ImagingModeSelector';
+import DocumentUpload from '../components/DocumentUpload';
+import { ImageSuggestions } from '../components/ImageSuggestions';
 
 interface ProcessedDocument {
-  id: string
-  title: string
-  content: string
+  id: string;
+  title: string;
+  content: string;
   sections: Array<{
-    id: string
-    content: string
-    topicTags: string[]
-    tone: string
-    intent: string
-  }>
+    id: string;
+    content: string;
+    topicTags: string[];
+    tone: string;
+    intent: string;
+  }>;
 }
 
 export default function Imager() {
-  const ctx = useMCP("Imager.tsx")
+  const ctx = useMCP('Imager.tsx');
+  const [document, setDocument] = useState<ProcessedDocument | null>(null);
 
-  if (ctx.tier === "Free") {
-    return <AccessWarning tier="Pro" feature="Image Workspace" />
+  if (ctx.tier === 'Free') {
+    return <AccessWarning tier="Pro" feature="Image Workspace" />;
   }
-
-  const [document, setDocument] = useState<ProcessedDocument | null>(null)
 
   const handleFileUpload = (file: File) => {
-    console.log("Simulating file upload and processing:", file.name)
+    console.log('Simulating file upload and processing:', file.name);
     setTimeout(() => {
       const mockProcessedDoc: ProcessedDocument = {
-        id: "mock-id",
+        id: 'mock-id',
         title: file.name,
-        content: "This is a mock document content for demonstration purposes.",
+        content: 'This is a mock document content for demonstration purposes.',
         sections: [
           {
-            id: "mock-section-1",
-            content: "This is a mock section content for demonstration purposes.",
-            topicTags: ["mock", "demo"],
-            tone: "Neutral",
-            intent: "Informational",
+            id: 'mock-section-1',
+            content:
+              'This is a mock section content for demonstration purposes.',
+            topicTags: ['mock', 'demo'],
+            tone: 'Neutral',
+            intent: 'Informational',
           },
         ],
-      }
-      setDocument(mockProcessedDoc)
-    }, 1000)
-  }
+      };
+      setDocument(mockProcessedDoc);
+    }, 1000);
+  };
 
   return (
     <div className="max-w-7xl mx-auto py-10 px-4 space-y-6">
@@ -55,7 +55,8 @@ export default function Imager() {
           🖼️ Image Enhancement Workspace
         </h1>
         <p className="text-gray-600 dark:text-gray-300">
-          Upload a document and let AI assist in selecting and placing images intelligently.
+          Upload a document and let AI assist in selecting and placing images
+          intelligently.
         </p>
       </div>
 
@@ -65,5 +66,5 @@ export default function Imager() {
         {document && <ImageSuggestions document={document} />}
       </div>
     </div>
-  )
+  );
 }

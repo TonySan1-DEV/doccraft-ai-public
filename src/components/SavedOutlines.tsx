@@ -1,91 +1,109 @@
-import React, { useState, useEffect } from 'react'
-import { useAuth } from '../contexts/AuthContext'
-import { getUserOutlines, deleteOutline, BookOutline } from '../services/saveOutline'
-import { ChevronDown, ChevronUp, Loader2, Trash2, Edit3, Calendar, BookOpen } from 'lucide-react'
-import toast from 'react-hot-toast'
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import {
+  getUserOutlines,
+  deleteOutline,
+  BookOutline,
+} from "../services/saveOutline";
+import {
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  Trash2,
+  Edit3,
+  Calendar,
+  BookOpen,
+} from "lucide-react";
+import toast from "react-hot-toast";
 
 interface SavedOutlinesProps {
-  onLoadOutline?: (outline: BookOutline) => void
+  onLoadOutline?: (outline: BookOutline) => void;
 }
 
 const SavedOutlines: React.FC<SavedOutlinesProps> = ({ onLoadOutline }) => {
-  const { user } = useAuth()
-  const [outlines, setOutlines] = useState<BookOutline[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [expanded, setExpanded] = useState<string | null>(null)
-  const [deleting, setDeleting] = useState<string | null>(null)
+  const { user } = useAuth();
+  const [outlines, setOutlines] = useState<BookOutline[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.id) {
-      fetchOutlines()
+      fetchOutlines();
     }
-  }, [user?.id])
+  }, [user?.id]);
 
   const fetchOutlines = async () => {
-    if (!user?.id) return
-    
+    if (!user?.id) return;
+
     try {
-      setLoading(true)
-      setError(null)
-      const userOutlines = await getUserOutlines(user.id)
-      setOutlines(userOutlines)
-    } catch (err: any) {
-      console.error('Failed to fetch outlines:', err)
-      setError('Failed to load saved outlines')
-      toast.error('Failed to load saved outlines')
+      setLoading(true);
+      setError(null);
+      const userOutlines = await getUserOutlines(user.id);
+      setOutlines(userOutlines);
+    } catch (err: unknown) {
+      console.error("Failed to fetch outlines:", err);
+      setError("Failed to load saved outlines");
+      toast.error("Failed to load saved outlines");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDelete = async (outlineId: string) => {
     if (!user?.id) {
-      toast.error('You must be logged in to delete outlines')
-      return
+      toast.error("You must be logged in to delete outlines");
+      return;
     }
-    
-    if (!confirm('Are you sure you want to delete this outline? This action cannot be undone.')) {
-      return
+
+    if (
+      !confirm(
+        "Are you sure you want to delete this outline? This action cannot be undone."
+      )
+    ) {
+      return;
     }
 
     try {
-      setDeleting(outlineId)
-      await deleteOutline(outlineId, user.id)
-      setOutlines(prev => prev.filter(outline => outline.id !== outlineId))
-      toast.success('Outline deleted successfully')
-    } catch (err: any) {
-      console.error('Failed to delete outline:', err)
-      toast.error('Failed to delete outline')
+      setDeleting(outlineId);
+      await deleteOutline(outlineId, user.id);
+      setOutlines((prev) => prev.filter((outline) => outline.id !== outlineId));
+      toast.success("Outline deleted successfully");
+    } catch (err: unknown) {
+      console.error("Failed to delete outline:", err);
+      toast.error("Failed to delete outline");
     } finally {
-      setDeleting(null)
+      setDeleting(null);
     }
-  }
+  };
 
   const handleLoadOutline = (outline: BookOutline) => {
     if (onLoadOutline) {
-      onLoadOutline(outline)
-      toast.success('Outline loaded successfully')
+      onLoadOutline(outline);
+      toast.success("Outline loaded successfully");
     }
-  }
+  };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="animate-spin w-6 h-6 text-blue-600" />
-        <span className="ml-2 text-gray-600 dark:text-gray-300">Loading saved outlines...</span>
+        <span className="ml-2 text-gray-600 dark:text-gray-300">
+          Loading saved outlines...
+        </span>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -99,7 +117,7 @@ const SavedOutlines: React.FC<SavedOutlinesProps> = ({ onLoadOutline }) => {
           Try Again
         </button>
       </div>
-    )
+    );
   }
 
   if (outlines.length === 0) {
@@ -113,7 +131,7 @@ const SavedOutlines: React.FC<SavedOutlinesProps> = ({ onLoadOutline }) => {
           Generate your first outline to see it here.
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -159,7 +177,7 @@ const SavedOutlines: React.FC<SavedOutlinesProps> = ({ onLoadOutline }) => {
                     {outline.outline.length} chapters
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2 ml-4">
                   <button
                     onClick={() => handleLoadOutline(outline)}
@@ -184,18 +202,27 @@ const SavedOutlines: React.FC<SavedOutlinesProps> = ({ onLoadOutline }) => {
               </div>
 
               <button
-                onClick={() => setExpanded(expanded === outline.id ? null : outline.id)}
+                onClick={() =>
+                  setExpanded(expanded === outline.id ? null : outline.id)
+                }
                 className="w-full flex items-center justify-between mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
               >
                 <span>View chapters</span>
-                {expanded === outline.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {expanded === outline.id ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
               </button>
 
               {expanded === outline.id && (
                 <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                   <div className="space-y-2">
                     {outline.outline.map((chapter, idx) => (
-                      <div key={idx} className="bg-gray-50 dark:bg-gray-800 rounded p-3">
+                      <div
+                        key={idx}
+                        className="bg-gray-50 dark:bg-gray-800 rounded p-3"
+                      >
                         <div className="font-medium text-gray-900 dark:text-white mb-1">
                           Chapter {idx + 1}: {chapter.title}
                         </div>
@@ -212,7 +239,7 @@ const SavedOutlines: React.FC<SavedOutlinesProps> = ({ onLoadOutline }) => {
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SavedOutlines 
+export default SavedOutlines;

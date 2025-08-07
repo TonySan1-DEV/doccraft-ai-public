@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { 
-  Search, 
-  Clock, 
-  MessageSquare, 
+import React, { useState } from "react";
+import {
+  Search,
+  Clock,
+  MessageSquare,
   Tag,
   Eye,
   Edit,
@@ -13,48 +13,55 @@ import {
   XCircle,
   MoreVertical,
   Calendar,
-  FileText
-} from 'lucide-react';
-import { SupportTicket, TicketStatus, TicketPriority } from '../../types/SupportTypes';
+  FileText,
+} from "lucide-react";
+import {
+  SupportTicket,
+  TicketStatus,
+  TicketPriority,
+} from "../../types/SupportTypes";
 
 interface TicketListProps {
   tickets: SupportTicket[];
   loading: boolean;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  filterStatus: TicketStatus | 'all';
-  setFilterStatus: (status: TicketStatus | 'all') => void;
-  filterPriority: TicketPriority | 'all';
-  setFilterPriority: (priority: TicketPriority | 'all') => void;
-  onUpdateTicket: (ticketId: string, updates: Partial<SupportTicket>) => Promise<void>;
+  filterStatus: TicketStatus | "all";
+  setFilterStatus: (status: TicketStatus | "all") => void;
+  filterPriority: TicketPriority | "all";
+  setFilterPriority: (priority: TicketPriority | "all") => void;
+  onUpdateTicket: (
+    ticketId: string,
+    updates: Partial<SupportTicket>
+  ) => Promise<void>;
   onRefresh: () => void;
 }
 
 const STATUS_COLORS = {
-  open: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20',
-  in_progress: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20',
-  resolved: 'text-green-600 bg-green-50 dark:bg-green-900/20',
-  closed: 'text-gray-600 bg-gray-50 dark:bg-gray-900/20'
+  open: "text-blue-600 bg-blue-50 dark:bg-blue-900/20",
+  in_progress: "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20",
+  resolved: "text-green-600 bg-green-50 dark:bg-green-900/20",
+  closed: "text-gray-600 bg-gray-50 dark:bg-gray-900/20",
 };
 
 const PRIORITY_COLORS = {
-  low: 'text-green-600 bg-green-50 dark:bg-green-900/20',
-  medium: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20',
-  high: 'text-orange-600 bg-orange-50 dark:bg-orange-900/20',
-  urgent: 'text-red-600 bg-red-50 dark:bg-red-900/20'
+  low: "text-green-600 bg-green-50 dark:bg-green-900/20",
+  medium: "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20",
+  high: "text-orange-600 bg-orange-50 dark:bg-orange-900/20",
+  urgent: "text-red-600 bg-red-50 dark:bg-red-900/20",
 };
 
 const CATEGORY_ICONS = {
-  technical_issue: '🔧',
-  billing: '💳',
-  feature_request: '💡',
-  bug_report: '🐛',
-  account_access: '🔐',
-  general_inquiry: '❓',
-  integration_help: '🔗',
-  performance: '⚡',
-  security: '🛡️',
-  other: '📝'
+  technical_issue: "🔧",
+  billing: "💳",
+  feature_request: "💡",
+  bug_report: "🐛",
+  account_access: "🔐",
+  general_inquiry: "❓",
+  integration_help: "🔗",
+  performance: "⚡",
+  security: "🛡️",
+  other: "📝",
 };
 
 export const TicketList: React.FC<TicketListProps> = ({
@@ -66,19 +73,26 @@ export const TicketList: React.FC<TicketListProps> = ({
   setFilterStatus,
   filterPriority,
   setFilterPriority,
-  onRefresh
+  onRefresh,
 }) => {
-  const [sortBy, setSortBy] = useState<'createdAt' | 'updatedAt' | 'priority' | 'status'>('createdAt');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [sortBy, setSortBy] = useState<
+    "createdAt" | "updatedAt" | "priority" | "status"
+  >("createdAt");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
 
   const getStatusIcon = (status: TicketStatus) => {
     switch (status) {
-      case 'open': return <AlertCircle className="w-4 h-4" />;
-      case 'in_progress': return <Clock className="w-4 h-4" />;
-      case 'resolved': return <CheckCircle className="w-4 h-4" />;
-      case 'closed': return <XCircle className="w-4 h-4" />;
-      default: return <AlertCircle className="w-4 h-4" />;
+      case "open":
+        return <AlertCircle className="w-4 h-4" />;
+      case "in_progress":
+        return <Clock className="w-4 h-4" />;
+      case "resolved":
+        return <CheckCircle className="w-4 h-4" />;
+      case "closed":
+        return <XCircle className="w-4 h-4" />;
+      default:
+        return <AlertCircle className="w-4 h-4" />;
     }
   };
 
@@ -86,7 +100,7 @@ export const TicketList: React.FC<TicketListProps> = ({
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-    
+
     if (diffInHours < 24) {
       return `${Math.floor(diffInHours)}h ago`;
     } else if (diffInHours < 168) {
@@ -97,15 +111,15 @@ export const TicketList: React.FC<TicketListProps> = ({
   };
 
   const sortedTickets = [...tickets].sort((a, b) => {
-    let aValue: any = a[sortBy];
-    let bValue: any = b[sortBy];
+    let aValue: string | number | Date = a[sortBy];
+    let bValue: string | number | Date = b[sortBy];
 
-    if (sortBy === 'createdAt' || sortBy === 'updatedAt') {
+    if (sortBy === "createdAt" || sortBy === "updatedAt") {
       aValue = new Date(aValue).getTime();
       bValue = new Date(bValue).getTime();
     }
 
-    if (sortDirection === 'asc') {
+    if (sortDirection === "asc") {
       return aValue > bValue ? 1 : -1;
     } else {
       return aValue < bValue ? 1 : -1;
@@ -121,7 +135,7 @@ export const TicketList: React.FC<TicketListProps> = ({
             My Support Tickets
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            {tickets.length} ticket{tickets.length !== 1 ? 's' : ''} total
+            {tickets.length} ticket{tickets.length !== 1 ? "s" : ""} total
           </p>
         </div>
         <div className="flex items-center space-x-3">
@@ -130,7 +144,7 @@ export const TicketList: React.FC<TicketListProps> = ({
             disabled={loading}
             className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors disabled:opacity-50"
           >
-            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
           </button>
         </div>
       </div>
@@ -153,7 +167,9 @@ export const TicketList: React.FC<TicketListProps> = ({
           {/* Status Filter */}
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as TicketStatus | 'all')}
+            onChange={(e) =>
+              setFilterStatus(e.target.value as TicketStatus | "all")
+            }
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
           >
             <option value="all">All Status</option>
@@ -166,7 +182,9 @@ export const TicketList: React.FC<TicketListProps> = ({
           {/* Priority Filter */}
           <select
             value={filterPriority}
-            onChange={(e) => setFilterPriority(e.target.value as TicketPriority | 'all')}
+            onChange={(e) =>
+              setFilterPriority(e.target.value as TicketPriority | "all")
+            }
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
           >
             <option value="all">All Priority</option>
@@ -180,9 +198,9 @@ export const TicketList: React.FC<TicketListProps> = ({
           <select
             value={`${sortBy}-${sortDirection}`}
             onChange={(e) => {
-              const [field, direction] = e.target.value.split('-');
+              const [field, direction] = e.target.value.split("-");
               setSortBy(field as typeof sortBy);
-              setSortDirection(direction as 'asc' | 'desc');
+              setSortDirection(direction as "asc" | "desc");
             }}
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
           >
@@ -200,7 +218,9 @@ export const TicketList: React.FC<TicketListProps> = ({
         {loading ? (
           <div className="p-8 text-center">
             <RefreshCw className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">Loading tickets...</p>
+            <p className="text-gray-500 dark:text-gray-400">
+              Loading tickets...
+            </p>
           </div>
         ) : sortedTickets.length === 0 ? (
           <div className="p-8 text-center">
@@ -209,21 +229,27 @@ export const TicketList: React.FC<TicketListProps> = ({
               No tickets found
             </h3>
             <p className="text-gray-500 dark:text-gray-400">
-              {searchQuery || filterStatus !== 'all' || filterPriority !== 'all'
-                ? 'Try adjusting your filters'
-                : 'Create your first support ticket to get started'
-              }
+              {searchQuery || filterStatus !== "all" || filterPriority !== "all"
+                ? "Try adjusting your filters"
+                : "Create your first support ticket to get started"}
             </p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {sortedTickets.map((ticket) => (
-              <div key={ticket.id} className="p-6 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+              <div
+                key={ticket.id}
+                className="p-6 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+              >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-3 mb-2">
                       <span className="text-lg">
-                        {CATEGORY_ICONS[ticket.category as keyof typeof CATEGORY_ICONS]}
+                        {
+                          CATEGORY_ICONS[
+                            ticket.category as keyof typeof CATEGORY_ICONS
+                          ]
+                        }
                       </span>
                       <h3 className="text-lg font-medium text-gray-900 dark:text-white truncate">
                         {ticket.title}
@@ -275,20 +301,34 @@ export const TicketList: React.FC<TicketListProps> = ({
 
                   <div className="flex items-center space-x-3 ml-4">
                     {/* Status */}
-                    <div className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium ${STATUS_COLORS[ticket.status]}`}>
+                    <div
+                      className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium ${
+                        STATUS_COLORS[ticket.status]
+                      }`}
+                    >
                       {getStatusIcon(ticket.status)}
-                      <span className="capitalize">{ticket.status.replace('_', ' ')}</span>
+                      <span className="capitalize">
+                        {ticket.status.replace("_", " ")}
+                      </span>
                     </div>
 
                     {/* Priority */}
-                    <div className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium ${PRIORITY_COLORS[ticket.priority]}`}>
+                    <div
+                      className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium ${
+                        PRIORITY_COLORS[ticket.priority]
+                      }`}
+                    >
                       <span className="capitalize">{ticket.priority}</span>
                     </div>
 
                     {/* Actions */}
                     <div className="relative">
                       <button
-                        onClick={() => setSelectedTicket(selectedTicket === ticket.id ? null : ticket.id)}
+                        onClick={() =>
+                          setSelectedTicket(
+                            selectedTicket === ticket.id ? null : ticket.id
+                          )
+                        }
                         className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                       >
                         <MoreVertical className="w-4 h-4" />
@@ -298,21 +338,27 @@ export const TicketList: React.FC<TicketListProps> = ({
                         <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
                           <div className="py-1">
                             <button
-                              onClick={() => {/* TODO: View ticket details */}}
+                              onClick={() => {
+                                /* TODO: View ticket details */
+                              }}
                               className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
                             >
                               <Eye className="w-4 h-4 mr-2" />
                               View Details
                             </button>
                             <button
-                              onClick={() => {/* TODO: Edit ticket */}}
+                              onClick={() => {
+                                /* TODO: Edit ticket */
+                              }}
                               className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
                             >
                               <Edit className="w-4 h-4 mr-2" />
                               Edit
                             </button>
                             <button
-                              onClick={() => {/* TODO: Delete ticket */}}
+                              onClick={() => {
+                                /* TODO: Delete ticket */
+                              }}
                               className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
@@ -331,4 +377,4 @@ export const TicketList: React.FC<TicketListProps> = ({
       </div>
     </div>
   );
-}; 
+};

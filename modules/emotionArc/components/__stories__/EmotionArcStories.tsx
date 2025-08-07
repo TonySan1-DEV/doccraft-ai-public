@@ -210,7 +210,7 @@ export const EmotionTimelineChartDefault: Story = () => (
           <p><strong>Props:</strong></p>
           <ul className="list-disc list-inside mt-2 space-y-1">
             <li>emotionalBeats: {mockEmotionalBeats.length} beats</li>
-            <li>selectedCharacter: "all"</li>
+            <li>selectedCharacter: &quot;all&quot;</li>
             <li>simulation: tension curve data</li>
             <li>isLoading: false</li>
             <li>error: null</li>
@@ -287,7 +287,7 @@ export const OptimizationSuggestionsDefault: Story = () => (
       <h3 className="text-lg font-semibold mb-4">OptimizationSuggestions Component</h3>
       <div className="bg-white p-6 rounded-lg shadow">
         <div className="space-y-4">
-          {mockOptimizationPlan.suggestions.map((suggestion, index) => (
+          {mockOptimizationPlan.suggestions.map((suggestion, _index) => (
             <div key={suggestion.id} className="border border-gray-200 rounded-lg p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3">
@@ -325,7 +325,7 @@ export const SceneSentimentPanelDefault: Story = () => (
       <h3 className="text-lg font-semibold mb-4">SceneSentimentPanel Component</h3>
       <div className="bg-white p-6 rounded-lg shadow">
         <div className="space-y-4">
-          {mockSceneData.map((scene, index) => (
+          {mockSceneData.map((scene, _index) => (
             <div key={scene.sceneId} className="border border-gray-200 rounded-lg p-4">
               <div className="flex items-start justify-between">
                 <div>
@@ -390,8 +390,8 @@ export const CharacterArcSwitchDefault: Story = () => (
         <div className="mt-4 text-sm text-gray-600">
           <p><strong>Props:</strong></p>
           <ul className="list-disc list-inside mt-2 space-y-1">
-            <li>characterIds: ["protagonist", "antagonist"]</li>
-            <li>selectedCharacter: "all"</li>
+            <li>characterIds: [&quot;protagonist&quot;, &quot;antagonist&quot;]</li>
+            <li>selectedCharacter: &quot;all&quot;</li>
             <li>isLoading: false</li>
             <li>disabled: false</li>
           </ul>

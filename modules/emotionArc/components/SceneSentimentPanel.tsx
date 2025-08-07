@@ -11,7 +11,7 @@
 */
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { SceneEmotionData, EmotionalBeat } from '../types/emotionTypes';
+import { SceneEmotionData } from '../types/emotionTypes';
 import { EMOTION_COLORS } from '../constants/emotions';
 
 interface SceneSentimentPanelProps {
@@ -83,9 +83,9 @@ const SceneCard: React.FC<SceneCardProps> = ({
       <div className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h4 
+            <button 
               id={`scene-title-${scene.sceneId}`}
-              className="text-sm font-semibold text-gray-900 cursor-pointer hover:text-blue-600"
+              className="text-sm font-semibold text-gray-900 cursor-pointer hover:text-blue-600 text-left w-full"
               onClick={() => onSelect(scene.sceneId)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -93,12 +93,10 @@ const SceneCard: React.FC<SceneCardProps> = ({
                   onSelect(scene.sceneId);
                 }
               }}
-              tabIndex={0}
-              role="button"
               aria-pressed={isSelected}
             >
               Scene {scene.sceneId}
-            </h4>
+            </button>
             <p className="text-xs text-gray-500 mt-1">
               {scene.processingMetadata.wordCount} words • {scene.processingMetadata.characterCount} characters
             </p>

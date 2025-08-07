@@ -2,9 +2,9 @@
 
 export interface UserPreferences {
   copilotEnabled: boolean;
-  defaultCommandView: "list" | "grid";
-  language: "en" | "es" | "fr";
-  tone: "friendly" | "professional" | "casual";
+  defaultCommandView: 'list' | 'grid';
+  language: 'en' | 'es' | 'fr';
+  tone: 'friendly' | 'professional' | 'casual';
   memoryEnabled: boolean;
   lockedFields: string[];
   lockedFieldsCount: number;
@@ -12,7 +12,7 @@ export interface UserPreferences {
 
 export interface ApiResponse<T = unknown> {
   data: T;
-  status: "success" | "error";
+  status: 'success' | 'error';
   message?: string;
   timestamp: string;
 }
@@ -45,7 +45,7 @@ export interface UserProfile {
   name: string;
   avatar?: string;
   preferences: UserPreferences;
-  tier: "Free" | "Pro" | "Admin";
+  tier: 'Free' | 'Pro' | 'Admin';
   createdAt: string;
   updatedAt: string;
 }
@@ -71,7 +71,7 @@ export interface CharacterData {
 
 export interface CharacterRelationship {
   characterId: string;
-  relationshipType: "friend" | "enemy" | "family" | "romantic" | "mentor";
+  relationshipType: 'friend' | 'enemy' | 'family' | 'romantic' | 'mentor';
   description: string;
 }
 
@@ -117,8 +117,8 @@ export interface SupportTicket {
   id: string;
   title: string;
   description: string;
-  status: "open" | "in-progress" | "resolved" | "closed";
-  priority: "low" | "medium" | "high" | "urgent";
+  status: 'open' | 'in-progress' | 'resolved' | 'closed';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
   category: string;
   assignedTo?: string;
   createdAt: string;
@@ -129,7 +129,7 @@ export interface PaymentData {
   id: string;
   amount: number;
   currency: string;
-  status: "pending" | "completed" | "failed" | "refunded";
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
   paymentMethod: string;
   createdAt: string;
   updatedAt: string;
@@ -154,11 +154,11 @@ export interface MarketTrendData {
 
 export interface FeedbackData {
   id: string;
-  type: "bug" | "feature" | "improvement" | "other";
+  type: 'bug' | 'feature' | 'improvement' | 'other';
   title: string;
   description: string;
-  priority: "low" | "medium" | "high";
-  status: "new" | "reviewing" | "in-progress" | "resolved";
+  priority: 'low' | 'medium' | 'high';
+  status: 'new' | 'reviewing' | 'in-progress' | 'resolved';
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -175,7 +175,7 @@ export type JsonValue =
 export interface JsonObject {
   [key: string]: JsonValue;
 }
-export interface JsonArray extends Array<JsonValue> {}
+export type JsonArray = JsonValue[];
 
 // Event handler types
 export type EventHandler<T = Event> = (event: T) => void;
@@ -190,7 +190,7 @@ export interface FormData {
 export interface BaseComponentProps {
   className?: string;
   id?: string;
-  "data-testid"?: string;
+  'data-testid'?: string;
 }
 
 export interface ClickableProps extends BaseComponentProps {

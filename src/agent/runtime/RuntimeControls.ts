@@ -50,6 +50,7 @@ function logDebug(message: string, data?: any): void {
 
 // Telemetry logging utility
 function logTelemetry(event: string, data: any): void {
+  // Access optional global telemetry function that may not be available in all environments
   if (typeof window !== 'undefined' && (window as any).logTelemetryEvent) {
     (window as any).logTelemetryEvent(event, {
       ...data,

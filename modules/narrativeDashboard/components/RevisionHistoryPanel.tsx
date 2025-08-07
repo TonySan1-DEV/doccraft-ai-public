@@ -28,11 +28,13 @@ function diffWords(oldStr: string, newStr: string) {
   const oldWords = oldStr.split(/(\s+)/);
   const newWords = newStr.split(/(\s+)/);
   const result: { value: string; added?: boolean; removed?: boolean }[] = [];
-  let i = 0, j = 0;
+  let i = 0,
+    j = 0;
   while (i < oldWords.length && j < newWords.length) {
     if (oldWords[i] === newWords[j]) {
       result.push({ value: oldWords[i] });
-      i++; j++;
+      i++;
+      j++;
     } else if (newWords[j] && !oldWords.includes(newWords[j])) {
       result.push({ value: newWords[j], added: true });
       j++;
@@ -59,31 +61,53 @@ function highlightDiff(original: string, revised: string) {
   const diff = diffWords(original, revised);
   return diff.map((part, idx) =>
     part.added ? (
-      <span key={idx} className="bg-green-200 dark:bg-green-700/40 px-0.5 rounded" aria-label="Added">{part.value}</span>
+      <span
+        key={idx}
+        className="bg-green-200 dark:bg-green-700/40 px-0.5 rounded"
+        aria-label="Added"
+      >
+        {part.value}
+      </span>
     ) : part.removed ? (
-      <span key={idx} className="bg-red-200 dark:bg-red-700/40 px-0.5 rounded line-through" aria-label="Removed">{part.value}</span>
+      <span
+        key={idx}
+        className="bg-red-200 dark:bg-red-700/40 px-0.5 rounded line-through"
+        aria-label="Removed"
+      >
+        {part.value}
+      </span>
     ) : (
       <span key={idx}>{part.value}</span>
     )
   );
 }
 
-const RevisionHistoryPanel: React.FC<RevisionHistoryPanelProps> = ({ revisions, sceneId, onUndo, onRetry }) => {
+const RevisionHistoryPanel: React.FC<RevisionHistoryPanelProps> = ({
+  revisions,
+  sceneId,
+  onUndo,
+  onRetry,
+}) => {
   const narrativeSync = useNarrativeSync();
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'inline' | 'side'>('inline');
   const [loadingIdx, setLoadingIdx] = useState<number | null>(null);
 
   // Memoize sorted revisions (latest first)
-  const sortedRevisions = useMemo(() =>
-    [...revisions].sort((a, b) => (b as any).timestamp - (a as any).timestamp),
+  const sortedRevisions = useMemo(
+    () =>
+      [...revisions].sort(
+        (a, b) => (b as any).timestamp - (a as any).timestamp
+      ),
     [revisions]
   );
 
   // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent, idx: number) => {
     if (e.key === 'ArrowDown') {
-      setSelectedIdx(i => (i === null ? 0 : Math.min(i + 1, sortedRevisions.length - 1)));
+      setSelectedIdx(i =>
+        i === null ? 0 : Math.min(i + 1, sortedRevisions.length - 1)
+      );
     } else if (e.key === 'ArrowUp') {
       setSelectedIdx(i => (i === null ? 0 : Math.max(i - 1, 0)));
     } else if (e.key === 'Enter' || e.key === ' ') {
@@ -92,19 +116,25 @@ const RevisionHistoryPanel: React.FC<RevisionHistoryPanelProps> = ({ revisions, 
   };
 
   // Undo action
-  const handleUndo = useCallback(async (rev: SceneRevision) => {
-    setLoadingIdx(revisions.indexOf(rev));
-    // Rollback logic: could call proposeEdit with previous revision or restore original
-    onUndo(rev);
-    setLoadingIdx(null);
-  }, [onUndo, revisions]);
+  const handleUndo = useCallback(
+    async (rev: SceneRevision) => {
+      setLoadingIdx(revisions.indexOf(rev));
+      // Rollback logic: could call proposeEdit with previous revision or restore original
+      onUndo(rev);
+      setLoadingIdx(null);
+    },
+    [onUndo, revisions]
+  );
 
   // Retry action
-  const handleRetry = useCallback(async (rev: SceneRevision) => {
-    setLoadingIdx(revisions.indexOf(rev));
-    onRetry(rev);
-    setLoadingIdx(null);
-  }, [onRetry, revisions]);
+  const handleRetry = useCallback(
+    async (rev: SceneRevision) => {
+      setLoadingIdx(revisions.indexOf(rev));
+      onRetry(rev);
+      setLoadingIdx(null);
+    },
+    [onRetry, revisions]
+  );
 
   return (
     <section
@@ -133,23 +163,31 @@ const RevisionHistoryPanel: React.FC<RevisionHistoryPanelProps> = ({ revisions, 
           </button>
         </div>
       </header>
-      <ul className="divide-y divide-zinc-200 dark:divide-zinc-700" role="listbox" aria-label="Revision list">
+      <ul
+        className="divide-y divide-zinc-200 dark:divide-zinc-700"
+        role="listbox"
+        aria-label="Revision list"
+      >
         {sortedRevisions.map((rev, idx) => (
           <li
             key={idx}
-            tabIndex={0}
             className={`py-3 px-2 rounded transition ${selectedIdx === idx ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}
             aria-label={`Revision ${idx + 1} for scene ${sceneId}`}
-            aria-selected={selectedIdx === idx}
-            onClick={() => setSelectedIdx(idx)}
-            onKeyDown={e => handleKeyDown(e, idx)}
           >
             <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">{formatTimestamp((rev as any).timestamp)}</span>
-              <span className="text-xs text-green-700 dark:text-green-200 font-semibold">Confidence: {(rev.confidenceScore * 100).toFixed(0)}%</span>
-              <span className="text-xs text-blue-700 dark:text-blue-200">Scene: {sceneId}</span>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                {formatTimestamp((rev as any).timestamp)}
+              </span>
+              <span className="text-xs text-green-700 dark:text-green-200 font-semibold">
+                Confidence: {(rev.confidenceScore * 100).toFixed(0)}%
+              </span>
+              <span className="text-xs text-blue-700 dark:text-blue-200">
+                Scene: {sceneId}
+              </span>
             </div>
-            <div className="text-sm mt-1" aria-label="Change summary">{rev.changeSummary.join('; ')}</div>
+            <div className="text-sm mt-1" aria-label="Change summary">
+              {rev.changeSummary.join('; ')}
+            </div>
             <div className="flex gap-2 mt-2">
               <button
                 className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 focus:ring-2 focus:ring-blue-400"
@@ -178,16 +216,25 @@ const RevisionHistoryPanel: React.FC<RevisionHistoryPanelProps> = ({ revisions, 
             {selectedIdx === idx && (
               <div className="mt-3" aria-label="Revision diff view">
                 {viewMode === 'inline' ? (
-                  <div className="text-xs whitespace-pre-line">{highlightDiff((rev as any).originalText || '', rev.revisedText)}</div>
+                  <div className="text-xs whitespace-pre-line">
+                    {highlightDiff(
+                      (rev as any).originalText || '',
+                      rev.revisedText
+                    )}
+                  </div>
                 ) : (
                   <div className="flex gap-4">
                     <div className="flex-1 bg-zinc-50 dark:bg-zinc-800 p-2 rounded border border-zinc-200 dark:border-zinc-700">
                       <div className="font-semibold mb-1">Original</div>
-                      <div className="text-xs whitespace-pre-line">{(rev as any).originalText || ''}</div>
+                      <div className="text-xs whitespace-pre-line">
+                        {(rev as any).originalText || ''}
+                      </div>
                     </div>
                     <div className="flex-1 bg-green-50 dark:bg-green-900/30 p-2 rounded border border-green-200 dark:border-green-700">
                       <div className="font-semibold mb-1">AI Revision</div>
-                      <div className="text-xs whitespace-pre-line">{rev.revisedText}</div>
+                      <div className="text-xs whitespace-pre-line">
+                        {rev.revisedText}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -200,4 +247,4 @@ const RevisionHistoryPanel: React.FC<RevisionHistoryPanelProps> = ({ revisions, 
   );
 };
 
-export default React.memo(RevisionHistoryPanel); 
+export default React.memo(RevisionHistoryPanel);

@@ -1,100 +1,117 @@
-import { useState } from 'react'
-import { X, Upload, Search, Wand2 } from 'lucide-react'
-import { useDropzone } from 'react-dropzone'
-import { searchStockImages, generateAIImage } from '../services/imageService'
-import toast from 'react-hot-toast'
+import { useState } from "react";
+import { X, Upload, Search, Wand2 } from "lucide-react";
+import { useDropzone } from "react-dropzone";
+import { searchStockImages, generateAIImage, type ImageResult } from "../services/imageService";
+import toast from "react-hot-toast";
 
 interface ManualImageSelectorProps {
   section: {
-    id: string
-    content: string
-    topic_tags: string[]
-    tone: string
-    intent: string
-  }
-  onClose: () => void
-  onImageSelect: (image: any) => void
+    id: string;
+    content: string;
+    topic_tags: string[];
+    tone: string;
+    intent: string;
+  };
+  onClose: () => void;
+  onImageSelect: (image: {
+    id: string;
+    section_id: string;
+    source: 'ai' | 'stock' | 'upload';
+    source_metadata: Record<string, unknown>;
+    caption: string;
+    relevance_score: number;
+    image_url: string;
+  }) => void;
 }
 
-export default function ManualImageSelector({ section, onClose, onImageSelect }: ManualImageSelectorProps) {
-  const [activeTab, setActiveTab] = useState<'search' | 'ai' | 'upload'>('search')
-  const [searchQuery, setSearchQuery] = useState(section.topic_tags.join(' '))
-  const [searchResults, setSearchResults] = useState<any[]>([])
-  const [loading, setLoading] = useState(false)
-  const [aiPrompt, setAiPrompt] = useState('')
+export default function ManualImageSelector({
+  section,
+  onClose,
+  onImageSelect,
+}: ManualImageSelectorProps) {
+  const [activeTab, setActiveTab] = useState<"search" | "ai" | "upload">(
+    "search"
+  );
+  const [searchQuery, setSearchQuery] = useState(section.topic_tags.join(" "));
+  const [searchResults, setSearchResults] = useState<ImageResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp']
+      "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp"],
     },
     maxSize: 5 * 1024 * 1024, // 5MB
     onDrop: async (acceptedFiles) => {
-      if (acceptedFiles.length === 0) return
+      if (acceptedFiles.length === 0) return;
 
-      const file = acceptedFiles[0]
+      const file = acceptedFiles[0];
       // In a real app, you'd upload this to your storage service
-      const imageUrl = URL.createObjectURL(file)
-      
+      const imageUrl = URL.createObjectURL(file);
+
       const image = {
+        id: `upload-${Date.now()}`,
         section_id: section.id,
-        source: 'upload' as const,
+        source: "upload" as const,
         source_metadata: { filename: file.name, size: file.size },
         caption: `Uploaded image: ${file.name}`,
         relevance_score: 1.0,
-        image_url: imageUrl
-      }
+        image_url: imageUrl,
+      };
 
-      onImageSelect(image)
-    }
-  })
+      onImageSelect(image);
+    },
+  });
 
   const handleSearch = async () => {
-    if (!searchQuery.trim()) return
+    if (!searchQuery.trim()) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
-      const results = await searchStockImages(searchQuery)
-      setSearchResults(results)
-    } catch (error: any) {
-      toast.error(error.message || 'Search failed')
+      const results = await searchStockImages(searchQuery);
+      setSearchResults(results);
+    } catch (error: unknown) {
+      toast.error((error as Error).message || "Search failed");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleGenerateAI = async () => {
-    if (!aiPrompt.trim()) return
+    if (!aiPrompt.trim()) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
-      const result = await generateAIImage({ prompt: aiPrompt })
+      const result = await generateAIImage({ prompt: aiPrompt });
       const image = {
+        id: `ai-${Date.now()}`,
         section_id: section.id,
-        source: 'ai' as const,
+        source: "ai" as const,
         source_metadata: { prompt: aiPrompt },
         caption: `AI generated: ${aiPrompt}`,
         relevance_score: 0.9,
-        image_url: result.url
-      }
-      onImageSelect(image)
-    } catch (error: any) {
-      toast.error(error.message || 'AI generation failed')
+        image_url: result.url,
+      };
+      onImageSelect(image);
+    } catch (error: unknown) {
+      toast.error((error as Error).message || "AI generation failed");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleSelectImage = (image: any) => {
+  const handleSelectImage = (image: ImageResult) => {
     const selectedImage = {
+      id: `stock-${Date.now()}`,
       section_id: section.id,
-      source: 'stock' as const,
-      source_metadata: image.metadata,
-      caption: image.caption,
+      source: "stock" as const,
+      source_metadata: { title: image.title, description: image.description, tags: image.tags },
+      caption: image.title,
       relevance_score: 0.8,
-      image_url: image.url
-    }
-    onImageSelect(selectedImage)
-  }
+      image_url: image.url,
+    };
+    onImageSelect(selectedImage);
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -102,7 +119,10 @@ export default function ManualImageSelector({ section, onClose, onImageSelect }:
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold">Add Image to Section</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -110,33 +130,33 @@ export default function ManualImageSelector({ section, onClose, onImageSelect }:
         {/* Tabs */}
         <div className="flex border-b">
           <button
-            onClick={() => setActiveTab('search')}
+            onClick={() => setActiveTab("search")}
             className={`px-6 py-3 font-medium ${
-              activeTab === 'search'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-600 hover:text-gray-800'
+              activeTab === "search"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-600 hover:text-gray-800"
             }`}
           >
             <Search className="w-4 h-4 inline mr-2" />
             Search Stock
           </button>
           <button
-            onClick={() => setActiveTab('ai')}
+            onClick={() => setActiveTab("ai")}
             className={`px-6 py-3 font-medium ${
-              activeTab === 'ai'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-600 hover:text-gray-800'
+              activeTab === "ai"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-600 hover:text-gray-800"
             }`}
           >
             <Wand2 className="w-4 h-4 inline mr-2" />
             AI Generate
           </button>
           <button
-            onClick={() => setActiveTab('upload')}
+            onClick={() => setActiveTab("upload")}
             className={`px-6 py-3 font-medium ${
-              activeTab === 'upload'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-600 hover:text-gray-800'
+              activeTab === "upload"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-600 hover:text-gray-800"
             }`}
           >
             <Upload className="w-4 h-4 inline mr-2" />
@@ -146,7 +166,7 @@ export default function ManualImageSelector({ section, onClose, onImageSelect }:
 
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[60vh]">
-          {activeTab === 'search' && (
+          {activeTab === "search" && (
             <div>
               <div className="flex gap-2 mb-4">
                 <input
@@ -155,14 +175,14 @@ export default function ManualImageSelector({ section, onClose, onImageSelect }:
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search for images..."
                   className="input flex-1"
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 />
                 <button
                   onClick={handleSearch}
                   disabled={loading}
                   className="btn btn-primary"
                 >
-                  {loading ? 'Searching...' : 'Search'}
+                  {loading ? "Searching..." : "Search"}
                 </button>
               </div>
 
@@ -173,14 +193,21 @@ export default function ManualImageSelector({ section, onClose, onImageSelect }:
                       key={index}
                       className="border rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
                       onClick={() => handleSelectImage(image)}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && handleSelectImage(image)
+                      }
+                      role="button"
+                      tabIndex={0}
                     >
                       <img
                         src={image.url}
-                        alt={image.caption}
+                        alt={image.title}
                         className="w-full h-32 object-cover"
                       />
                       <div className="p-2">
-                        <p className="text-xs text-gray-600 truncate">{image.caption}</p>
+                        <p className="text-xs text-gray-600 truncate">
+                          {image.title}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -189,13 +216,17 @@ export default function ManualImageSelector({ section, onClose, onImageSelect }:
             </div>
           )}
 
-          {activeTab === 'ai' && (
+          {activeTab === "ai" && (
             <div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="ai-prompt"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   AI Image Prompt
                 </label>
                 <textarea
+                  id="ai-prompt"
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
                   placeholder="Describe the image you want to generate..."
@@ -208,12 +239,12 @@ export default function ManualImageSelector({ section, onClose, onImageSelect }:
                 disabled={loading || !aiPrompt.trim()}
                 className="btn btn-primary"
               >
-                {loading ? 'Generating...' : 'Generate Image'}
+                {loading ? "Generating..." : "Generate Image"}
               </button>
             </div>
           )}
 
-          {activeTab === 'upload' && (
+          {activeTab === "upload" && (
             <div>
               <div
                 {...getRootProps()}
@@ -236,5 +267,5 @@ export default function ManualImageSelector({ section, onClose, onImageSelect }:
         </div>
       </div>
     </div>
-  )
+  );
 }

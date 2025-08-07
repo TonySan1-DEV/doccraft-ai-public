@@ -11,9 +11,9 @@
 */
 
 import { test, expect } from '@playwright/test';
-import { NarrativeSyncProvider } from '../../../shared/state/useNarrativeSyncContext';
-import EmotionTimelineChart from '../EmotionTimelineChart';
-import PlotFrameworkTimeline from '../../plotStructure/PlotFrameworkTimeline';
+import { _NarrativeSyncProvider } from '../../../shared/state/useNarrativeSyncContext';
+import _EmotionTimelineChart from '../EmotionTimelineChart';
+import _PlotFrameworkTimeline from '../../plotStructure/PlotFrameworkTimeline';
 
 // Mock data for testing
 const mockEmotionalBeats = [
@@ -24,7 +24,7 @@ const mockEmotionalBeats = [
     intensity: 80,
     narrativePosition: 0.2,
     timestamp: Date.now(),
-    context: 'Hero discovers treasure'
+    context: 'Hero discovers treasure',
   },
   {
     sceneId: 'scene2',
@@ -33,7 +33,7 @@ const mockEmotionalBeats = [
     intensity: 90,
     narrativePosition: 0.5,
     timestamp: Date.now(),
-    context: 'Hero faces danger'
+    context: 'Hero faces danger',
   },
   {
     sceneId: 'scene3',
@@ -42,15 +42,27 @@ const mockEmotionalBeats = [
     intensity: 70,
     narrativePosition: 0.8,
     timestamp: Date.now(),
-    context: 'Hero escapes safely'
-  }
+    context: 'Hero escapes safely',
+  },
 ];
 
 const mockPlotBeats = [
   { id: 'setup', label: 'Setup', act: 1, position: 0.1, isStructural: true },
-  { id: 'catalyst', label: 'Catalyst', act: 1, position: 0.25, isStructural: true },
+  {
+    id: 'catalyst',
+    label: 'Catalyst',
+    act: 1,
+    position: 0.25,
+    isStructural: true,
+  },
   { id: 'climax', label: 'Climax', act: 3, position: 0.75, isStructural: true },
-  { id: 'resolution', label: 'Resolution', act: 3, position: 0.9, isStructural: true }
+  {
+    id: 'resolution',
+    label: 'Resolution',
+    act: 3,
+    position: 0.9,
+    isStructural: true,
+  },
 ];
 
 test.describe('Visual Regression Tests - Emotion Arc Components', () => {
@@ -70,10 +82,10 @@ test.describe('Visual Regression Tests - Emotion Arc Components', () => {
           />
         </div>
       `);
-      
+
       const chart = page.locator('#test-container');
       await expect(chart).toHaveScreenshot('emotion-timeline-default.png');
-      
+
       // Accessibility check
       await expect(chart).toHaveAttribute('role', 'region');
       await expect(chart).toHaveAttribute('aria-label');
@@ -89,9 +101,11 @@ test.describe('Visual Regression Tests - Emotion Arc Components', () => {
           />
         </div>
       `);
-      
+
       const chart = page.locator('#test-container');
-      await expect(chart).toHaveScreenshot('emotion-timeline-character-filtered.png');
+      await expect(chart).toHaveScreenshot(
+        'emotion-timeline-character-filtered.png'
+      );
     });
 
     test('scene selected state', async ({ page }) => {
@@ -106,15 +120,17 @@ test.describe('Visual Regression Tests - Emotion Arc Components', () => {
           </div>
         </NarrativeSyncProvider>
       `);
-      
+
       // Simulate scene selection via context
       await page.evaluate(() => {
         // Mock context update
         window.narrativeSync = { currentSceneId: 'scene2' };
       });
-      
+
       const chart = page.locator('#test-container');
-      await expect(chart).toHaveScreenshot('emotion-timeline-scene-selected.png');
+      await expect(chart).toHaveScreenshot(
+        'emotion-timeline-scene-selected.png'
+      );
     });
 
     test('no data available state', async ({ page }) => {
@@ -127,10 +143,10 @@ test.describe('Visual Regression Tests - Emotion Arc Components', () => {
           />
         </div>
       `);
-      
+
       const chart = page.locator('#test-container');
       await expect(chart).toHaveScreenshot('emotion-timeline-no-data.png');
-      
+
       // Check for empty state message
       await expect(chart).toContainText('No emotional data available');
     });
@@ -146,10 +162,10 @@ test.describe('Visual Regression Tests - Emotion Arc Components', () => {
           />
         </div>
       `);
-      
+
       const chart = page.locator('#test-container');
       await expect(chart).toHaveScreenshot('emotion-timeline-loading.png');
-      
+
       // Check for loading spinner
       await expect(chart).toContainText('Loading emotional timeline');
     });
@@ -165,10 +181,10 @@ test.describe('Visual Regression Tests - Emotion Arc Components', () => {
           />
         </div>
       `);
-      
+
       const chart = page.locator('#test-container');
       await expect(chart).toHaveScreenshot('emotion-timeline-error.png');
-      
+
       // Check for error message
       await expect(chart).toContainText('Error loading emotional data');
     });
@@ -185,10 +201,10 @@ test.describe('Visual Regression Tests - Emotion Arc Components', () => {
           />
         </div>
       `);
-      
+
       const timeline = page.locator('#test-container');
       await expect(timeline).toHaveScreenshot('plot-timeline-default.png');
-      
+
       // Accessibility check
       await expect(timeline).toHaveAttribute('role', 'region');
     });
@@ -204,10 +220,12 @@ test.describe('Visual Regression Tests - Emotion Arc Components', () => {
           />
         </div>
       `);
-      
+
       const timeline = page.locator('#test-container');
-      await expect(timeline).toHaveScreenshot('plot-timeline-scene-selected.png');
-      
+      await expect(timeline).toHaveScreenshot(
+        'plot-timeline-scene-selected.png'
+      );
+
       // Check for selected beat highlighting
       const selectedBeat = timeline.locator('[aria-pressed="true"]');
       await expect(selectedBeat).toBeVisible();
@@ -215,10 +233,20 @@ test.describe('Visual Regression Tests - Emotion Arc Components', () => {
 
     test('with arc overlay', async ({ page }) => {
       const mockOverlay = [
-        { sceneId: 'scene1', beatId: 'setup', beatLabel: 'Setup', expectedEmotionalTone: 'calm' },
-        { sceneId: 'scene2', beatId: 'climax', beatLabel: 'Climax', expectedEmotionalTone: 'tension' }
+        {
+          sceneId: 'scene1',
+          beatId: 'setup',
+          beatLabel: 'Setup',
+          expectedEmotionalTone: 'calm',
+        },
+        {
+          sceneId: 'scene2',
+          beatId: 'climax',
+          beatLabel: 'Climax',
+          expectedEmotionalTone: 'tension',
+        },
       ];
-      
+
       await page.setContent(`
         <NarrativeSyncProvider>
           <div id="test-container">
@@ -231,7 +259,7 @@ test.describe('Visual Regression Tests - Emotion Arc Components', () => {
           </div>
         </NarrativeSyncProvider>
       `);
-      
+
       const timeline = page.locator('#test-container');
       await expect(timeline).toHaveScreenshot('plot-timeline-with-overlay.png');
     });
@@ -248,14 +276,14 @@ test.describe('Visual Regression Tests - Emotion Arc Components', () => {
           />
         </div>
       `);
-      
+
       // Check for sufficient color contrast
-      const chart = page.locator('#test-container');
+      const _chart = page.locator('#test-container');
       const contrast = await page.evaluate(() => {
         // Mock contrast calculation - in real test, use actual contrast checking library
         return { passed: true, ratio: 4.5 };
       });
-      
+
       expect(contrast.passed).toBe(true);
       expect(contrast.ratio).toBeGreaterThan(4.5);
     });
@@ -268,16 +296,16 @@ test.describe('Visual Regression Tests - Emotion Arc Components', () => {
             selectedCharacter="all"
             className="w-full h-64"
           />
-        </div>
+                </div>
       `);
-      
+
       const chart = page.locator('#test-container');
-      
+
       // Test tab navigation
       await page.keyboard.press('Tab');
       const focusedElement = page.locator(':focus');
       await expect(focusedElement).toBeVisible();
-      
+
       // Test Enter key on focused element
       await page.keyboard.press('Enter');
       // Should trigger onBeatClick callback
@@ -290,7 +318,7 @@ test.describe('CI Visual Regression', () => {
   test('pixel delta threshold check', async ({ page }) => {
     // This would be implemented with actual pixel comparison
     // For now, we'll just ensure components render without errors
-    
+
     await page.setContent(`
       <div id="test-container">
         <EmotionTimelineChart
@@ -300,12 +328,12 @@ test.describe('CI Visual Regression', () => {
         />
       </div>
     `);
-    
+
     const chart = page.locator('#test-container');
     await expect(chart).toBeVisible();
-    
+
     // In real implementation, compare with baseline and warn if delta > 2%
     const pixelDelta = 0; // Mock - would be calculated from actual comparison
     expect(pixelDelta).toBeLessThan(2);
   });
-}); 
+});

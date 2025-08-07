@@ -1,74 +1,44 @@
 // Enhanced Character Chat Component
 // Advanced user-to-character interaction with sophisticated features
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   MessageCircle,
   Brain,
   Heart,
   Users,
-  Target,
-  Zap,
   Send,
   Mic,
   MicOff,
-  Star,
-  TrendingUp,
-  Lightbulb,
   Eye,
   Settings,
-  Play,
-  Pause,
-  SkipForward,
-  Volume2,
-  VolumeX,
-  Camera,
-  Video,
-  Phone,
-  VideoOff,
-  MoreHorizontal,
   Smile,
   Frown,
   Meh,
   AlertCircle,
-  CheckCircle,
-  Clock,
-  Calendar,
-  MapPin,
   User,
-  Users2,
-  Shield,
   Sword,
   Crown,
-  BookOpen,
-  Activity,
   BarChart3,
-  PieChart,
-  LineChart,
-  Target as TargetIcon,
-  Heart as HeartIcon,
-  Brain as BrainIcon,
-  Users as UsersIcon,
-} from "lucide-react";
-import { toast } from "react-hot-toast";
-import { enhancedCharacterInteraction } from "../services/enhancedCharacterInteraction";
-import { CharacterPersona } from "../types/CharacterPersona";
+} from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { EnhancedCharacterInteractionService } from '../services/enhancedCharacterInteraction';
+import { CharacterPersona } from '../types/CharacterPersona';
 import {
   InteractionMode,
   InteractionContext,
-  CharacterResponse,
   ConversationFlow,
-} from "../services/enhancedCharacterInteraction";
+} from '../services/enhancedCharacterInteraction';
 
 interface EnhancedCharacterChatProps {
   character: CharacterPersona;
-  onCharacterUpdate: (character: CharacterPersona) => void;
+  onCharacterUpdate?: (character: CharacterPersona) => void;
   className?: string;
 }
 
 interface ChatMessage {
   id: string;
-  sender: "user" | "character";
+  sender: 'user' | 'character';
   content: string;
   timestamp: Date;
   emotion?: string;
@@ -82,10 +52,10 @@ interface ChatMessage {
 }
 
 interface InteractionModeOption {
-  id: InteractionMode["type"];
+  id: InteractionMode['type'];
   label: string;
   description: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
   color: string;
   intensity: number;
   duration: number;
@@ -95,7 +65,7 @@ interface InteractionModeOption {
 export default function EnhancedCharacterChat({
   character,
   onCharacterUpdate,
-  className = "",
+  className = '',
 }: EnhancedCharacterChatProps) {
   const [activeMode, setActiveMode] = useState<InteractionModeOption | null>(
     null
@@ -103,21 +73,21 @@ export default function EnhancedCharacterChat({
   const [conversationFlow, setConversationFlow] =
     useState<ConversationFlow | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [inputMessage, setInputMessage] = useState("");
+  const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [showCharacterInsights, setShowCharacterInsights] = useState(false);
   const [showEmotionalAnalysis, setShowEmotionalAnalysis] = useState(false);
   const [showFollowUpSuggestions, setShowFollowUpSuggestions] = useState(false);
-  const [currentContext, setCurrentContext] = useState<InteractionContext>({
-    scene: "Casual conversation",
-    mood: "neutral",
-    timeOfDay: "afternoon",
-    location: "living room",
+  const [currentContext] = useState<InteractionContext>({
+    scene: 'Casual conversation',
+    mood: 'neutral',
+    timeOfDay: 'afternoon',
+    location: 'living room',
     otherCharacters: [],
     recentEvents: [],
-    emotionalState: "calm",
-    conversationTone: "casual",
+    emotionalState: 'calm',
+    conversationTone: 'casual',
   });
 
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -125,73 +95,73 @@ export default function EnhancedCharacterChat({
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
 
   const interactionModes: InteractionModeOption[] = [
     {
-      id: "conversation",
-      label: "Casual Chat",
-      description: "Natural, relaxed conversation",
+      id: 'conversation',
+      label: 'Casual Chat',
+      description: 'Natural, relaxed conversation',
       icon: MessageCircle,
-      color: "blue",
+      color: 'blue',
       intensity: 0.3,
       duration: 15,
-      goals: ["Build rapport", "Learn about character", "Explore personality"],
+      goals: ['Build rapport', 'Learn about character', 'Explore personality'],
     },
     {
-      id: "interview",
-      label: "Deep Interview",
-      description: "Structured questions for character development",
+      id: 'interview',
+      label: 'Deep Interview',
+      description: 'Structured questions for character development',
       icon: Brain,
-      color: "purple",
+      color: 'purple',
       intensity: 0.7,
       duration: 30,
       goals: [
-        "Explore background",
-        "Understand motivations",
-        "Discover secrets",
+        'Explore background',
+        'Understand motivations',
+        'Discover secrets',
       ],
     },
     {
-      id: "therapy",
-      label: "Emotional Support",
-      description: "Therapeutic conversation for emotional growth",
+      id: 'therapy',
+      label: 'Emotional Support',
+      description: 'Therapeutic conversation for emotional growth',
       icon: Heart,
-      color: "pink",
+      color: 'pink',
       intensity: 0.8,
       duration: 45,
-      goals: ["Process emotions", "Heal wounds", "Build resilience"],
+      goals: ['Process emotions', 'Heal wounds', 'Build resilience'],
     },
     {
-      id: "conflict",
-      label: "Conflict Resolution",
-      description: "Address disagreements and tensions",
+      id: 'conflict',
+      label: 'Conflict Resolution',
+      description: 'Address disagreements and tensions',
       icon: Sword,
-      color: "red",
+      color: 'red',
       intensity: 0.9,
       duration: 20,
-      goals: ["Resolve conflicts", "Improve communication", "Strengthen bonds"],
+      goals: ['Resolve conflicts', 'Improve communication', 'Strengthen bonds'],
     },
     {
-      id: "bonding",
-      label: "Relationship Building",
-      description: "Deepen emotional connections",
+      id: 'bonding',
+      label: 'Relationship Building',
+      description: 'Deepen emotional connections',
       icon: Users,
-      color: "green",
+      color: 'green',
       intensity: 0.6,
       duration: 25,
-      goals: ["Strengthen relationships", "Build trust", "Create intimacy"],
+      goals: ['Strengthen relationships', 'Build trust', 'Create intimacy'],
     },
     {
-      id: "mentoring",
-      label: "Guidance & Advice",
-      description: "Provide wisdom and direction",
+      id: 'mentoring',
+      label: 'Guidance & Advice',
+      description: 'Provide wisdom and direction',
       icon: Crown,
-      color: "yellow",
+      color: 'yellow',
       intensity: 0.5,
       duration: 35,
-      goals: ["Share wisdom", "Provide guidance", "Support growth"],
+      goals: ['Share wisdom', 'Provide guidance', 'Support growth'],
     },
   ];
 
@@ -208,6 +178,8 @@ export default function EnhancedCharacterChat({
       };
 
       try {
+        const enhancedCharacterInteraction =
+          new EnhancedCharacterInteractionService();
         const flow = await enhancedCharacterInteraction.startConversation(
           character.id,
           interactionMode,
@@ -217,8 +189,8 @@ export default function EnhancedCharacterChat({
         setConversationFlow(flow);
         toast.success(`Started ${mode.label} mode`);
       } catch (error) {
-        console.error("Failed to start conversation:", error);
-        toast.error("Failed to start conversation");
+        console.error('Failed to start conversation:', error);
+        toast.error('Failed to start conversation');
       }
     },
     [character.id, currentContext]
@@ -229,16 +201,18 @@ export default function EnhancedCharacterChat({
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
-      sender: "user",
+      sender: 'user',
       content: inputMessage,
       timestamp: new Date(),
     };
 
-    setChatMessages((prev) => [...prev, userMessage]);
-    setInputMessage("");
+    setChatMessages(prev => [...prev, userMessage]);
+    setInputMessage('');
     setIsTyping(true);
 
     try {
+      const enhancedCharacterInteraction =
+        new EnhancedCharacterInteractionService();
       const characterResponse =
         await enhancedCharacterInteraction.generateResponse(
           character.id,
@@ -249,7 +223,7 @@ export default function EnhancedCharacterChat({
 
       const characterMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        sender: "character",
+        sender: 'character',
         content: characterResponse.content,
         timestamp: new Date(),
         emotion: characterResponse.emotion,
@@ -262,10 +236,10 @@ export default function EnhancedCharacterChat({
         developmentInsight: characterResponse.developmentInsight,
       };
 
-      setChatMessages((prev) => [...prev, characterMessage]);
+      setChatMessages(prev => [...prev, characterMessage]);
 
       // Update conversation flow
-      setConversationFlow((prev) =>
+      setConversationFlow(prev =>
         prev
           ? {
               ...prev,
@@ -274,77 +248,65 @@ export default function EnhancedCharacterChat({
           : null
       );
 
+      // Update character if callback provided
+      if (onCharacterUpdate && characterResponse.developmentInsight) {
+        const updatedCharacter = {
+          ...character,
+          developmentNotes: character.developmentNotes
+            ? [
+                ...character.developmentNotes,
+                characterResponse.developmentInsight,
+              ]
+            : [characterResponse.developmentInsight],
+        };
+        onCharacterUpdate(updatedCharacter);
+      }
+
       // Show follow-up suggestions
       if (characterResponse.developmentInsight) {
         setShowFollowUpSuggestions(true);
       }
     } catch (error) {
-      console.error("Failed to generate character response:", error);
-      toast.error("Failed to generate character response");
+      console.error('Failed to generate character response:', error);
+      toast.error('Failed to generate character response');
     } finally {
       setIsTyping(false);
     }
   }, [inputMessage, conversationFlow, character.id, currentContext]);
 
-  const switchMode = useCallback(
-    async (newMode: InteractionModeOption) => {
-      if (!conversationFlow) return;
-
-      try {
-        const updatedFlow =
-          await enhancedCharacterInteraction.switchInteractionMode(
-            conversationFlow,
-            {
-              type: newMode.id,
-              intensity: newMode.intensity,
-              focus: newMode.description,
-              duration: newMode.duration,
-              goals: newMode.goals,
-            }
-          );
-
-        setConversationFlow(updatedFlow);
-        setActiveMode(newMode);
-        toast.success(`Switched to ${newMode.label} mode`);
-      } catch (error) {
-        console.error("Failed to switch mode:", error);
-        toast.error("Failed to switch conversation mode");
-      }
-    },
-    [conversationFlow]
-  );
-
   const analyzeConversation = useCallback(async () => {
     if (!conversationFlow) return;
 
     try {
+      const enhancedCharacterInteraction =
+        new EnhancedCharacterInteractionService();
       const analysis =
         await enhancedCharacterInteraction.analyzeConversationFlow(
           conversationFlow
         );
-      console.log("Conversation Analysis:", analysis);
+      console.log('Conversation Analysis:', analysis);
 
       setShowEmotionalAnalysis(true);
-      toast.success("Conversation analysis complete");
+      toast.success('Conversation analysis complete');
     } catch (error) {
-      console.error("Failed to analyze conversation:", error);
-      toast.error("Failed to analyze conversation");
+      console.error('Failed to analyze conversation:', error);
+      toast.error('Failed to analyze conversation');
     }
   }, [conversationFlow]);
 
   const getEmotionIcon = (emotion: string) => {
     switch (emotion) {
-      case "joy":
+      case 'joy':
         return <Smile className="w-4 h-4 text-green-500" />;
-      case "sadness":
+      case 'sadness':
         return <Frown className="w-4 h-4 text-blue-500" />;
-      case "anger":
+      case 'anger':
         return <AlertCircle className="w-4 h-4 text-red-500" />;
-      case "fear":
+      case 'fear':
         return <AlertCircle className="w-4 h-4 text-yellow-500" />;
-      case "surprise":
+      case 'surprise':
         return <Eye className="w-4 h-4 text-purple-500" />;
-      case "contempt":
+      case 'contempt':
         return <Meh className="w-4 h-4 text-gray-500" />;
       default:
         return <Meh className="w-4 h-4 text-gray-400" />;
@@ -352,9 +314,9 @@ export default function EnhancedCharacterChat({
   };
 
   const getIntensityColor = (intensity: number) => {
-    if (intensity > 0.7) return "text-red-600";
-    if (intensity > 0.4) return "text-yellow-600";
-    return "text-green-600";
+    if (intensity > 0.7) return 'text-red-600';
+    if (intensity > 0.4) return 'text-yellow-600';
+    return 'text-green-600';
   };
 
   return (
@@ -375,7 +337,7 @@ export default function EnhancedCharacterChat({
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {activeMode
                   ? `${activeMode.label} Mode`
-                  : "Select interaction mode"}
+                  : 'Select interaction mode'}
               </p>
             </div>
           </div>
@@ -407,7 +369,7 @@ export default function EnhancedCharacterChat({
             Choose Interaction Mode
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {interactionModes.map((mode) => (
+            {interactionModes.map(mode => (
               <button
                 key={mode.id}
                 onClick={() => startConversation(mode)}
@@ -481,30 +443,30 @@ export default function EnhancedCharacterChat({
               <p>Start a conversation with {character.name}</p>
               {activeMode && (
                 <p className="text-sm mt-2">
-                  Mode: {activeMode.label} • Goals:{" "}
-                  {activeMode.goals.join(", ")}
+                  Mode: {activeMode.label} • Goals:{' '}
+                  {activeMode.goals.join(', ')}
                 </p>
               )}
             </div>
           ) : (
-            chatMessages.map((message) => (
+            chatMessages.map(message => (
               <div
                 key={message.id}
                 className={`flex ${
-                  message.sender === "user" ? "justify-end" : "justify-start"
+                  message.sender === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
                 <div
                   className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
-                    message.sender === "user"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
+                    message.sender === 'user'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
                   }`}
                 >
                   <p className="text-sm">{message.content}</p>
 
                   {/* Character Response Details */}
-                  {message.sender === "character" && (
+                  {message.sender === 'character' && (
                     <div className="mt-2 space-y-1">
                       {message.emotion && (
                         <div className="flex items-center space-x-1 text-xs opacity-75">
@@ -568,11 +530,11 @@ export default function EnhancedCharacterChat({
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                     <div
                       className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.1s" }}
+                      style={{ animationDelay: '0.1s' }}
                     ></div>
                     <div
                       className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.2s" }}
+                      style={{ animationDelay: '0.2s' }}
                     ></div>
                   </div>
                   <span className="text-sm">
@@ -593,8 +555,8 @@ export default function EnhancedCharacterChat({
               ref={inputRef}
               type="text"
               value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+              onChange={e => setInputMessage(e.target.value)}
+              onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
               placeholder={`Chat with ${character.name}...`}
               className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               disabled={isTyping || !activeMode}
@@ -604,8 +566,8 @@ export default function EnhancedCharacterChat({
               onClick={() => setIsListening(!isListening)}
               className={`p-2 rounded-lg ${
                 isListening
-                  ? "bg-red-500 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  ? 'bg-red-500 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
               {isListening ? (
@@ -658,7 +620,7 @@ export default function EnhancedCharacterChat({
                 Current Emotion
               </p>
               <p className="font-medium text-gray-900 dark:text-white">
-                {chatMessages[chatMessages.length - 1]?.emotion || "neutral"}
+                {chatMessages[chatMessages.length - 1]?.emotion || 'neutral'}
               </p>
             </div>
             <div>
@@ -693,7 +655,7 @@ export default function EnhancedCharacterChat({
               <span className="font-medium text-gray-900 dark:text-white">
                 {Math.round(
                   (Date.now() - conversationFlow.startTime.getTime()) / 60000
-                )}{" "}
+                )}{' '}
                 minutes
               </span>
             </div>

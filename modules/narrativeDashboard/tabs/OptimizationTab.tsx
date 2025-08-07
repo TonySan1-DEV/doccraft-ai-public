@@ -174,7 +174,7 @@ export const OptimizationTab: React.FC<{ narrativeSync: ReturnType<typeof useNar
         </Suspense>
       </div>
       <aside className="lg:col-span-1 flex flex-col gap-4" aria-label="Scene Inspector">
-        <Suspense fallback={<div>Loading scene inspector..."></div>}>
+        <Suspense fallback={<div>Loading scene inspector...</div>}>
           <SceneInspectorPanel narrativeSync={{ ...narrativeSync, currentSceneId: selectedSceneId }} />
         </Suspense>
       </aside>

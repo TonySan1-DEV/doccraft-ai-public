@@ -19,20 +19,21 @@ interface PreferenceVersionHistoryProps {
   onVersionRestored?: (version: PreferenceVersion) => void;
 }
 
-export function PreferenceVersionHistory({ 
+export function PreferenceVersionHistory({
   className = '',
-  onVersionRestored 
+  onVersionRestored,
 }: PreferenceVersionHistoryProps) {
-  const { 
-    versionHistory, 
-    isLoadingVersions, 
+  const {
+    versionHistory,
+    isLoadingVersions,
 
-    restoreVersion, 
-    deleteVersion, 
-    updateVersionLabel 
+    restoreVersion,
+    deleteVersion,
+    updateVersionLabel,
   } = useAgentPreferences();
 
-  const [selectedVersion, setSelectedVersion] = useState<PreferenceVersion | null>(null);
+  const [selectedVersion, setSelectedVersion] =
+    useState<PreferenceVersion | null>(null);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [editingLabel, setEditingLabel] = useState<string | null>(null);
@@ -46,49 +47,63 @@ export function PreferenceVersionHistory({
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
   // Handle version restore
-  const handleRestore = useCallback(async (version: PreferenceVersion) => {
-    if (!confirm(`Are you sure you want to restore version ${version.version_number}? This will create a new version with the restored preferences.`)) {
-      return;
-    }
-
-    setIsRestoring(true);
-    try {
-      const success = await restoreVersion(version.id, {
-        label: `Restored from version ${version.version_number}`,
-        reason: 'User restored from version history'
-      });
-
-      if (success) {
-        onVersionRestored?.(version);
-        setSelectedVersion(null);
+  const handleRestore = useCallback(
+    async (version: PreferenceVersion) => {
+      if (
+        !confirm(
+          `Are you sure you want to restore version ${version.version_number}? This will create a new version with the restored preferences.`
+        )
+      ) {
+        return;
       }
-    } catch (error) {
-      console.error('Failed to restore version:', error);
-    } finally {
-      setIsRestoring(false);
-    }
-  }, [restoreVersion, onVersionRestored]);
+
+      setIsRestoring(true);
+      try {
+        const success = await restoreVersion(version.id, {
+          label: `Restored from version ${version.version_number}`,
+          reason: 'User restored from version history',
+        });
+
+        if (success) {
+          onVersionRestored?.(version);
+          setSelectedVersion(null);
+        }
+      } catch (error) {
+        console.error('Failed to restore version:', error);
+      } finally {
+        setIsRestoring(false);
+      }
+    },
+    [restoreVersion, onVersionRestored]
+  );
 
   // Handle version delete
-  const handleDelete = useCallback(async (version: PreferenceVersion) => {
-    if (!confirm(`Are you sure you want to delete version ${version.version_number}? This action cannot be undone.`)) {
-      return;
-    }
+  const handleDelete = useCallback(
+    async (version: PreferenceVersion) => {
+      if (
+        !confirm(
+          `Are you sure you want to delete version ${version.version_number}? This action cannot be undone.`
+        )
+      ) {
+        return;
+      }
 
-    setIsDeleting(version.id);
-    try {
-      await deleteVersion(version.id);
-    } catch (error) {
-      console.error('Failed to delete version:', error);
-    } finally {
-      setIsDeleting(null);
-    }
-  }, [deleteVersion]);
+      setIsDeleting(version.id);
+      try {
+        await deleteVersion(version.id);
+      } catch (error) {
+        console.error('Failed to delete version:', error);
+      } finally {
+        setIsDeleting(null);
+      }
+    },
+    [deleteVersion]
+  );
 
   // Handle label editing
   const handleEditLabel = useCallback((version: PreferenceVersion) => {
@@ -96,15 +111,18 @@ export function PreferenceVersionHistory({
     setNewLabel(version.label || '');
   }, []);
 
-  const handleSaveLabel = useCallback(async (version: PreferenceVersion) => {
-    try {
-      await updateVersionLabel(version.id, newLabel);
-      setEditingLabel(null);
-      setNewLabel('');
-    } catch (error) {
-      console.error('Failed to update label:', error);
-    }
-  }, [updateVersionLabel, newLabel]);
+  const handleSaveLabel = useCallback(
+    async (version: PreferenceVersion) => {
+      try {
+        await updateVersionLabel(version.id, newLabel);
+        setEditingLabel(null);
+        setNewLabel('');
+      } catch (error) {
+        console.error('Failed to update label:', error);
+      }
+    },
+    [updateVersionLabel, newLabel]
+  );
 
   const handleCancelLabel = useCallback(() => {
     setEditingLabel(null);
@@ -112,12 +130,14 @@ export function PreferenceVersionHistory({
   }, []);
 
   // Get preference summary for display
-  const getPreferenceSummary = (preferences: any) => {
+  const getPreferenceSummary = (preferences: Record<string, unknown>) => {
     const summary = [];
     if (preferences.tone) summary.push(`Tone: ${preferences.tone}`);
     if (preferences.language) summary.push(`Language: ${preferences.language}`);
-    if (preferences.copilotEnabled !== undefined) summary.push(`Copilot: ${preferences.copilotEnabled ? 'On' : 'Off'}`);
-    if (preferences.memoryEnabled !== undefined) summary.push(`Memory: ${preferences.memoryEnabled ? 'On' : 'Off'}`);
+    if (preferences.copilotEnabled !== undefined)
+      summary.push(`Copilot: ${preferences.copilotEnabled ? 'On' : 'Off'}`);
+    if (preferences.memoryEnabled !== undefined)
+      summary.push(`Memory: ${preferences.memoryEnabled ? 'On' : 'Off'}`);
     return summary.join(', ');
   };
 
@@ -137,7 +157,9 @@ export function PreferenceVersionHistory({
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Version History</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Version History
+          </h3>
           <p className="text-sm text-gray-600 mt-1">
             Manage and restore previous preference configurations
           </p>
@@ -149,15 +171,19 @@ export function PreferenceVersionHistory({
             <div className="px-6 py-8 text-center text-gray-500">
               <div className="text-4xl mb-2">📝</div>
               <p>No version history yet</p>
-              <p className="text-sm mt-1">Your preference changes will appear here</p>
+              <p className="text-sm mt-1">
+                Your preference changes will appear here
+              </p>
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {versionHistory.map((version) => (
-                <div 
-                  key={version.id} 
+              {versionHistory.map(version => (
+                <div
+                  key={version.id}
                   className={`px-6 py-4 hover:bg-gray-50 transition-colors ${
-                    version.is_current ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                    version.is_current
+                      ? 'bg-blue-50 border-l-4 border-blue-500'
+                      : ''
                   }`}
                 >
                   <div className="flex items-start justify-between">
@@ -174,7 +200,7 @@ export function PreferenceVersionHistory({
                         )}
                         {version.label && (
                           <span className="text-sm text-gray-600">
-                            "{version.label}"
+                            &quot;{version.label}&quot;
                           </span>
                         )}
                       </div>
@@ -186,7 +212,12 @@ export function PreferenceVersionHistory({
 
                       {/* Preference Summary */}
                       <div className="text-sm text-gray-700 mb-3">
-                        {getPreferenceSummary(version.preferences)}
+                        {getPreferenceSummary(
+                          version.preferences as unknown as Record<
+                            string,
+                            unknown
+                          >
+                        )}
                       </div>
 
                       {/* Label Editing */}
@@ -195,10 +226,10 @@ export function PreferenceVersionHistory({
                           <input
                             type="text"
                             value={newLabel}
-                            onChange={(e) => setNewLabel(e.target.value)}
+                            onChange={e => setNewLabel(e.target.value)}
                             className="flex-1 px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="Enter version label..."
-                            autoFocus
+                            // autoFocus removed for accessibility
                           />
                           <button
                             onClick={() => handleSaveLabel(version)}
@@ -241,7 +272,9 @@ export function PreferenceVersionHistory({
                                 disabled={isDeleting === version.id}
                                 className="text-sm text-red-600 hover:text-red-800 focus:outline-none focus:underline disabled:opacity-50"
                               >
-                                {isDeleting === version.id ? 'Deleting...' : 'Delete'}
+                                {isDeleting === version.id
+                                  ? 'Deleting...'
+                                  : 'Delete'}
                               </button>
                             </>
                           )}
@@ -269,25 +302,37 @@ export function PreferenceVersionHistory({
                   onClick={() => setSelectedVersion(null)}
                   className="text-gray-400 hover:text-gray-600 focus:outline-none"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
               {selectedVersion.label && (
-                <p className="text-sm text-gray-600 mt-1">"{selectedVersion.label}"</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  &quot;{selectedVersion.label}&quot;
+                </p>
               )}
               <p className="text-sm text-gray-600 mt-1">
                 Created: {formatDate(selectedVersion.created_at)}
               </p>
             </div>
-            
+
             <div className="px-6 py-4 overflow-y-auto max-h-96">
               <pre className="text-sm bg-gray-50 p-4 rounded-md overflow-x-auto">
                 {JSON.stringify(selectedVersion.preferences, null, 2)}
               </pre>
             </div>
-            
+
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
               <button
                 onClick={() => setSelectedVersion(null)}
@@ -310,4 +355,4 @@ export function PreferenceVersionHistory({
       )}
     </div>
   );
-} 
+}

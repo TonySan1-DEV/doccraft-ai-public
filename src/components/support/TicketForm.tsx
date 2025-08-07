@@ -1,14 +1,11 @@
-import React, { useState } from 'react';
-import { 
-  Upload, 
-  X, 
-  Clock,
-  Paperclip,
-  Send,
-  ArrowLeft
-} from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import { SupportTicket, TicketCategory, TicketPriority } from '../../types/SupportTypes';
+import React, { useState } from "react";
+import { Upload, X, Clock, Paperclip, Send, ArrowLeft } from "lucide-react";
+import { toast } from "react-hot-toast";
+import {
+  SupportTicket,
+  TicketCategory,
+  TicketPriority,
+} from "../../types/SupportTypes";
 
 interface TicketFormProps {
   onSubmit: (ticket: Partial<SupportTicket>) => Promise<void>;
@@ -17,77 +14,80 @@ interface TicketFormProps {
 }
 
 const CATEGORIES: { value: TicketCategory; label: string; icon: string }[] = [
-  { value: 'technical_issue', label: 'Technical Issue', icon: '🔧' },
-  { value: 'billing', label: 'Billing & Payment', icon: '💳' },
-  { value: 'feature_request', label: 'Feature Request', icon: '💡' },
-  { value: 'bug_report', label: 'Bug Report', icon: '🐛' },
-  { value: 'account_access', label: 'Account Access', icon: '🔐' },
-  { value: 'general_inquiry', label: 'General Inquiry', icon: '❓' },
-  { value: 'integration_help', label: 'Integration Help', icon: '🔗' },
-  { value: 'performance', label: 'Performance Issue', icon: '⚡' },
-  { value: 'security', label: 'Security Concern', icon: '🛡️' },
-  { value: 'other', label: 'Other', icon: '📝' }
+  { value: "technical_issue", label: "Technical Issue", icon: "🔧" },
+  { value: "billing", label: "Billing & Payment", icon: "💳" },
+  { value: "feature_request", label: "Feature Request", icon: "💡" },
+  { value: "bug_report", label: "Bug Report", icon: "🐛" },
+  { value: "account_access", label: "Account Access", icon: "🔐" },
+  { value: "general_inquiry", label: "General Inquiry", icon: "❓" },
+  { value: "integration_help", label: "Integration Help", icon: "🔗" },
+  { value: "performance", label: "Performance Issue", icon: "⚡" },
+  { value: "security", label: "Security Concern", icon: "🛡️" },
+  { value: "other", label: "Other", icon: "📝" },
 ];
 
 const PRIORITIES: { value: TicketPriority; label: string; color: string }[] = [
-  { value: 'low', label: 'Low', color: 'text-green-600 bg-green-50' },
-  { value: 'medium', label: 'Medium', color: 'text-yellow-600 bg-yellow-50' },
-  { value: 'high', label: 'High', color: 'text-orange-600 bg-orange-50' },
-  { value: 'urgent', label: 'Urgent', color: 'text-red-600 bg-red-50' }
+  { value: "low", label: "Low", color: "text-green-600 bg-green-50" },
+  { value: "medium", label: "Medium", color: "text-yellow-600 bg-yellow-50" },
+  { value: "high", label: "High", color: "text-orange-600 bg-orange-50" },
+  { value: "urgent", label: "Urgent", color: "text-red-600 bg-red-50" },
 ];
 
-export const TicketForm: React.FC<TicketFormProps> = ({ 
-  onSubmit, 
-  onCancel, 
-  initialData 
+export const TicketForm: React.FC<TicketFormProps> = ({
+  onSubmit,
+  onCancel,
+  initialData,
 }) => {
   const [formData, setFormData] = useState<Partial<SupportTicket>>({
-    title: initialData?.title || '',
-    description: initialData?.description || '',
-    category: initialData?.category || 'general_inquiry',
-    priority: initialData?.priority || 'medium',
-    tags: initialData?.tags || []
+    title: initialData?.title || "",
+    description: initialData?.description || "",
+    category: initialData?.category || "general_inquiry",
+    priority: initialData?.priority || "medium",
+    tags: initialData?.tags || [],
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
-  const [newTag, setNewTag] = useState('');
+  const [newTag, setNewTag] = useState("");
 
-  const handleInputChange = (field: keyof SupportTicket, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (
+    field: keyof SupportTicket,
+    value: string | number | boolean
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleAddTag = () => {
     if (newTag.trim() && !formData.tags?.includes(newTag.trim())) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        tags: [...(prev.tags || []), newTag.trim()]
+        tags: [...(prev.tags || []), newTag.trim()],
       }));
-      setNewTag('');
+      setNewTag("");
     }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags?.filter(tag => tag !== tagToRemove) || []
+      tags: prev.tags?.filter((tag) => tag !== tagToRemove) || [],
     }));
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    setAttachments(prev => [...prev, ...files]);
+    setAttachments((prev) => [...prev, ...files]);
   };
 
   const handleRemoveAttachment = (index: number) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title?.trim() || !formData.description?.trim()) {
-      toast.error('Please fill in all required fields');
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -95,14 +95,16 @@ export const TicketForm: React.FC<TicketFormProps> = ({
     try {
       await onSubmit(formData);
     } catch (error) {
-      console.error('Error submitting ticket:', error);
-      toast.error('Failed to create ticket');
+      console.error("Error submitting ticket:", error);
+      toast.error("Failed to create ticket");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const selectedPriority = PRIORITIES.find(pri => pri.value === formData.priority);
+  const selectedPriority = PRIORITIES.find(
+    (pri) => pri.value === formData.priority
+  );
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -122,12 +124,14 @@ export const TicketForm: React.FC<TicketFormProps> = ({
                   Create Support Ticket
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Describe your issue and we'll help you resolve it
+                  Describe your issue and we&apos;ll help you resolve it
                 </p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <div className={`px-3 py-1 rounded-full text-sm font-medium ${selectedPriority?.color}`}>
+              <div
+                className={`px-3 py-1 rounded-full text-sm font-medium ${selectedPriority?.color}`}
+              >
                 {selectedPriority?.label} Priority
               </div>
             </div>
@@ -137,7 +141,10 @@ export const TicketForm: React.FC<TicketFormProps> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Category Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <label
+              htmlFor="ticket-category"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3"
+            >
               Category *
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -145,11 +152,11 @@ export const TicketForm: React.FC<TicketFormProps> = ({
                 <button
                   key={category.value}
                   type="button"
-                  onClick={() => handleInputChange('category', category.value)}
+                  onClick={() => handleInputChange("category", category.value)}
                   className={`p-3 border rounded-lg text-left transition-all ${
                     formData.category === category.value
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                      : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                   }`}
                 >
                   <div className="text-2xl mb-1">{category.icon}</div>
@@ -163,13 +170,17 @@ export const TicketForm: React.FC<TicketFormProps> = ({
 
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="ticket-title"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Title *
             </label>
             <input
+              id="ticket-title"
               type="text"
               value={formData.title}
-              onChange={(e) => handleInputChange('title', e.target.value)}
+              onChange={(e) => handleInputChange("title", e.target.value)}
               placeholder="Brief description of your issue"
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
               maxLength={100}
@@ -181,7 +192,10 @@ export const TicketForm: React.FC<TicketFormProps> = ({
 
           {/* Priority */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <label
+              htmlFor="ticket-priority"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3"
+            >
               Priority *
             </label>
             <div className="flex space-x-3">
@@ -189,11 +203,11 @@ export const TicketForm: React.FC<TicketFormProps> = ({
                 <button
                   key={priority.value}
                   type="button"
-                  onClick={() => handleInputChange('priority', priority.value)}
+                  onClick={() => handleInputChange("priority", priority.value)}
                   className={`px-4 py-2 rounded-lg border transition-all ${
                     formData.priority === priority.value
                       ? `${priority.color} border-current`
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                      : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                   }`}
                 >
                   {priority.label}
@@ -204,12 +218,16 @@ export const TicketForm: React.FC<TicketFormProps> = ({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="ticket-description"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Description *
             </label>
             <textarea
+              id="ticket-description"
               value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
+              onChange={(e) => handleInputChange("description", e.target.value)}
               placeholder="Please provide detailed information about your issue..."
               rows={6}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white resize-none"
@@ -221,7 +239,10 @@ export const TicketForm: React.FC<TicketFormProps> = ({
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="ticket-tags"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Tags
             </label>
             <div className="flex flex-wrap gap-2 mb-2">
@@ -243,12 +264,15 @@ export const TicketForm: React.FC<TicketFormProps> = ({
             </div>
             <div className="flex space-x-2">
               <input
+                id="ticket-tags"
                 type="text"
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
                 placeholder="Add a tag..."
                 className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                onKeyPress={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), handleAddTag())
+                }
               />
               <button
                 type="button"
@@ -262,7 +286,10 @@ export const TicketForm: React.FC<TicketFormProps> = ({
 
           {/* Attachments */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="file-upload"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Attachments
             </label>
             <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
@@ -284,15 +311,22 @@ export const TicketForm: React.FC<TicketFormProps> = ({
                 </p>
               </label>
             </div>
-            
+
             {attachments.length > 0 && (
               <div className="mt-4 space-y-2">
                 {attachments.map((file, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg"
+                  >
                     <div className="flex items-center space-x-3">
                       <Paperclip className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-900 dark:text-white">{file.name}</span>
-                      <span className="text-xs text-gray-500">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                      <span className="text-sm text-gray-900 dark:text-white">
+                        {file.name}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                      </span>
                     </div>
                     <button
                       type="button"
@@ -318,7 +352,11 @@ export const TicketForm: React.FC<TicketFormProps> = ({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !formData.title?.trim() || !formData.description?.trim()}
+              disabled={
+                isSubmitting ||
+                !formData.title?.trim() ||
+                !formData.description?.trim()
+              }
               className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? (
@@ -338,4 +376,4 @@ export const TicketForm: React.FC<TicketFormProps> = ({
       </div>
     </div>
   );
-}; 
+};

@@ -3,39 +3,83 @@
 role: ai-engineer,
 tier: Pro,
 file: "modules/agent/services/enrichAgentMessage.ts",
-allowedActions: ["integrate", "fallback", "query"],
-theme: "agent_llm"
+allowedActions: ["enrich", "suggest", "augment"],
+theme: "agent_message_enrichment"
 */
 
 import { AgentMessage } from './agentChatRouter';
 
-export function enrichAgentMessage(msg: AgentMessage): AgentMessage {
+/**
+ * Enrich agent messages with context-aware suggested actions
+ * @param message - The agent message to enrich
+ * @param context - Optional context for feature-specific actions
+ * @returns Enriched AgentMessage
+ */
+export function enrichAgentMessage(
+  message: AgentMessage,
+  context?: { feature?: string }
+): AgentMessage {
+  // Ensure non-destructive enrichment by preserving existing actions
+  const existingActions = message.suggestedActions || [];
+
   // Add quick replies based on context
-  if (msg.relatedStepId) {
-    msg.suggestedActions = [
-      ...(msg.suggestedActions || []),
-      { label: "Show Me", action: "showOnboarding", targetStepId: msg.relatedStepId }
+  if (message.relatedStepId) {
+    message.suggestedActions = [
+      ...existingActions,
+      {
+        label: 'Show Me',
+        action: 'showOnboarding',
+        targetStepId: message.relatedStepId,
+      },
     ];
   }
 
+  // Add doc-to-video specific actions if feature context is provided
+  if (context?.feature === 'doc2video') {
+    // Validate and attach doc2video-specific actions
+    const doc2videoActions = [
+      { label: 'Download PPT', action: 'exportPPT' },
+      { label: 'Preview Narration', action: 'previewNarration' },
+      { label: 'Play Voiceover', action: 'playVoiceover' },
+      { label: 'Switch to Hybrid Mode', action: 'switchModeHybrid' },
+    ];
+
+    // Ensure actions are valid before attaching
+    const validatedActions = doc2videoActions.filter(
+      action =>
+        action.label &&
+        action.action &&
+        typeof action.label === 'string' &&
+        typeof action.action === 'string'
+    );
+
+    message.suggestedActions = [...existingActions, ...validatedActions];
+  }
+
   // Add help action if no other actions present
-  if (!msg.suggestedActions || msg.suggestedActions.length === 0) {
-    msg.suggestedActions = [{ label: "Get Help", action: "showHelp" }];
+  if (!message.suggestedActions || message.suggestedActions.length === 0) {
+    message.suggestedActions = [{ label: 'Get Help', action: 'showHelp' }];
   }
 
   // Add retry action for LLM fallback responses
-  if (msg.llmFallback) {
-    msg.suggestedActions = [
-      ...(msg.suggestedActions || []),
-      { label: "Try Again", action: "retry" }
+  if (message.llmFallback) {
+    message.suggestedActions = [
+      ...(message.suggestedActions || []),
+      { label: 'Try Again', action: 'retry' },
     ];
   }
 
   // Add accessibility attributes
-  if (msg.type === 'agent') {
-    msg['aria-live'] = 'polite';
-    msg['role'] = 'dialog';
+  if (message.type === 'agent') {
+    message['aria-live'] = 'polite';
+    message['role'] = 'dialog';
   }
 
-  return msg;
-} 
+  // TODO: Future contextual expansion
+  // - Add actions based on user tier (Premium users get more options)
+  // - Show "Edit Slide 2" if Hybrid mode is active
+  // - Add "Export Timeline" for advanced users
+  // - Include "Share Presentation" for collaboration features
+
+  return message;
+}

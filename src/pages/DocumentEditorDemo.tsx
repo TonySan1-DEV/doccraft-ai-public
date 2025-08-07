@@ -1,11 +1,11 @@
-import { useState } from 'react'
-import DocumentEditor from '../components/DocumentEditor'
-import { ImageSuggestions } from '../components/ImageSuggestions'
-import { useMCP } from '../useMCP'
+import { useState } from 'react';
+import DocumentEditor from '../components/DocumentEditor';
+import { ImageSuggestions } from '../components/ImageSuggestions';
+import { useMCP } from '../useMCP';
 
 export default function DocumentEditorDemo() {
-  const ctx = useMCP("DocumentEditorDemo.tsx")
-  const [content, setContent] = useState('')
+  const ctx = useMCP('DocumentEditorDemo.tsx');
+  const [content, setContent] = useState('');
   const [document, setDocument] = useState({
     id: 'demo-doc-1',
     title: 'Demo Document',
@@ -16,24 +16,24 @@ export default function DocumentEditorDemo() {
         content: 'This is a demo section for testing image suggestions.',
         topicTags: ['demo', 'testing', 'documentation'],
         tone: 'professional',
-        intent: 'informative'
-      }
-    ]
-  })
+        intent: 'informative',
+      },
+    ],
+  });
 
   const handleContentChange = (newContent: string) => {
-    setContent(newContent)
+    setContent(newContent);
     setDocument(prev => ({
       ...prev,
       content: newContent,
       sections: [
         {
           ...prev.sections[0],
-          content: newContent
-        }
-      ]
-    }))
-  }
+          content: newContent,
+        },
+      ],
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -44,7 +44,8 @@ export default function DocumentEditorDemo() {
             Document Editor Demo
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
-            Testing the enhanced DocumentEditor with AI-powered image suggestions
+            Testing the enhanced DocumentEditor with AI-powered image
+            suggestions
           </p>
           <div className="mt-4 flex items-center space-x-2">
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white">
@@ -67,7 +68,6 @@ export default function DocumentEditorDemo() {
                 content={content}
                 onChange={handleContentChange}
                 placeholder="Start writing your document here... The AI will suggest relevant images based on your content."
-                autoFocus={true}
                 minHeight="300px"
               />
             </div>
@@ -91,7 +91,9 @@ export default function DocumentEditorDemo() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <h3 className="font-medium text-gray-900 dark:text-white">Document Editor</h3>
+              <h3 className="font-medium text-gray-900 dark:text-white">
+                Document Editor
+              </h3>
               <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                 <li>• Real-time character count</li>
                 <li>• Role-based access control</li>
@@ -101,7 +103,9 @@ export default function DocumentEditorDemo() {
               </ul>
             </div>
             <div className="space-y-2">
-              <h3 className="font-medium text-gray-900 dark:text-white">Image Suggestions</h3>
+              <h3 className="font-medium text-gray-900 dark:text-white">
+                Image Suggestions
+              </h3>
               <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                 <li>• AI-powered image generation</li>
                 <li>• Stock photo integration</li>
@@ -111,7 +115,9 @@ export default function DocumentEditorDemo() {
               </ul>
             </div>
             <div className="space-y-2">
-              <h3 className="font-medium text-gray-900 dark:text-white">MCP Integration</h3>
+              <h3 className="font-medium text-gray-900 dark:text-white">
+                MCP Integration
+              </h3>
               <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                 <li>• Context-aware permissions</li>
                 <li>• Role-based UI elements</li>
@@ -124,5 +130,5 @@ export default function DocumentEditorDemo() {
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

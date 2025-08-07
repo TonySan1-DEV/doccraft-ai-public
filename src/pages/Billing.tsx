@@ -1,92 +1,114 @@
-import React, { useState, useEffect } from 'react'
-import { useAuth } from '../contexts/AuthContext'
-import PaymentService, { Subscription, PaymentIntent, BillingInfo } from '../services/paymentService'
-import { CreditCard, Calendar, Download, AlertCircle, CheckCircle, XCircle, Loader2, Plus, Edit } from 'lucide-react'
-import toast from 'react-hot-toast'
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import PaymentService, {
+  Subscription,
+  PaymentIntent,
+  BillingInfo,
+} from "../services/paymentService";
+import {
+  CreditCard,
+  Calendar,
+  Download,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Loader2,
+  Plus,
+  Edit,
+} from "lucide-react";
+import toast from "react-hot-toast";
 
 export const Billing: React.FC = () => {
-  const { user } = useAuth()
-  const [subscription, setSubscription] = useState<Subscription | null>(null)
-  const [paymentHistory, setPaymentHistory] = useState<PaymentIntent[]>([])
-  const [billingInfo, setBillingInfo] = useState<BillingInfo | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isUpdating, setIsUpdating] = useState(false)
+  const { user } = useAuth();
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [paymentHistory, setPaymentHistory] = useState<PaymentIntent[]>([]);
+  const [billingInfo, setBillingInfo] = useState<BillingInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     if (user) {
-      loadBillingData()
+      loadBillingData();
     }
-  }, [user])
+  }, [user]);
 
   const loadBillingData = async () => {
     try {
-      const paymentService = PaymentService.getInstance()
-      
-      const [sub, history, billing] = await Promise.all([
-        paymentService.getUserSubscription(user?.id || ''),
-        paymentService.getPaymentHistory(user?.id || ''),
-        paymentService.getBillingInfo(user?.id || '')
-      ])
+      const paymentService = PaymentService.getInstance();
 
-      setSubscription(sub)
-      setPaymentHistory(history)
-      setBillingInfo(billing)
+      const [sub, history, billing] = await Promise.all([
+        paymentService.getUserSubscription(user?.id || ""),
+        paymentService.getPaymentHistory(user?.id || ""),
+        paymentService.getBillingInfo(user?.id || ""),
+      ]);
+
+      setSubscription(sub);
+      setPaymentHistory(history);
+      setBillingInfo(billing);
     } catch (error) {
-      console.error('Error loading billing data:', error)
-      toast.error('Failed to load billing information')
+      console.error("Error loading billing data:", error);
+      toast.error("Failed to load billing information");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleCancelSubscription = async () => {
-    if (!subscription) return
+    if (!subscription) return;
 
-    if (!confirm('Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your current billing period.')) {
-      return
+    if (
+      !confirm(
+        "Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your current billing period."
+      )
+    ) {
+      return;
     }
 
-    setIsUpdating(true)
+    setIsUpdating(true);
     try {
-      const paymentService = PaymentService.getInstance()
-      await paymentService.cancelSubscription(subscription.id)
-      
-      toast.success('Subscription canceled successfully')
-      loadBillingData()
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to cancel subscription')
+      const paymentService = PaymentService.getInstance();
+      await paymentService.cancelSubscription(subscription.id);
+
+      toast.success("Subscription canceled successfully");
+      loadBillingData();
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to cancel subscription";
+      toast.error(errorMessage);
     } finally {
-      setIsUpdating(false)
+      setIsUpdating(false);
     }
-  }
+  };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount / 100) // Convert from cents
-  }
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount / 100); // Convert from cents
+  };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'succeeded':
-        return <CheckCircle className="w-5 h-5 text-green-500" />
-      case 'failed':
-        return <XCircle className="w-5 h-5 text-red-500" />
-      case 'pending':
-        return <AlertCircle className="w-5 h-5 text-yellow-500" />
+      case "succeeded":
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case "failed":
+        return <XCircle className="w-5 h-5 text-red-500" />;
+      case "pending":
+        return <AlertCircle className="w-5 h-5 text-yellow-500" />;
       default:
-        return <AlertCircle className="w-5 h-5 text-gray-500" />
+        return <AlertCircle className="w-5 h-5 text-gray-500" />;
     }
-  }
+  };
 
   if (isLoading) {
     return (
@@ -96,7 +118,7 @@ export const Billing: React.FC = () => {
           <p className="text-gray-600">Loading billing information...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -119,11 +141,13 @@ export const Billing: React.FC = () => {
                 Current Subscription
               </h2>
               {subscription && (
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  subscription.status === 'active' 
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                    : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                }`}>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    subscription.status === "active"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                      : "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+                  }`}
+                >
                   {subscription.status}
                 </span>
               )}
@@ -145,7 +169,8 @@ export const Billing: React.FC = () => {
                       Billing Period
                     </h3>
                     <p className="text-gray-600 dark:text-gray-300">
-                      {formatDate(subscription.current_period_start)} - {formatDate(subscription.current_period_end)}
+                      {formatDate(subscription.current_period_start)} -{" "}
+                      {formatDate(subscription.current_period_end)}
                     </p>
                   </div>
                 </div>
@@ -155,7 +180,8 @@ export const Billing: React.FC = () => {
                     <div className="flex items-center">
                       <AlertCircle className="w-5 h-5 text-yellow-500 mr-2" />
                       <p className="text-yellow-800 dark:text-yellow-200">
-                        Your subscription will be canceled at the end of the current billing period.
+                        Your subscription will be canceled at the end of the
+                        current billing period.
                       </p>
                     </div>
                   </div>
@@ -171,7 +197,7 @@ export const Billing: React.FC = () => {
                       disabled={isUpdating}
                       className="px-4 py-2 border border-red-300 text-red-700 dark:text-red-300 rounded-lg font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
                     >
-                      {isUpdating ? 'Canceling...' : 'Cancel Subscription'}
+                      {isUpdating ? "Canceling..." : "Cancel Subscription"}
                     </button>
                   )}
                 </div>
@@ -183,7 +209,8 @@ export const Billing: React.FC = () => {
                   No Active Subscription
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  You're currently on the Free plan. Upgrade to unlock premium features.
+                  You&apos;re currently on the Free plan. Upgrade to unlock
+                  premium features.
                 </p>
                 <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200">
                   Upgrade Now
@@ -203,32 +230,64 @@ export const Billing: React.FC = () => {
             {billingInfo ? (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="billing-name"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Name
                   </label>
-                  <p className="text-gray-900 dark:text-white">{billingInfo.name}</p>
+                  <p
+                    id="billing-name"
+                    className="text-gray-900 dark:text-white"
+                  >
+                    {billingInfo.name}
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="billing-email"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Email
                   </label>
-                  <p className="text-gray-900 dark:text-white">{billingInfo.email}</p>
+                  <p
+                    id="billing-email"
+                    className="text-gray-900 dark:text-white"
+                  >
+                    {billingInfo.email}
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="billing-address"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Address
                   </label>
-                  <p className="text-gray-900 dark:text-white">
-                    {billingInfo.address.line1}<br />
-                    {billingInfo.address.city}, {billingInfo.address.state} {billingInfo.address.postal_code}
+                  <p
+                    id="billing-address"
+                    className="text-gray-900 dark:text-white"
+                  >
+                    {billingInfo.address.line1}
+                    <br />
+                    {billingInfo.address.city}, {billingInfo.address.state}{" "}
+                    {billingInfo.address.postal_code}
                   </p>
                 </div>
                 {billingInfo.phone && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label
+                      htmlFor="billing-phone"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
                       Phone
                     </label>
-                    <p className="text-gray-900 dark:text-white">{billingInfo.phone}</p>
+                    <p
+                      id="billing-phone"
+                      className="text-gray-900 dark:text-white"
+                    >
+                      {billingInfo.phone}
+                    </p>
                   </div>
                 )}
                 <button className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
@@ -269,16 +328,29 @@ export const Billing: React.FC = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Date</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Amount</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Method</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Actions</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                      Date
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                      Amount
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                      Method
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                      Status
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {paymentHistory.map((payment) => (
-                    <tr key={payment.id} className="border-b border-gray-100 dark:border-slate-700">
+                    <tr
+                      key={payment.id}
+                      className="border-b border-gray-100 dark:border-slate-700"
+                    >
                       <td className="py-3 px-4 text-gray-900 dark:text-white">
                         {formatDate(payment.created_at)}
                       </td>
@@ -291,7 +363,9 @@ export const Billing: React.FC = () => {
                       <td className="py-3 px-4">
                         <div className="flex items-center">
                           {getStatusIcon(payment.status)}
-                          <span className="ml-2 text-sm capitalize">{payment.status}</span>
+                          <span className="ml-2 text-sm capitalize">
+                            {payment.status}
+                          </span>
                         </div>
                       </td>
                       <td className="py-3 px-4">
@@ -311,14 +385,15 @@ export const Billing: React.FC = () => {
                 No Payment History
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Your payment history will appear here once you make your first payment.
+                Your payment history will appear here once you make your first
+                payment.
               </p>
             </div>
           )}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Billing 
+export default Billing;

@@ -3,8 +3,12 @@
  * DocCraft-AI v3 Support Module Testing
  */
 
-
-import { SupportTicket, TicketStatus, TicketPriority, TicketCategory } from '../types/SupportTypes';
+import {
+  SupportTicket,
+  TicketStatus,
+  TicketPriority,
+  TicketCategory,
+} from '../types/SupportTypes';
 
 // Mock Supabase client
 const mockSupabase = {
@@ -28,19 +32,19 @@ const mockSupabase = {
             lastActivityAt: new Date().toISOString(),
             isUrgent: false,
             customerImpact: 'low',
-            businessImpact: 'low'
+            businessImpact: 'low',
           },
-          error: null
-        }))
-      }))
+          error: null,
+        })),
+      })),
     })),
     select: jest.fn(() => ({
       eq: jest.fn(() => ({
         order: jest.fn(() => ({
           data: [],
-          error: null
-        }))
-      }))
+          error: null,
+        })),
+      })),
     })),
     update: jest.fn(() => ({
       eq: jest.fn(() => ({
@@ -62,19 +66,19 @@ const mockSupabase = {
               lastActivityAt: new Date().toISOString(),
               isUrgent: false,
               customerImpact: 'low',
-              businessImpact: 'low'
+              businessImpact: 'low',
             },
-            error: null
-          }))
-        }))
-      }))
-    }))
-  }))
+            error: null,
+          })),
+        })),
+      })),
+    })),
+  })),
 };
 
 // Mock the supabase module
 jest.mock('../lib/supabase', () => ({
-  supabase: mockSupabase
+  supabase: mockSupabase,
 }));
 
 describe('Support System Type Safety Tests', () => {
@@ -88,16 +92,26 @@ describe('Support System Type Safety Tests', () => {
 
   describe('Type Safety', () => {
     it('should enforce correct ticket status values', () => {
-      const validStatuses: TicketStatus[] = ['open', 'in_progress', 'resolved', 'closed'];
-      
+      const validStatuses: TicketStatus[] = [
+        'open',
+        'in_progress',
+        'resolved',
+        'closed',
+      ];
+
       validStatuses.forEach(status => {
         expect(status).toMatch(/^(open|in_progress|resolved|closed)$/);
       });
     });
 
     it('should enforce correct ticket priority values', () => {
-      const validPriorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
-      
+      const validPriorities: TicketPriority[] = [
+        'low',
+        'medium',
+        'high',
+        'urgent',
+      ];
+
       validPriorities.forEach(priority => {
         expect(priority).toMatch(/^(low|medium|high|urgent)$/);
       });
@@ -105,13 +119,22 @@ describe('Support System Type Safety Tests', () => {
 
     it('should enforce correct ticket category values', () => {
       const validCategories: TicketCategory[] = [
-        'technical_issue', 'billing', 'feature_request', 'bug_report',
-        'account_access', 'general_inquiry', 'integration_help',
-        'performance', 'security', 'other'
+        'technical_issue',
+        'billing',
+        'feature_request',
+        'bug_report',
+        'account_access',
+        'general_inquiry',
+        'integration_help',
+        'performance',
+        'security',
+        'other',
       ];
-      
+
       validCategories.forEach(category => {
-        expect(category).toMatch(/^(technical_issue|billing|feature_request|bug_report|account_access|general_inquiry|integration_help|performance|security|other)$/);
+        expect(category).toMatch(
+          /^(technical_issue|billing|feature_request|bug_report|account_access|general_inquiry|integration_help|performance|security|other)$/
+        );
       });
     });
 
@@ -132,7 +155,7 @@ describe('Support System Type Safety Tests', () => {
         lastActivityAt: new Date().toISOString(),
         isUrgent: false,
         customerImpact: 'low',
-        businessImpact: 'low'
+        businessImpact: 'low',
       };
 
       expect(ticket).toBeDefined();
@@ -148,11 +171,17 @@ describe('Support System Type Safety Tests', () => {
     it('should have all required support components', () => {
       // Test that all support components can be imported
       expect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         require('../pages/Support');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         require('../components/support/TicketForm');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         require('../components/support/TicketList');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         require('../components/support/SupportChat');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         require('../components/support/FAQSection');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         require('../components/support/SupportStats');
       }).not.toThrow();
     });
@@ -160,6 +189,7 @@ describe('Support System Type Safety Tests', () => {
     it('should have all required support types', () => {
       // Test that all support types can be imported
       expect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         require('../types/SupportTypes');
       }).not.toThrow();
     });
@@ -167,6 +197,7 @@ describe('Support System Type Safety Tests', () => {
     it('should have all required support services', () => {
       // Test that all support services can be imported
       expect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         require('../services/supportService');
       }).not.toThrow();
     });
@@ -174,17 +205,24 @@ describe('Support System Type Safety Tests', () => {
 
   describe('Database Schema Validation', () => {
     it('should have support database schema file', () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const fs = require('fs');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const path = require('path');
-      
-      const schemaPath = path.join(__dirname, '../../database/support_schema.sql');
+
+      const schemaPath = path.join(
+        __dirname,
+        '../../database/support_schema.sql'
+      );
       expect(fs.existsSync(schemaPath)).toBe(true);
     });
 
     it('should have support documentation', () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const fs = require('fs');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const path = require('path');
-      
+
       const docsPath = path.join(__dirname, '../../docs/SUPPORT_SYSTEM.md');
       expect(fs.existsSync(docsPath)).toBe(true);
     });
@@ -192,23 +230,27 @@ describe('Support System Type Safety Tests', () => {
 
   describe('Integration Points', () => {
     it('should have support route in App.tsx', () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const fs = require('fs');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const path = require('path');
-      
+
       const appPath = path.join(__dirname, '../App.tsx');
       const appContent = fs.readFileSync(appPath, 'utf8');
-      
+
       expect(appContent).toContain('Support');
       expect(appContent).toContain('/support');
     });
 
     it('should have support navigation in Sidebar', () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const fs = require('fs');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const path = require('path');
-      
+
       const sidebarPath = path.join(__dirname, '../components/Sidebar.tsx');
       const sidebarContent = fs.readFileSync(sidebarPath, 'utf8');
-      
+
       expect(sidebarContent).toContain('Support');
       expect(sidebarContent).toContain('/support');
     });
@@ -222,4 +264,4 @@ console.log('  - Component imports');
 console.log('  - Service imports');
 console.log('  - Database schema validation');
 console.log('  - Documentation validation');
-console.log('  - Integration points validation'); 
+console.log('  - Integration points validation');

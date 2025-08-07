@@ -10,22 +10,21 @@
 }
 */
 
-import React, { useState, useEffect } from 'react';
-import { 
-  getAvailableGenres, 
-  getAvailableArcs, 
+import React, { useState, useEffect } from "react";
+import {
+  getAvailableGenres,
+  getAvailableArcs,
   getAvailableTones,
   registerUserPromptPatterns,
   listAllPatterns,
   PromptPattern,
-
-} from '../engines/PromptPatternLibrary';
-import { useMCP } from '../useMCP';
+} from "../engines/PromptPatternLibrary";
+import { useMCP } from "../useMCP";
 
 interface PromptPatternFormData {
   genre: string;
-  arc: PromptPattern['arc'];
-  tone?: PromptPattern['tone'];
+  arc: PromptPattern["arc"];
+  tone?: PromptPattern["tone"];
   pattern: string;
   tags: string[];
 }
@@ -39,15 +38,15 @@ interface PromptPatternEditorProps {
 const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
   onPatternSaved,
   showPreview = true,
-  isAdmin = false
+  isAdmin = false,
 }) => {
-  const mcp = useMCP('PromptPatternEditor');
+  const mcp = useMCP("PromptPatternEditor");
   const [formData, setFormData] = useState<PromptPatternFormData>({
-    genre: '',
-    arc: 'setup',
+    genre: "",
+    arc: "setup",
     tone: undefined,
-    pattern: '',
-    tags: []
+    pattern: "",
+    tags: [],
   });
   const [errors, setErrors] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,13 +57,13 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
   const [availableTones] = useState(getAvailableTones());
 
   // Check if user has Pro or Admin tier
-  const hasProAccess = mcp.tier === 'Pro' || mcp.tier === 'Admin';
+  const hasProAccess = mcp.tier === "Pro" || mcp.tier === "Admin";
 
   // Load user patterns on mount
   useEffect(() => {
     if (hasProAccess) {
       const allPatterns = listAllPatterns();
-      const userPatterns = allPatterns.user.flatMap(genre => genre.patterns);
+      const userPatterns = allPatterns.user.flatMap((genre) => genre.patterns);
       setUserPatterns(userPatterns);
     }
   }, [hasProAccess]);
@@ -74,17 +73,17 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
     const newErrors: string[] = [];
 
     if (!formData.genre) {
-      newErrors.push('Genre is required');
+      newErrors.push("Genre is required");
     }
 
     if (!formData.arc) {
-      newErrors.push('Narrative arc is required');
+      newErrors.push("Narrative arc is required");
     }
 
     if (!formData.pattern.trim()) {
-      newErrors.push('Pattern text is required');
+      newErrors.push("Pattern text is required");
     } else if (formData.pattern.length > 300) {
-      newErrors.push('Pattern text must be 300 characters or less');
+      newErrors.push("Pattern text must be 300 characters or less");
     }
 
     setErrors(newErrors);
@@ -94,7 +93,7 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -107,19 +106,19 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
         pattern: formData.pattern.trim(),
         tone: formData.tone,
         tags: formData.tags,
-        source: 'user'
+        source: "user",
       };
 
       // Register the new pattern
       registerUserPromptPatterns([
         {
           genre: formData.genre,
-          patterns: [newPattern]
-        }
+          patterns: [newPattern],
+        },
       ]);
 
       // Update local state
-      setUserPatterns(prev => [...prev, newPattern]);
+      setUserPatterns((prev) => [...prev, newPattern]);
 
       // Show success message
       setShowSuccess(true);
@@ -127,30 +126,32 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
 
       // Reset form
       setFormData({
-        genre: '',
-        arc: 'setup',
+        genre: "",
+        arc: "setup",
         tone: undefined,
-        pattern: '',
-        tags: []
+        pattern: "",
+        tags: [],
       });
 
       // Call callback if provided
       if (onPatternSaved) {
         onPatternSaved(newPattern);
       }
-
-    } catch (error) {
-      setErrors(['Failed to save pattern. Please try again.']);
+    } catch (_error) {
+      setErrors(["Failed to save pattern. Please try again."]);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   // Handle input changes
-  const handleInputChange = (field: keyof PromptPatternFormData, value: any) => {
-    setFormData(prev => ({
+  const handleInputChange = (
+    field: keyof PromptPatternFormData,
+    value: string | string[]
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
     // Clear errors when user starts typing
     if (errors.length > 0) {
@@ -161,30 +162,33 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
   // Insert example pattern
   const insertExample = () => {
     const examples = {
-      'Romance': {
-        pattern: "Show [CHARACTER] experiencing a moment of unexpected vulnerability.",
-        arc: 'rising' as const,
-        tone: 'reflective' as const
+      Romance: {
+        pattern:
+          "Show [CHARACTER] experiencing a moment of unexpected vulnerability.",
+        arc: "rising" as const,
+        tone: "reflective" as const,
       },
-      'Mystery': {
-        pattern: "Reveal a detail that contradicts [CHARACTER]'s initial assumption.",
-        arc: 'rising' as const,
-        tone: 'ironic' as const
+      Mystery: {
+        pattern:
+          "Reveal a detail that contradicts [CHARACTER]'s initial assumption.",
+        arc: "rising" as const,
+        tone: "ironic" as const,
       },
-      'Science Fiction': {
-        pattern: "Show [CHARACTER] adapting to technology that changes their worldview.",
-        arc: 'setup' as const,
-        tone: 'dramatic' as const
-      }
+      "Science Fiction": {
+        pattern:
+          "Show [CHARACTER] adapting to technology that changes their worldview.",
+        arc: "setup" as const,
+        tone: "dramatic" as const,
+      },
     };
 
     const example = examples[formData.genre as keyof typeof examples];
     if (example) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         pattern: example.pattern,
         arc: example.arc,
-        tone: example.tone
+        tone: example.tone,
       }));
     }
   };
@@ -194,17 +198,17 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
     const data = {
       patterns: userPatterns,
       exportedAt: new Date().toISOString(),
-      version: '1.0'
+      version: "1.0",
     };
 
     const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: 'application/json'
+      type: "application/json",
     });
 
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'prompt-patterns.json';
+    a.download = "prompt-patterns.json";
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -214,8 +218,18 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
     return (
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
         <div className="text-gray-500 mb-4">
-          <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          <svg
+            className="w-12 h-12 mx-auto mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
           </svg>
         </div>
         <h3 className="text-lg font-semibold text-gray-700 mb-2">
@@ -248,8 +262,16 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
         {showSuccess && (
           <div className="mx-6 mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
             <div className="flex">
-              <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              <svg
+                className="w-5 h-5 text-green-400"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
               </svg>
               <p className="ml-3 text-sm text-green-800">
                 Prompt pattern saved successfully!
@@ -262,8 +284,16 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
         {errors.length > 0 && (
           <div className="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
             <div className="flex">
-              <svg className="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              <svg
+                className="w-5 h-5 text-red-400"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
               </svg>
               <div className="ml-3">
                 <p className="text-sm text-red-800">
@@ -284,41 +314,65 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Genre Selection */}
             <div>
-              <label htmlFor="genre" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="genre"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Genre *
               </label>
               <select
                 id="genre"
                 value={formData.genre}
-                onChange={(e) => handleInputChange('genre', e.target.value)}
+                onChange={(e) => handleInputChange("genre", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               >
                 <option value="">Select a genre</option>
-                {availableGenres.map(genre => (
-                  <option key={genre} value={genre}>{genre}</option>
+                {availableGenres.map((genre) => (
+                  <option key={genre} value={genre}>
+                    {genre}
+                  </option>
                 ))}
               </select>
             </div>
 
             {/* Narrative Arc */}
             <div>
-              <label htmlFor="arc" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="arc"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Narrative Arc *
-                <span className="ml-1 text-gray-500" title="The stage of the story where this prompt applies">
-                  <svg className="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                <span
+                  className="ml-1 text-gray-500"
+                  title="The stage of the story where this prompt applies"
+                >
+                  <svg
+                    className="w-4 h-4 inline"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </span>
               </label>
               <select
                 id="arc"
                 value={formData.arc}
-                onChange={(e) => handleInputChange('arc', e.target.value as PromptPattern['arc'])}
+                onChange={(e) =>
+                  handleInputChange(
+                    "arc",
+                    e.target.value as PromptPattern["arc"]
+                  )
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               >
-                {availableArcs.map(arc => (
+                {availableArcs.map((arc) => (
                   <option key={arc} value={arc}>
                     {arc.charAt(0).toUpperCase() + arc.slice(1)}
                   </option>
@@ -328,22 +382,38 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
 
             {/* Tone (Optional) */}
             <div>
-              <label htmlFor="tone" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="tone"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Tone (Optional)
-                <span className="ml-1 text-gray-500" title="The emotional tone this prompt should convey">
-                  <svg className="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                <span
+                  className="ml-1 text-gray-500"
+                  title="The emotional tone this prompt should convey"
+                >
+                  <svg
+                    className="w-4 h-4 inline"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </span>
               </label>
               <select
                 id="tone"
-                value={formData.tone || ''}
-                onChange={(e) => handleInputChange('tone', e.target.value || undefined)}
+                value={formData.tone || ""}
+                onChange={(e) =>
+                  handleInputChange("tone", e.target.value || "")
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">No specific tone</option>
-                {availableTones.map(tone => (
+                {availableTones.map((tone) => (
                   <option key={tone} value={tone}>
                     {tone.charAt(0).toUpperCase() + tone.slice(1)}
                   </option>
@@ -368,13 +438,16 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
 
           {/* Pattern Text */}
           <div className="mt-6">
-            <label htmlFor="pattern" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="pattern"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Pattern Text *
             </label>
             <textarea
               id="pattern"
               value={formData.pattern}
-              onChange={(e) => handleInputChange('pattern', e.target.value)}
+              onChange={(e) => handleInputChange("pattern", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               rows={4}
               placeholder="Enter your prompt pattern here. Use [CHARACTER], [LOCATION], [CONFLICT] as placeholders."
@@ -382,7 +455,10 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
               required
             />
             <div className="mt-2 text-sm text-gray-500">
-              <p>Available placeholders: [CHARACTER], [LOCATION], [CONFLICT], [SECRET], [EMOTION]</p>
+              <p>
+                Available placeholders: [CHARACTER], [LOCATION], [CONFLICT],
+                [SECRET], [EMOTION]
+              </p>
             </div>
           </div>
 
@@ -393,7 +469,7 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
               disabled={isSubmitting}
               className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isSubmitting ? 'Saving...' : 'Save Pattern'}
+              {isSubmitting ? "Saving..." : "Save Pattern"}
             </button>
 
             {userPatterns.length > 0 && (
@@ -451,4 +527,4 @@ const PromptPatternEditor: React.FC<PromptPatternEditorProps> = ({
   );
 };
 
-export default PromptPatternEditor; 
+export default PromptPatternEditor;

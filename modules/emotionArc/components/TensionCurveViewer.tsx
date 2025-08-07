@@ -54,7 +54,6 @@ export default function TensionCurveViewer({
 }: TensionCurveViewerProps) {
   const [hoveredPoint, setHoveredPoint] = useState<ChartPoint | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [isZooming, setIsZooming] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
 
   const chartData = useMemo(() => {

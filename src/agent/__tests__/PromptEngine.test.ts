@@ -12,9 +12,9 @@
 
 import { logFallbackWarning, getDiagnostics } from '../ContextualPromptEngine';
 
-
 // Jest types for TypeScript
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace jest {
     interface Matchers<R> {
       toHaveBeenCalledWith(...args: any[]): R;
@@ -30,7 +30,7 @@ describe('PromptEngine Fallback Diagnostics', () => {
   beforeEach(() => {
     // Stub console.warn to capture log output without printing
     consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-    
+
     // Clear internal diagnostics/memo state between tests
     // Use unique values to ensure clean state
     logFallbackWarning('CLEAR_TEST_1', 'clear', 'clear', true);
@@ -59,7 +59,12 @@ describe('PromptEngine Fallback Diagnostics', () => {
       });
 
       it('should not call console.warn when debug is undefined', () => {
-        logFallbackWarning('Romance', 'climax', 'setup arc for Romance', undefined);
+        logFallbackWarning(
+          'Romance',
+          'climax',
+          'setup arc for Romance',
+          undefined
+        );
 
         expect(consoleWarnSpy).not.toHaveBeenCalled();
       });
@@ -90,10 +95,12 @@ describe('PromptEngine Fallback Diagnostics', () => {
         logFallbackWarning('SciFi', 'setup', 'DEFAULT pattern for SciFi', true);
 
         expect(consoleWarnSpy).toHaveBeenCalledTimes(2);
-        expect(consoleWarnSpy).toHaveBeenNthCalledWith(1,
+        expect(consoleWarnSpy).toHaveBeenNthCalledWith(
+          1,
           '[PromptEngine] No pattern match for genre "SciFi" + arc "setup". Using fallback: [setup arc for SciFi]'
         );
-        expect(consoleWarnSpy).toHaveBeenNthCalledWith(2,
+        expect(consoleWarnSpy).toHaveBeenNthCalledWith(
+          2,
           '[PromptEngine] No pattern match for genre "SciFi" + arc "setup". Using fallback: [DEFAULT pattern for SciFi]'
         );
       });
@@ -108,7 +115,12 @@ describe('PromptEngine Fallback Diagnostics', () => {
       it('should prevent duplicates across different debug values', () => {
         logFallbackWarning('Horror', 'setup', 'setup arc for Horror', true);
         logFallbackWarning('Horror', 'setup', 'setup arc for Horror', false);
-        logFallbackWarning('Horror', 'setup', 'setup arc for Horror', undefined);
+        logFallbackWarning(
+          'Horror',
+          'setup',
+          'setup arc for Horror',
+          undefined
+        );
 
         expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
       });
@@ -116,7 +128,12 @@ describe('PromptEngine Fallback Diagnostics', () => {
 
     describe('Message Format', () => {
       it('should format message with all parameters correctly', () => {
-        logFallbackWarning('Fantasy', 'climax', 'DEFAULT pattern for Fantasy / climax', true);
+        logFallbackWarning(
+          'Fantasy',
+          'climax',
+          'DEFAULT pattern for Fantasy / climax',
+          true
+        );
 
         expect(consoleWarnSpy).toHaveBeenCalledWith(
           '[PromptEngine] No pattern match for genre "Fantasy" + arc "climax". Using fallback: [DEFAULT pattern for Fantasy / climax]'
@@ -124,7 +141,12 @@ describe('PromptEngine Fallback Diagnostics', () => {
       });
 
       it('should handle special characters in parameters', () => {
-        logFallbackWarning('Sci-Fi', 'rising-action', 'custom fallback (with parentheses)', true);
+        logFallbackWarning(
+          'Sci-Fi',
+          'rising-action',
+          'custom fallback (with parentheses)',
+          true
+        );
 
         expect(consoleWarnSpy).toHaveBeenCalledWith(
           '[PromptEngine] No pattern match for genre "Sci-Fi" + arc "rising-action". Using fallback: [custom fallback (with parentheses)]'
@@ -147,7 +169,7 @@ describe('PromptEngine Fallback Diagnostics', () => {
         logFallbackWarning('Romance', 'climax', 'setup arc for Romance', true);
 
         const diagnostics = getDiagnostics();
-        
+
         expect(Array.isArray(diagnostics)).toBe(true);
         expect(diagnostics.length).toBeGreaterThan(0);
       });
@@ -156,15 +178,18 @@ describe('PromptEngine Fallback Diagnostics', () => {
         logFallbackWarning('Mystery', 'rising', 'DEFAULT pattern', true);
 
         const diagnostics = getDiagnostics();
-        const logEntry = diagnostics.find(log => 
-          log.genre === 'Mystery' && log.arc === 'rising' && log.usedFallback === 'DEFAULT pattern'
+        const logEntry = diagnostics.find(
+          log =>
+            log.genre === 'Mystery' &&
+            log.arc === 'rising' &&
+            log.usedFallback === 'DEFAULT pattern'
         );
 
         expect(logEntry).toBeDefined();
         expect(logEntry).toMatchObject({
           genre: 'Mystery',
           arc: 'rising',
-          usedFallback: 'DEFAULT pattern'
+          usedFallback: 'DEFAULT pattern',
         });
         expect(typeof logEntry!.timestamp).toBe('number');
         expect(logEntry!.timestamp).toBeGreaterThan(0);
@@ -176,8 +201,8 @@ describe('PromptEngine Fallback Diagnostics', () => {
         const afterTime = Date.now();
 
         const diagnostics = getDiagnostics();
-        const logEntry = diagnostics.find(log => 
-          log.genre === 'Thriller' && log.arc === 'resolution'
+        const logEntry = diagnostics.find(
+          log => log.genre === 'Thriller' && log.arc === 'resolution'
         );
 
         expect(logEntry!.timestamp).toBeGreaterThanOrEqual(beforeTime);
@@ -193,8 +218,11 @@ describe('PromptEngine Fallback Diagnostics', () => {
         logFallbackWarning('Romance', 'climax', 'setup arc for Romance', true);
 
         const diagnostics = getDiagnostics();
-        const romanceLogs = diagnostics.filter(log => 
-          log.genre === 'Romance' && log.arc === 'climax' && log.usedFallback === 'setup arc for Romance'
+        const romanceLogs = diagnostics.filter(
+          log =>
+            log.genre === 'Romance' &&
+            log.arc === 'climax' &&
+            log.usedFallback === 'setup arc for Romance'
         );
 
         expect(romanceLogs).toHaveLength(1);
@@ -208,7 +236,9 @@ describe('PromptEngine Fallback Diagnostics', () => {
         const diagnostics = getDiagnostics();
         const romanceLogs = diagnostics.filter(log => log.genre === 'Romance');
         const mysteryLogs = diagnostics.filter(log => log.genre === 'Mystery');
-        const thrillerLogs = diagnostics.filter(log => log.genre === 'Thriller');
+        const thrillerLogs = diagnostics.filter(
+          log => log.genre === 'Thriller'
+        );
 
         expect(romanceLogs).toHaveLength(1);
         expect(mysteryLogs).toHaveLength(1);
@@ -220,7 +250,9 @@ describe('PromptEngine Fallback Diagnostics', () => {
         logFallbackWarning('SciFi', 'setup', 'DEFAULT pattern for SciFi', true);
 
         const diagnostics = getDiagnostics();
-        const scifiLogs = diagnostics.filter(log => log.genre === 'SciFi' && log.arc === 'setup');
+        const scifiLogs = diagnostics.filter(
+          log => log.genre === 'SciFi' && log.arc === 'setup'
+        );
 
         expect(scifiLogs).toHaveLength(2);
         expect(scifiLogs[0].usedFallback).toBe('setup arc for SciFi');
@@ -263,7 +295,9 @@ describe('PromptEngine Fallback Diagnostics', () => {
         );
 
         const diagnostics = getDiagnostics();
-        const emptyGenreLog = diagnostics.find(log => log.genre === '' && log.arc === 'climax');
+        const emptyGenreLog = diagnostics.find(
+          log => log.genre === '' && log.arc === 'climax'
+        );
         expect(emptyGenreLog).toBeDefined();
       });
 
@@ -275,7 +309,9 @@ describe('PromptEngine Fallback Diagnostics', () => {
         );
 
         const diagnostics = getDiagnostics();
-        const emptyArcLog = diagnostics.find(log => log.genre === 'Romance' && log.arc === '');
+        const emptyArcLog = diagnostics.find(
+          log => log.genre === 'Romance' && log.arc === ''
+        );
         expect(emptyArcLog).toBeDefined();
       });
 
@@ -287,8 +323,11 @@ describe('PromptEngine Fallback Diagnostics', () => {
         );
 
         const diagnostics = getDiagnostics();
-        const emptyFallbackLog = diagnostics.find(log => 
-          log.genre === 'Mystery' && log.arc === 'rising' && log.usedFallback === ''
+        const emptyFallbackLog = diagnostics.find(
+          log =>
+            log.genre === 'Mystery' &&
+            log.arc === 'rising' &&
+            log.usedFallback === ''
         );
         expect(emptyFallbackLog).toBeDefined();
       });
@@ -301,8 +340,8 @@ describe('PromptEngine Fallback Diagnostics', () => {
         );
 
         const diagnostics = getDiagnostics();
-        const allEmptyLog = diagnostics.find(log => 
-          log.genre === '' && log.arc === '' && log.usedFallback === ''
+        const allEmptyLog = diagnostics.find(
+          log => log.genre === '' && log.arc === '' && log.usedFallback === ''
         );
         expect(allEmptyLog).toBeDefined();
       });
@@ -310,44 +349,61 @@ describe('PromptEngine Fallback Diagnostics', () => {
 
     describe('Special Characters', () => {
       it('should handle special characters in genre names', () => {
-        logFallbackWarning('Sci-Fi & Fantasy', 'climax', 'custom fallback', true);
+        logFallbackWarning(
+          'Sci-Fi & Fantasy',
+          'climax',
+          'custom fallback',
+          true
+        );
 
         expect(consoleWarnSpy).toHaveBeenCalledWith(
           '[PromptEngine] No pattern match for genre "Sci-Fi & Fantasy" + arc "climax". Using fallback: [custom fallback]'
         );
 
         const diagnostics = getDiagnostics();
-        const specialCharLog = diagnostics.find(log => 
-          log.genre === 'Sci-Fi & Fantasy' && log.arc === 'climax'
+        const specialCharLog = diagnostics.find(
+          log => log.genre === 'Sci-Fi & Fantasy' && log.arc === 'climax'
         );
         expect(specialCharLog).toBeDefined();
       });
 
       it('should handle special characters in arc names', () => {
-        logFallbackWarning('Romance', 'rising-action', 'setup arc for Romance', true);
+        logFallbackWarning(
+          'Romance',
+          'rising-action',
+          'setup arc for Romance',
+          true
+        );
 
         expect(consoleWarnSpy).toHaveBeenCalledWith(
           '[PromptEngine] No pattern match for genre "Romance" + arc "rising-action". Using fallback: [setup arc for Romance]'
         );
 
         const diagnostics = getDiagnostics();
-        const specialArcLog = diagnostics.find(log => 
-          log.genre === 'Romance' && log.arc === 'rising-action'
+        const specialArcLog = diagnostics.find(
+          log => log.genre === 'Romance' && log.arc === 'rising-action'
         );
         expect(specialArcLog).toBeDefined();
       });
 
       it('should handle special characters in fallback messages', () => {
-        logFallbackWarning('Mystery', 'setup', 'DEFAULT pattern (with parentheses)', true);
+        logFallbackWarning(
+          'Mystery',
+          'setup',
+          'DEFAULT pattern (with parentheses)',
+          true
+        );
 
         expect(consoleWarnSpy).toHaveBeenCalledWith(
           '[PromptEngine] No pattern match for genre "Mystery" + arc "setup". Using fallback: [DEFAULT pattern (with parentheses)]'
         );
 
         const diagnostics = getDiagnostics();
-        const specialFallbackLog = diagnostics.find(log => 
-          log.genre === 'Mystery' && log.arc === 'setup' && 
-          log.usedFallback === 'DEFAULT pattern (with parentheses)'
+        const specialFallbackLog = diagnostics.find(
+          log =>
+            log.genre === 'Mystery' &&
+            log.arc === 'setup' &&
+            log.usedFallback === 'DEFAULT pattern (with parentheses)'
         );
         expect(specialFallbackLog).toBeDefined();
       });
@@ -356,11 +412,19 @@ describe('PromptEngine Fallback Diagnostics', () => {
     describe('Multiple Unique Fallbacks', () => {
       it('should track all unique fallbacks properly', () => {
         const testCases = [
-          { genre: 'Romance', arc: 'climax', fallback: 'setup arc for Romance' },
+          {
+            genre: 'Romance',
+            arc: 'climax',
+            fallback: 'setup arc for Romance',
+          },
           { genre: 'Mystery', arc: 'rising', fallback: 'DEFAULT pattern' },
           { genre: 'Thriller', arc: 'resolution', fallback: 'custom fallback' },
           { genre: 'SciFi', arc: 'setup', fallback: 'setup arc for SciFi' },
-          { genre: 'Action', arc: 'climax', fallback: 'DEFAULT pattern for Action' }
+          {
+            genre: 'Action',
+            arc: 'climax',
+            fallback: 'DEFAULT pattern for Action',
+          },
         ];
 
         testCases.forEach(({ genre, arc, fallback }) => {
@@ -371,8 +435,11 @@ describe('PromptEngine Fallback Diagnostics', () => {
         expect(diagnostics.length).toBeGreaterThanOrEqual(testCases.length);
 
         testCases.forEach(({ genre, arc, fallback }) => {
-          const matchingLog = diagnostics.find(log => 
-            log.genre === genre && log.arc === arc && log.usedFallback === fallback
+          const matchingLog = diagnostics.find(
+            log =>
+              log.genre === genre &&
+              log.arc === arc &&
+              log.usedFallback === fallback
           );
           expect(matchingLog).toBeDefined();
         });
@@ -381,12 +448,20 @@ describe('PromptEngine Fallback Diagnostics', () => {
       it('should not duplicate identical fallbacks', () => {
         // Log same fallback multiple times
         for (let i = 0; i < 5; i++) {
-          logFallbackWarning('Romance', 'climax', 'setup arc for Romance', true);
+          logFallbackWarning(
+            'Romance',
+            'climax',
+            'setup arc for Romance',
+            true
+          );
         }
 
         const diagnostics = getDiagnostics();
-        const romanceLogs = diagnostics.filter(log => 
-          log.genre === 'Romance' && log.arc === 'climax' && log.usedFallback === 'setup arc for Romance'
+        const romanceLogs = diagnostics.filter(
+          log =>
+            log.genre === 'Romance' &&
+            log.arc === 'climax' &&
+            log.usedFallback === 'setup arc for Romance'
         );
 
         expect(romanceLogs).toHaveLength(1);
@@ -400,8 +475,11 @@ describe('PromptEngine Fallback Diagnostics', () => {
         logFallbackWarning('Mystery', 'rising', 'DEFAULT pattern', true);
 
         const diagnostics = getDiagnostics();
-        const mysteryLogs = diagnostics.filter(log => 
-          log.genre === 'Mystery' && log.arc === 'rising' && log.usedFallback === 'DEFAULT pattern'
+        const mysteryLogs = diagnostics.filter(
+          log =>
+            log.genre === 'Mystery' &&
+            log.arc === 'rising' &&
+            log.usedFallback === 'DEFAULT pattern'
         );
 
         expect(mysteryLogs).toHaveLength(1);
@@ -411,7 +489,12 @@ describe('PromptEngine Fallback Diagnostics', () => {
       it('should not duplicate logs for repeated identical calls with different debug values', () => {
         logFallbackWarning('Thriller', 'resolution', 'custom fallback', true);
         logFallbackWarning('Thriller', 'resolution', 'custom fallback', false);
-        logFallbackWarning('Thriller', 'resolution', 'custom fallback', undefined);
+        logFallbackWarning(
+          'Thriller',
+          'resolution',
+          'custom fallback',
+          undefined
+        );
 
         expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
       });
@@ -429,11 +512,11 @@ describe('PromptEngine Fallback Diagnostics', () => {
       expect(diagnostics.length).toBeGreaterThanOrEqual(2);
 
       // Verify each logged message corresponds to a diagnostic entry
-      const romanceLog = diagnostics.find(log => 
-        log.genre === 'Romance' && log.arc === 'climax'
+      const romanceLog = diagnostics.find(
+        log => log.genre === 'Romance' && log.arc === 'climax'
       );
-      const mysteryLog = diagnostics.find(log => 
-        log.genre === 'Mystery' && log.arc === 'rising'
+      const mysteryLog = diagnostics.find(
+        log => log.genre === 'Mystery' && log.arc === 'rising'
       );
 
       expect(romanceLog).toBeDefined();
@@ -472,4 +555,4 @@ describe('PromptEngine Fallback Diagnostics', () => {
       expect(genre2Logs).toHaveLength(1);
     });
   });
-}); 
+});

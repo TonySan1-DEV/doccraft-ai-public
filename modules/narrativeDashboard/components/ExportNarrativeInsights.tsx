@@ -9,17 +9,40 @@ theme: "reporting"
 
 import React, { useState } from 'react';
 // import { useNarrativeSync } from '../../shared/state/useNarrativeSyncContext';
-import { analyzeNarrativeStyle, compareToTargetStyle } from '../../styleProfile/services/styleProfiler';
+import {
+  analyzeNarrativeStyle,
+  compareToTargetStyle,
+} from '../../styleProfile/services/styleProfiler';
 import { stylePresets } from '../../styleProfile/configs/stylePresets';
-import { analyzeThemeConsistency, ThemeAlignmentReport } from '../../themeAnalysis/initThemeEngine';
+import {
+  analyzeThemeConsistency,
+  ThemeAlignmentReport,
+} from '../../themeAnalysis/initThemeEngine';
 
 const SYSTEM_VERSION = 'DocCraft-AI v3.0';
 
-const mockNarrativeSync = { currentSceneId: 'scene1', characterFocusId: 'char1', activePlotFramework: 'heros_journey' };
-const mockArcData = { tension: [10, 30, 60], empathy: [20, 40, 50], scenes: ['scene1', 'scene2', 'scene3'] };
-const mockPlotData = { framework: 'HerosJourney', beats: [{ id: 'call', label: 'Call to Adventure' }] };
+const mockNarrativeSync = {
+  currentSceneId: 'scene1',
+  characterFocusId: 'char1',
+  activePlotFramework: 'heros_journey',
+};
+const mockArcData = {
+  tension: [10, 30, 60],
+  empathy: [20, 40, 50],
+  scenes: ['scene1', 'scene2', 'scene3'],
+};
+const mockPlotData = {
+  framework: 'HerosJourney',
+  beats: [{ id: 'call', label: 'Call to Adventure' }],
+};
 const mockSuggestions = [
-  { id: '1', message: 'Raise tension in Act II', severity: 'Medium', impact: 60, action: 'Add conflict.' }
+  {
+    id: '1',
+    message: 'Raise tension in Act II',
+    severity: 'Medium',
+    impact: 60,
+    action: 'Add conflict.',
+  },
 ];
 // Mock revision history (replace with real from useNarrativeSync)
 const mockRevisionHistory = [
@@ -28,21 +51,22 @@ const mockRevisionHistory = [
     timestamp: 1710000000000,
     summary: 'Added urgency',
     suggestion: 'Fix pacing',
-    confidence: 0.92
+    confidence: 0.92,
   },
   {
     sceneId: 'scene2',
     timestamp: 1710001000000,
     summary: 'Improved emotional tone',
     suggestion: 'Balance emotion',
-    confidence: 0.88
-  }
+    confidence: 0.88,
+  },
 ];
 
 const mockSceneTexts: Record<string, string> = {
   scene1: 'The night was dark and stormy. I felt a chill run down my spine.',
-  scene2: 'She walked into the library, sunlight streaming through the windows.',
-  scene3: 'A car screeched to a halt, and the chase began.'
+  scene2:
+    'She walked into the library, sunlight streaming through the windows.',
+  scene3: 'A car screeched to a halt, and the chase began.',
 };
 
 // Helper to get style analysis for a scene (mocked async for now)
@@ -54,7 +78,7 @@ async function getStyleAnalysis(sceneId: string, genre: string) {
 }
 
 // Synchronous mock for export (replace with real async for real data)
-function getMockStyleAnalysisSync(sceneId: string, genre: string) {
+function getMockStyleAnalysisSync(sceneId: string, _genre: string) {
   // Use static values for demo
   if (sceneId === 'scene1') {
     return {
@@ -62,9 +86,21 @@ function getMockStyleAnalysisSync(sceneId: string, genre: string) {
       driftFlags: ['tone is neutral, expected dark'],
       recommendations: ['Adjust tone toward dark.'],
       profile: {
-        tone: 'neutral', voice: 'omniscient', pacingScore: 0.5, emotionDensity: 0.2, lexicalComplexity: 0.4, sentenceVariance: 4, keyDescriptors: ['stormy'],
-        toneConfidence: 0.7, voiceConfidence: 0.7, pacingScoreConfidence: 0.7, emotionDensityConfidence: 0.7, lexicalComplexityConfidence: 0.7, sentenceVarianceConfidence: 0.7, keyDescriptorsConfidence: 0.7
-      }
+        tone: 'neutral',
+        voice: 'omniscient',
+        pacingScore: 0.5,
+        emotionDensity: 0.2,
+        lexicalComplexity: 0.4,
+        sentenceVariance: 4,
+        keyDescriptors: ['stormy'],
+        toneConfidence: 0.7,
+        voiceConfidence: 0.7,
+        pacingScoreConfidence: 0.7,
+        emotionDensityConfidence: 0.7,
+        lexicalComplexityConfidence: 0.7,
+        sentenceVarianceConfidence: 0.7,
+        keyDescriptorsConfidence: 0.7,
+      },
     };
   }
   if (sceneId === 'scene2') {
@@ -73,20 +109,47 @@ function getMockStyleAnalysisSync(sceneId: string, genre: string) {
       driftFlags: [],
       recommendations: [],
       profile: {
-        tone: 'warm', voice: 'casual', pacingScore: 0.7, emotionDensity: 0.5, lexicalComplexity: 0.3, sentenceVariance: 3, keyDescriptors: ['sunlit'],
-        toneConfidence: 0.9, voiceConfidence: 0.9, pacingScoreConfidence: 0.9, emotionDensityConfidence: 0.8, lexicalComplexityConfidence: 0.8, sentenceVarianceConfidence: 0.8, keyDescriptorsConfidence: 0.8
-      }
+        tone: 'warm',
+        voice: 'casual',
+        pacingScore: 0.7,
+        emotionDensity: 0.5,
+        lexicalComplexity: 0.3,
+        sentenceVariance: 3,
+        keyDescriptors: ['sunlit'],
+        toneConfidence: 0.9,
+        voiceConfidence: 0.9,
+        pacingScoreConfidence: 0.9,
+        emotionDensityConfidence: 0.8,
+        lexicalComplexityConfidence: 0.8,
+        sentenceVarianceConfidence: 0.8,
+        keyDescriptorsConfidence: 0.8,
+      },
     };
   }
   if (sceneId === 'scene3') {
     return {
       alignmentScore: 70,
       driftFlags: ['pacing too fast', 'emotion density high'],
-      recommendations: ['Add description or slow scene transitions.', 'Balance emotional content.'],
+      recommendations: [
+        'Add description or slow scene transitions.',
+        'Balance emotional content.',
+      ],
       profile: {
-        tone: 'tense', voice: 'intimate', pacingScore: 0.95, emotionDensity: 0.7, lexicalComplexity: 0.2, sentenceVariance: 2, keyDescriptors: ['urgent'],
-        toneConfidence: 0.9, voiceConfidence: 0.9, pacingScoreConfidence: 0.9, emotionDensityConfidence: 0.9, lexicalComplexityConfidence: 0.7, sentenceVarianceConfidence: 0.7, keyDescriptorsConfidence: 0.7
-      }
+        tone: 'tense',
+        voice: 'intimate',
+        pacingScore: 0.95,
+        emotionDensity: 0.7,
+        lexicalComplexity: 0.2,
+        sentenceVariance: 2,
+        keyDescriptors: ['urgent'],
+        toneConfidence: 0.9,
+        voiceConfidence: 0.9,
+        pacingScoreConfidence: 0.9,
+        emotionDensityConfidence: 0.9,
+        lexicalComplexityConfidence: 0.7,
+        sentenceVarianceConfidence: 0.7,
+        keyDescriptorsConfidence: 0.7,
+      },
     };
   }
   return null;
@@ -100,20 +163,32 @@ function getMockThemeReport(): ThemeAlignmentReport {
       {
         sceneId: 'scene1',
         themes: [
-          { theme: 'paranoia', strength: 0.8, context: 'He glanced over his shoulder, certain someone was watching.' },
-          { theme: 'betrayal', strength: 0.7, context: 'She remembered the broken promise.' }
-        ]
-      }
+          {
+            theme: 'paranoia',
+            strength: 0.8,
+            context:
+              'He glanced over his shoulder, certain someone was watching.',
+          },
+          {
+            theme: 'betrayal',
+            strength: 0.7,
+            context: 'She remembered the broken promise.',
+          },
+        ],
+      },
     ],
     coverageScore: 67,
     suggestions: [
       'Scene scene1: Add cues for Trust or Loyalty.',
-      'Scene scene1: No loyalty signals present. Add character reflection on fractured trust.'
-    ]
+      'Scene scene1: No loyalty signals present. Add character reflection on fractured trust.',
+    ],
   };
 }
 
-function themeReportMarkdown(themeReport: ThemeAlignmentReport, sceneMeta: Record<string, { title: string }>) {
+function themeReportMarkdown(
+  themeReport: ThemeAlignmentReport,
+  sceneMeta: Record<string, { title: string }>
+) {
   if (!themeReport) return '';
   let md = '## Thematic Analysis\n';
   md += `- **Primary Themes:** ${themeReport.primaryThemes.join(', ')}\n`;
@@ -122,17 +197,28 @@ function themeReportMarkdown(themeReport: ThemeAlignmentReport, sceneMeta: Recor
     md += '\n';
     themeReport.misalignedScenes.forEach(scene => {
       const title = sceneMeta[scene.sceneId]?.title || scene.sceneId;
-      md += `### Scene ${scene.sceneId} – \"${title}\"\n`;
+      md += `### Scene ${scene.sceneId} – &quot;${title}&quot;\n`;
       md += `- 🎯 Target Themes: ${themeReport.primaryThemes.join(', ')}\n`;
       md += `- 🧩 Detected: ${scene.themes.map(t => `${t.theme.charAt(0).toUpperCase() + t.theme.slice(1)} (${t.strength})`).join(', ')}\n`;
       // Find suggestions for this scene
-      const sceneSuggestions = themeReport.suggestions.filter(s => s.includes(scene.sceneId));
-      if (scene.themes.every(t => !themeReport.primaryThemes.map(pt => pt.toLowerCase()).includes(t.theme.toLowerCase()))) {
+      const sceneSuggestions = themeReport.suggestions.filter(s =>
+        s.includes(scene.sceneId)
+      );
+      if (
+        scene.themes.every(
+          t =>
+            !themeReport.primaryThemes
+              .map(pt => pt.toLowerCase())
+              .includes(t.theme.toLowerCase())
+        )
+      ) {
         md += `- ⚠️ Mismatch: No ${themeReport.primaryThemes.join(' or ')} signals present\n`;
       }
       if (sceneSuggestions.length) {
         md += `- 🛠 Suggest:\n`;
-        sceneSuggestions.forEach(s => { md += `  - ${s.replace(/^Scene [^:]+: /, '')}\n`; });
+        sceneSuggestions.forEach(s => {
+          md += `  - ${s.replace(/^Scene [^:]+: /, '')}\n`;
+        });
       }
       md += '\n';
     });
@@ -162,9 +248,10 @@ function revisionHistoryMarkdownTable(history: typeof mockRevisionHistory) {
   return [
     '| Scene | Timestamp | Summary | Suggestion | Confidence |',
     '|-------|-----------|---------|------------|------------|',
-    ...history.map(h =>
-      `| ${h.sceneId} | ${new Date(h.timestamp).toLocaleString()} | ${h.summary} | ${h.suggestion} | ${(h.confidence * 100).toFixed(0)}% |`
-    )
+    ...history.map(
+      h =>
+        `| ${h.sceneId} | ${new Date(h.timestamp).toLocaleString()} | ${h.summary} | ${h.suggestion} | ${(h.confidence * 100).toFixed(0)}% |`
+    ),
   ].join('\n');
 }
 
@@ -178,13 +265,17 @@ function styleAnalysisMarkdownTable(styleAnalysis: Record<string, any>) {
     md += `- **Pacing Score:** ${(report.profile.pacingScore * 100).toFixed(0)}%\n`;
     if (report.driftFlags.length) {
       md += `- **Drift Flags:**\n`;
-      report.driftFlags.forEach((flag: string) => { md += `  - ${flag}\n`; });
+      report.driftFlags.forEach((flag: string) => {
+        md += `  - ${flag}\n`;
+      });
     } else {
       md += `- **Drift Flags:** None\n`;
     }
     if (report.recommendations.length) {
       md += `- **Recommendations:**\n`;
-      report.recommendations.forEach((rec: string) => { md += `  - ${rec}\n`; });
+      report.recommendations.forEach((rec: string) => {
+        md += `  - ${rec}\n`;
+      });
     } else {
       md += `- **Recommendations:** None\n`;
     }
@@ -193,7 +284,11 @@ function styleAnalysisMarkdownTable(styleAnalysis: Record<string, any>) {
   return md;
 }
 
-function generateMarkdown(includeHistory: boolean, includeStyle: boolean, includeTheme: boolean) {
+function generateMarkdown(
+  includeHistory: boolean,
+  includeStyle: boolean,
+  includeTheme: boolean
+) {
   let md = `# Narrative Analysis Export\n\n- **Exported:** ${getTimestamp()}\n- **System:** ${SYSTEM_VERSION}\n\n## Character Arcs\n- [Mock character arc summary]\n\n## Emotional Arc\n- Tension: ${mockArcData.tension.join(', ')}\n- Empathy: ${mockArcData.empathy.join(', ')}\n\n## Plot Structure\n- Framework: ${mockPlotData.framework}\n- Beats: ${mockPlotData.beats.map(b => b.label).join(', ')}\n\n## Suggestions\n${mockSuggestions.map(s => `- [${s.severity}] ${s.message} (Impact: ${s.impact})`).join('\n')}\n`;
   if (includeHistory && mockRevisionHistory.length) {
     md += `\n## Revision History\n${revisionHistoryMarkdownTable(mockRevisionHistory)}`;
@@ -212,43 +307,57 @@ function generateMarkdown(includeHistory: boolean, includeStyle: boolean, includ
     const sceneMeta: Record<string, { title: string }> = {
       scene1: { title: 'The Interrogation' },
       scene2: { title: 'The Library' },
-      scene3: { title: 'The Chase' }
+      scene3: { title: 'The Chase' },
     };
     md += '\n' + themeReportMarkdown(getMockThemeReport(), sceneMeta);
   }
   return md;
 }
 
-function generateJSON(includeHistory: boolean, includeStyle: boolean, includeTheme: boolean) {
+function generateJSON(
+  includeHistory: boolean,
+  includeStyle: boolean,
+  includeTheme: boolean
+) {
   const styleAnalysis: Record<string, any> = {};
   for (const sceneId of mockArcData.scenes) {
     const genre = 'YA'; // or use a mapping
     styleAnalysis[sceneId] = getMockStyleAnalysisSync(sceneId, genre);
   }
   const themeReport = getMockThemeReport();
-  return JSON.stringify({
-    exported: getTimestamp(),
-    system: SYSTEM_VERSION,
-    narrativeSync: sanitize(mockNarrativeSync),
-    arcData: sanitize(mockArcData),
-    plotData: sanitize(mockPlotData),
-    suggestions: sanitize(mockSuggestions),
-    ...(includeHistory ? { revisionHistory: mockRevisionHistory } : {}),
-    ...(includeStyle ? { styleAnalysis } : {}),
-    ...(includeTheme ? { themeReport } : {})
-  }, null, 2);
+  return JSON.stringify(
+    {
+      exported: getTimestamp(),
+      system: SYSTEM_VERSION,
+      narrativeSync: sanitize(mockNarrativeSync),
+      arcData: sanitize(mockArcData),
+      plotData: sanitize(mockPlotData),
+      suggestions: sanitize(mockSuggestions),
+      ...(includeHistory ? { revisionHistory: mockRevisionHistory } : {}),
+      ...(includeStyle ? { styleAnalysis } : {}),
+      ...(includeTheme ? { themeReport } : {}),
+    },
+    null,
+    2
+  );
 }
 
 function generatePDF() {
   // Mock PDF export (real implementation would use Puppeteer or jsPDF)
-  return new Blob([`PDF Export\nExported: ${getTimestamp()}\nSystem: ${SYSTEM_VERSION}`], { type: 'application/pdf' });
+  return new Blob(
+    [`PDF Export\nExported: ${getTimestamp()}\nSystem: ${SYSTEM_VERSION}`],
+    { type: 'application/pdf' }
+  );
 }
 
 const ExportNarrativeInsights: React.FC = () => {
   const [exportType, setExportType] = useState<'md' | 'json' | 'pdf'>('md');
   const [filename, setFilename] = useState('narrative-analysis.md');
   const [size, setSize] = useState('0 KB');
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: 'success' | 'error';
+  } | null>(null);
   const [includeHistory, setIncludeHistory] = useState(true);
   const [includeStyle, setIncludeStyle] = useState(true);
   const [includeTheme, setIncludeTheme] = useState(true);
@@ -270,7 +379,12 @@ const ExportNarrativeInsights: React.FC = () => {
       setFilename(name);
       setSize(estimateSize(typeof data === 'string' ? data : 'PDF Export'));
       // Download
-      const blob = typeof data === 'string' ? new Blob([data], { type: exportType === 'md' ? 'text/markdown' : 'application/json' }) : data;
+      const blob =
+        typeof data === 'string'
+          ? new Blob([data], {
+              type: exportType === 'md' ? 'text/markdown' : 'application/json',
+            })
+          : data;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -282,31 +396,43 @@ const ExportNarrativeInsights: React.FC = () => {
         URL.revokeObjectURL(url);
       }, 100);
       setToast({ message: `Exported as ${name}`, type: 'success' });
-    } catch (e) {
+    } catch (_e) {
       setToast({ message: 'Export failed.', type: 'error' });
     }
   }
 
   return (
-    <div className="flex items-center gap-3" aria-label="Export Narrative Insights">
+    <div
+      className="flex items-center gap-3"
+      aria-label="Export Narrative Insights"
+    >
       <div className="flex gap-1" role="group" aria-label="Export format">
         <button
           className={`px-2 py-1 rounded text-xs ${exportType === 'md' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
           onClick={() => setExportType('md')}
           aria-pressed={exportType === 'md'}
-        >.md</button>
+        >
+          .md
+        </button>
         <button
           className={`px-2 py-1 rounded text-xs ${exportType === 'json' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
           onClick={() => setExportType('json')}
           aria-pressed={exportType === 'json'}
-        >.json</button>
+        >
+          .json
+        </button>
         <button
           className={`px-2 py-1 rounded text-xs ${exportType === 'pdf' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
           onClick={() => setExportType('pdf')}
           aria-pressed={exportType === 'pdf'}
-        >.pdf</button>
+        >
+          .pdf
+        </button>
       </div>
-      <label className="flex items-center gap-1 text-xs" aria-label="Include revision history">
+      <label
+        className="flex items-center gap-1 text-xs"
+        aria-label="Include revision history"
+      >
         <input
           type="checkbox"
           checked={includeHistory}
@@ -315,7 +441,10 @@ const ExportNarrativeInsights: React.FC = () => {
         />
         Revision History
       </label>
-      <label className="flex items-center gap-1 text-xs" aria-label="Include style analysis">
+      <label
+        className="flex items-center gap-1 text-xs"
+        aria-label="Include style analysis"
+      >
         <input
           type="checkbox"
           checked={includeStyle}
@@ -324,7 +453,10 @@ const ExportNarrativeInsights: React.FC = () => {
         />
         Style Analysis
       </label>
-      <label className="flex items-center gap-1 text-xs" aria-label="Include theme analysis">
+      <label
+        className="flex items-center gap-1 text-xs"
+        aria-label="Include theme analysis"
+      >
         <input
           type="checkbox"
           checked={includeTheme}
@@ -337,8 +469,12 @@ const ExportNarrativeInsights: React.FC = () => {
         className="px-3 py-1 rounded bg-green-600 text-white text-xs font-semibold"
         onClick={handleExport}
         aria-label={`Export as ${exportType}`}
-      >Export</button>
-      <span className="text-xs text-gray-500 ml-2">{filename} ({size})</span>
+      >
+        Export
+      </button>
+      <span className="text-xs text-gray-500 ml-2">
+        {filename} ({size})
+      </span>
       {toast && (
         <div
           className={`ml-4 px-3 py-1 rounded text-xs font-semibold ${toast.type === 'success' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}
@@ -352,4 +488,4 @@ const ExportNarrativeInsights: React.FC = () => {
   );
 };
 
-export default ExportNarrativeInsights; 
+export default ExportNarrativeInsights;

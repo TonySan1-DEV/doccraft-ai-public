@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Key, Check, X, Plus } from 'lucide-react';
 
 interface APIKeyConfig {
@@ -17,27 +17,59 @@ interface APIKeyManagementPanelProps {
 }
 
 const PROVIDERS = [
-  { id: 'openai', name: 'OpenAI', description: 'GPT-4, GPT-3.5 Turbo', color: 'bg-green-500' },
-  { id: 'anthropic', name: 'Anthropic', description: 'Claude 3 Opus, Sonnet, Haiku', color: 'bg-orange-500' },
-  { id: 'google', name: 'Google', description: 'Gemini Pro, Gemini Pro Vision', color: 'bg-blue-500' },
-  { id: 'mistral', name: 'Mistral AI', description: 'Mistral Large, Medium, Small', color: 'bg-purple-500' },
-  { id: 'cohere', name: 'Cohere', description: 'Command, Command Light', color: 'bg-indigo-500' },
-  { id: 'ollama', name: 'Ollama', description: 'Local models (no key required)', color: 'bg-gray-500' },
+  {
+    id: 'openai',
+    name: 'OpenAI',
+    description: 'GPT-4, GPT-3.5 Turbo',
+    color: 'bg-green-500',
+  },
+  {
+    id: 'anthropic',
+    name: 'Anthropic',
+    description: 'Claude 3 Opus, Sonnet, Haiku',
+    color: 'bg-orange-500',
+  },
+  {
+    id: 'google',
+    name: 'Google',
+    description: 'Gemini Pro, Gemini Pro Vision',
+    color: 'bg-blue-500',
+  },
+  {
+    id: 'mistral',
+    name: 'Mistral AI',
+    description: 'Mistral Large, Medium, Small',
+    color: 'bg-purple-500',
+  },
+  {
+    id: 'cohere',
+    name: 'Cohere',
+    description: 'Command, Command Light',
+    color: 'bg-indigo-500',
+  },
+  {
+    id: 'ollama',
+    name: 'Ollama',
+    description: 'Local models (no key required)',
+    color: 'bg-gray-500',
+  },
 ];
 
 export default function APIKeyManagementPanel({
   isOpen,
   onClose,
   onSave,
-  currentKeys = []
+  currentKeys = [],
 }: APIKeyManagementPanelProps) {
   const [apiKeys, setApiKeys] = useState<APIKeyConfig[]>(currentKeys);
   const [showKeys, setShowKeys] = useState<{ [key: string]: boolean }>({});
-  const [editingKey, setEditingKey] = useState<string | null>(null);
+
   const [newKey, setNewKey] = useState('');
   const [selectedProvider, setSelectedProvider] = useState('');
   const [isValidating, setIsValidating] = useState(false);
-  const [validationResults, setValidationResults] = useState<{ [key: string]: boolean }>({});
+  const [validationResults, setValidationResults] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   useEffect(() => {
     if (isOpen) {
@@ -61,7 +93,10 @@ export default function APIKeyManagementPanel({
       usageCount: 0,
     };
 
-    setApiKeys(prev => [...prev.filter(k => k.provider !== selectedProvider), newApiKey]);
+    setApiKeys(prev => [
+      ...prev.filter(k => k.provider !== selectedProvider),
+      newApiKey,
+    ]);
     setNewKey('');
     setSelectedProvider('');
     setShowKeys(prev => ({ ...prev, [selectedProvider]: false }));
@@ -119,7 +154,7 @@ export default function APIKeyManagementPanel({
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center">
-                              <Key className="w-6 h-6 text-white" />
+              <Key className="w-6 h-6 text-white" />
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -134,7 +169,7 @@ export default function APIKeyManagementPanel({
             onClick={onClose}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-                            <X className="w-6 h-6 text-gray-500" />
+            <X className="w-6 h-6 text-gray-500" />
           </button>
         </div>
 
@@ -147,12 +182,16 @@ export default function APIKeyManagementPanel({
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="provider-select"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   Provider
                 </label>
                 <select
+                  id="provider-select"
                   value={selectedProvider}
-                  onChange={(e) => setSelectedProvider(e.target.value)}
+                  onChange={e => setSelectedProvider(e.target.value)}
                   className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="">Select a provider</option>
@@ -164,14 +203,18 @@ export default function APIKeyManagementPanel({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="api-key-input"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   API Key
                 </label>
                 <div className="relative">
                   <input
+                    id="api-key-input"
                     type="password"
                     value={newKey}
-                    onChange={(e) => setNewKey(e.target.value)}
+                    onChange={e => setNewKey(e.target.value)}
                     placeholder="Enter your API key"
                     className="w-full p-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
@@ -200,10 +243,12 @@ export default function APIKeyManagementPanel({
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <Key className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>No API keys configured</p>
-                  <p className="text-sm">Add your first API key above to get started</p>
+                  <p className="text-sm">
+                    Add your first API key above to get started
+                  </p>
                 </div>
               ) : (
-                apiKeys.map((key) => {
+                apiKeys.map(key => {
                   const providerInfo = getProviderInfo(key.provider);
                   return (
                     <div
@@ -212,7 +257,9 @@ export default function APIKeyManagementPanel({
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className={`w-8 h-8 ${providerInfo?.color} rounded-lg flex items-center justify-center`}>
+                          <div
+                            className={`w-8 h-8 ${providerInfo?.color} rounded-lg flex items-center justify-center`}
+                          >
                             <span className="text-white text-sm font-medium">
                               {providerInfo?.name.charAt(0)}
                             </span>
@@ -226,7 +273,8 @@ export default function APIKeyManagementPanel({
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
                               {formatUsageCount(key.usageCount)}
-                              {key.lastUsed && ` • Last used ${key.lastUsed.toLocaleDateString()}`}
+                              {key.lastUsed &&
+                                ` • Last used ${key.lastUsed.toLocaleDateString()}`}
                             </p>
                           </div>
                         </div>
@@ -237,35 +285,41 @@ export default function APIKeyManagementPanel({
                               {validationResults[key.provider] ? (
                                 <Check className="w-4 h-4 text-green-500" />
                               ) : (
-                                                                  <X className="w-4 h-4 text-red-500" />
+                                <X className="w-4 h-4 text-red-500" />
                               )}
                               <span className="text-xs text-gray-500">
-                                {validationResults[key.provider] ? 'Valid' : 'Invalid'}
+                                {validationResults[key.provider]
+                                  ? 'Valid'
+                                  : 'Invalid'}
                               </span>
                             </div>
                           )}
-                          
+
                           {/* Show/Hide Key */}
                           <button
-                            onClick={() => handleToggleKeyVisibility(key.provider)}
+                            onClick={() =>
+                              handleToggleKeyVisibility(key.provider)
+                            }
                             className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                           >
                             {showKeys[key.provider] ? (
                               <EyeOff className="w-4 h-4 text-gray-500" />
                             ) : (
-                                                              <Eye className="w-4 h-4 text-gray-500" />
+                              <Eye className="w-4 h-4 text-gray-500" />
                             )}
                           </button>
-                          
+
                           {/* Validate Key */}
                           <button
-                            onClick={() => handleValidateKey(key.provider, key.apiKey)}
+                            onClick={() =>
+                              handleValidateKey(key.provider, key.apiKey)
+                            }
                             disabled={isValidating}
                             className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50"
                           >
                             {isValidating ? 'Validating...' : 'Validate'}
                           </button>
-                          
+
                           {/* Remove Key */}
                           <button
                             onClick={() => handleRemoveKey(key.provider)}
@@ -275,16 +329,19 @@ export default function APIKeyManagementPanel({
                           </button>
                         </div>
                       </div>
-                      
+
                       {/* API Key Display */}
                       {showKeys[key.provider] && (
                         <div className="mt-3 p-3 bg-gray-100 dark:bg-gray-600 rounded">
                           <div className="flex items-center justify-between">
                             <code className="text-sm font-mono text-gray-700 dark:text-gray-300">
-                              {key.apiKey.substring(0, 8)}...{key.apiKey.substring(key.apiKey.length - 4)}
+                              {key.apiKey.substring(0, 8)}...
+                              {key.apiKey.substring(key.apiKey.length - 4)}
                             </code>
                             <button
-                              onClick={() => navigator.clipboard.writeText(key.apiKey)}
+                              onClick={() =>
+                                navigator.clipboard.writeText(key.apiKey)
+                              }
                               className="text-xs text-blue-600 hover:text-blue-700"
                             >
                               Copy
@@ -306,10 +363,15 @@ export default function APIKeyManagementPanel({
                 <span className="text-white text-xs font-medium">i</span>
               </div>
               <div>
-                <h4 className="font-medium text-blue-900 dark:text-blue-100">Local Ollama Setup</h4>
+                <h4 className="font-medium text-blue-900 dark:text-blue-100">
+                  Local Ollama Setup
+                </h4>
                 <p className="text-sm text-blue-700 dark:text-blue-200 mt-1">
-                  For local Ollama models, no API key is required. Simply install Ollama and run{' '}
-                  <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded text-xs">ollama serve</code>{' '}
+                  For local Ollama models, no API key is required. Simply
+                  install Ollama and run{' '}
+                  <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded text-xs">
+                    ollama serve
+                  </code>{' '}
                   to start the local server.
                 </p>
               </div>
@@ -340,4 +402,4 @@ export default function APIKeyManagementPanel({
       </div>
     </div>
   );
-} 
+}

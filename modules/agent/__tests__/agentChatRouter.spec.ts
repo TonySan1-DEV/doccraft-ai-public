@@ -7,7 +7,7 @@ allowedActions: ["test", "mock", "validate"],
 theme: "agent_chat"
 */
 
-import { agentChatRouter, AgentMessage } from '../services/agentChatRouter';
+import { agentChatRouter } from '../services/agentChatRouter';
 import { OnboardingEngine } from '../onboarding/onboardingEngine';
 
 // Mock dependencies
@@ -62,7 +62,8 @@ jest.mock('../onboarding/onboardingSteps', () => ({
 }));
 
 import { getKBEntry } from '../services/seedAgentKnowledgeBase';
-import { onboardingFlows } from '../onboarding/onboardingSteps';
+// Note: onboardingFlows is imported but not used in this test file
+// import { onboardingFlows } from '../onboarding/onboardingSteps';
 
 const mockGetKBEntry = getKBEntry as jest.MockedFunction<typeof getKBEntry>;
 const mockStartFlow = OnboardingEngine.startFlow as jest.MockedFunction<typeof OnboardingEngine.startFlow>;

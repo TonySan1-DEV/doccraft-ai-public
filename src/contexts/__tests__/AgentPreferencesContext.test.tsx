@@ -11,7 +11,10 @@
 */
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { AgentPreferencesProvider, useAgentPreferences } from '../AgentPreferencesContext';
+import {
+  AgentPreferencesProvider,
+  useAgentPreferences,
+} from '../AgentPreferencesContext';
 import { useMCP } from '../../useMCP';
 
 // Mock dependencies
@@ -19,7 +22,9 @@ jest.mock('../../useMCP');
 jest.mock('../../utils/loadInitialPrefs');
 
 const mockUseMCP = useMCP as jest.MockedFunction<typeof useMCP>;
-const mockLoadInitialPrefs = require('../../utils/loadInitialPrefs').loadInitialPrefs as jest.MockedFunction<any>;
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const mockLoadInitialPrefs = require('../../utils/loadInitialPrefs')
+  .loadInitialPrefs as jest.MockedFunction<any>;
 
 // Mock localStorage
 const localStorageMock = {
@@ -29,53 +34,63 @@ const localStorageMock = {
   clear: jest.fn(),
 };
 Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
+  value: localStorageMock,
 });
 
 // Mock telemetry
 const mockLogTelemetryEvent = jest.fn();
 Object.defineProperty(window, 'logTelemetryEvent', {
   value: mockLogTelemetryEvent,
-  writable: true
+  writable: true,
 });
 
 // Test component to access context
-const TestComponent = ({ onPreferencesChange: _onPreferencesChange }: { onPreferencesChange?: () => void }) => {
-  const { preferences, updatePreferences, resetToDefaults, isFieldLocked } = useAgentPreferences();
-  
+const TestComponent = ({
+  onPreferencesChange: _onPreferencesChange,
+}: {
+  onPreferencesChange?: () => void;
+}) => {
+  const { preferences, updatePreferences, resetToDefaults, isFieldLocked } =
+    useAgentPreferences();
+
   return (
     <div>
       <div data-testid="tone">{preferences.tone}</div>
       <div data-testid="language">{preferences.language}</div>
-      <div data-testid="copilot-enabled">{preferences.copilotEnabled.toString()}</div>
-      <div data-testid="memory-enabled">{preferences.memoryEnabled.toString()}</div>
-      <div data-testid="locked-fields">{preferences.lockedFields.join(',')}</div>
-      <button 
-        data-testid="update-tone" 
+      <div data-testid="copilot-enabled">
+        {preferences.copilotEnabled.toString()}
+      </div>
+      <div data-testid="memory-enabled">
+        {preferences.memoryEnabled.toString()}
+      </div>
+      <div data-testid="locked-fields">
+        {preferences.lockedFields.join(',')}
+      </div>
+      <button
+        data-testid="update-tone"
         onClick={() => updatePreferences({ tone: 'formal' })}
       >
         Update Tone
       </button>
-      <button 
-        data-testid="update-language" 
+      <button
+        data-testid="update-language"
         onClick={() => updatePreferences({ language: 'es' })}
       >
         Update Language
       </button>
-      <button 
-        data-testid="update-copilot" 
+      <button
+        data-testid="update-copilot"
         onClick={() => updatePreferences({ copilotEnabled: false })}
       >
         Toggle Copilot
       </button>
-      <button 
-        data-testid="reset-defaults" 
-        onClick={() => resetToDefaults()}
-      >
+      <button data-testid="reset-defaults" onClick={() => resetToDefaults()}>
         Reset
       </button>
       <div data-testid="tone-locked">{isFieldLocked('tone').toString()}</div>
-      <div data-testid="language-locked">{isFieldLocked('language').toString()}</div>
+      <div data-testid="language-locked">
+        {isFieldLocked('language').toString()}
+      </div>
     </div>
   );
 };
@@ -96,7 +111,7 @@ describe('AgentPreferencesContext', () => {
         copilotEnabled: true,
         memoryEnabled: true,
         defaultCommandView: 'list',
-        lockedFields: []
+        lockedFields: [],
       });
 
       mockUseMCP.mockReturnValue({
@@ -104,7 +119,7 @@ describe('AgentPreferencesContext', () => {
         allowedActions: ['updatePrefs'],
         theme: 'general',
         contentSensitivity: 'low',
-        tier: 'Pro'
+        tier: 'Pro',
       });
 
       render(
@@ -128,7 +143,7 @@ describe('AgentPreferencesContext', () => {
         copilotEnabled: false,
         memoryEnabled: false,
         defaultCommandView: 'grid',
-        lockedFields: []
+        lockedFields: [],
       };
 
       localStorageMock.getItem.mockReturnValue(JSON.stringify(storedPrefs));
@@ -139,7 +154,7 @@ describe('AgentPreferencesContext', () => {
         allowedActions: ['updatePrefs'],
         theme: 'general',
         contentSensitivity: 'low',
-        tier: 'Pro'
+        tier: 'Pro',
       });
 
       render(
@@ -151,7 +166,9 @@ describe('AgentPreferencesContext', () => {
       await waitFor(() => {
         expect(screen.getByTestId('tone')).toHaveTextContent('formal');
         expect(screen.getByTestId('language')).toHaveTextContent('es');
-        expect(screen.getByTestId('copilot-enabled')).toHaveTextContent('false');
+        expect(screen.getByTestId('copilot-enabled')).toHaveTextContent(
+          'false'
+        );
         expect(screen.getByTestId('memory-enabled')).toHaveTextContent('false');
       });
     });
@@ -165,7 +182,7 @@ describe('AgentPreferencesContext', () => {
         copilotEnabled: true,
         memoryEnabled: true,
         defaultCommandView: 'list',
-        lockedFields: ['tone', 'language']
+        lockedFields: ['tone', 'language'],
       });
 
       mockUseMCP.mockReturnValue({
@@ -173,7 +190,7 @@ describe('AgentPreferencesContext', () => {
         allowedActions: ['updatePrefs'],
         theme: 'general',
         contentSensitivity: 'low',
-        tier: 'Pro'
+        tier: 'Pro',
       });
 
       render(
@@ -185,7 +202,9 @@ describe('AgentPreferencesContext', () => {
       await waitFor(() => {
         expect(screen.getByTestId('tone-locked')).toHaveTextContent('true');
         expect(screen.getByTestId('language-locked')).toHaveTextContent('true');
-        expect(screen.getByTestId('locked-fields')).toHaveTextContent('tone,language');
+        expect(screen.getByTestId('locked-fields')).toHaveTextContent(
+          'tone,language'
+        );
       });
     });
 
@@ -196,7 +215,7 @@ describe('AgentPreferencesContext', () => {
         copilotEnabled: true,
         memoryEnabled: true,
         defaultCommandView: 'list',
-        lockedFields: ['tone']
+        lockedFields: ['tone'],
       });
 
       mockUseMCP.mockReturnValue({
@@ -204,7 +223,7 @@ describe('AgentPreferencesContext', () => {
         allowedActions: ['updatePrefs'],
         theme: 'general',
         contentSensitivity: 'low',
-        tier: 'Pro'
+        tier: 'Pro',
       });
 
       render(
@@ -233,7 +252,7 @@ describe('AgentPreferencesContext', () => {
         copilotEnabled: true,
         memoryEnabled: true,
         defaultCommandView: 'list',
-        lockedFields: []
+        lockedFields: [],
       });
 
       mockUseMCP.mockReturnValue({
@@ -241,7 +260,7 @@ describe('AgentPreferencesContext', () => {
         allowedActions: ['updatePrefs'],
         theme: 'general',
         contentSensitivity: 'low',
-        tier: 'Pro'
+        tier: 'Pro',
       });
 
       render(
@@ -268,7 +287,7 @@ describe('AgentPreferencesContext', () => {
         copilotEnabled: true,
         memoryEnabled: true,
         defaultCommandView: 'list',
-        lockedFields: []
+        lockedFields: [],
       });
 
       mockUseMCP.mockReturnValue({
@@ -276,7 +295,7 @@ describe('AgentPreferencesContext', () => {
         allowedActions: ['read'],
         theme: 'general',
         contentSensitivity: 'low',
-        tier: 'Basic'
+        tier: 'Basic',
       });
 
       render(
@@ -305,7 +324,7 @@ describe('AgentPreferencesContext', () => {
         copilotEnabled: true,
         memoryEnabled: true,
         defaultCommandView: 'list',
-        lockedFields: []
+        lockedFields: [],
       });
 
       mockUseMCP.mockReturnValue({
@@ -313,7 +332,7 @@ describe('AgentPreferencesContext', () => {
         allowedActions: ['updatePrefs'],
         theme: 'general',
         contentSensitivity: 'low',
-        tier: 'Pro'
+        tier: 'Pro',
       });
 
       render(
@@ -329,16 +348,18 @@ describe('AgentPreferencesContext', () => {
 
       // Update multiple preferences
       const { updatePreferences } = useAgentPreferences();
-      updatePreferences({ 
-        tone: 'formal', 
+      updatePreferences({
+        tone: 'formal',
         language: 'es',
-        copilotEnabled: false 
+        copilotEnabled: false,
       });
 
       await waitFor(() => {
         expect(screen.getByTestId('tone')).toHaveTextContent('formal');
         expect(screen.getByTestId('language')).toHaveTextContent('es');
-        expect(screen.getByTestId('copilot-enabled')).toHaveTextContent('false');
+        expect(screen.getByTestId('copilot-enabled')).toHaveTextContent(
+          'false'
+        );
       });
     });
 
@@ -349,7 +370,7 @@ describe('AgentPreferencesContext', () => {
         copilotEnabled: false,
         memoryEnabled: false,
         defaultCommandView: 'grid',
-        lockedFields: []
+        lockedFields: [],
       });
 
       mockUseMCP.mockReturnValue({
@@ -357,7 +378,7 @@ describe('AgentPreferencesContext', () => {
         allowedActions: ['updatePrefs'],
         theme: 'general',
         contentSensitivity: 'low',
-        tier: 'Pro'
+        tier: 'Pro',
       });
 
       render(
@@ -389,7 +410,7 @@ describe('AgentPreferencesContext', () => {
         copilotEnabled: true,
         memoryEnabled: true,
         defaultCommandView: 'list',
-        lockedFields: []
+        lockedFields: [],
       });
 
       mockUseMCP.mockReturnValue({
@@ -397,7 +418,7 @@ describe('AgentPreferencesContext', () => {
         allowedActions: ['updatePrefs'],
         theme: 'general',
         contentSensitivity: 'low',
-        tier: 'Pro'
+        tier: 'Pro',
       });
 
       render(
@@ -413,12 +434,15 @@ describe('AgentPreferencesContext', () => {
       fireEvent.click(screen.getByTestId('update-tone'));
 
       await waitFor(() => {
-        expect(mockLogTelemetryEvent).toHaveBeenCalledWith('preference_change', {
-          updatedFields: ['tone'],
-          timestamp: expect.any(Number),
-          userTier: 'Pro',
-          previousValues: { tone: 'friendly' }
-        });
+        expect(mockLogTelemetryEvent).toHaveBeenCalledWith(
+          'preference_change',
+          {
+            updatedFields: ['tone'],
+            timestamp: expect.any(Number),
+            userTier: 'Pro',
+            previousValues: { tone: 'friendly' },
+          }
+        );
       });
     });
   });

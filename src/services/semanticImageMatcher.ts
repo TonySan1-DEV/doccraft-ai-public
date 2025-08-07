@@ -4,8 +4,20 @@
 export interface ContentAnalysis {
   topics: string[];
   emotions: string[];
-  tone: 'formal' | 'casual' | 'professional' | 'creative' | 'academic' | 'technical';
-  audience: 'general' | 'professional' | 'academic' | 'creative' | 'children' | 'senior';
+  tone:
+    | 'formal'
+    | 'casual'
+    | 'professional'
+    | 'creative'
+    | 'academic'
+    | 'technical';
+  audience:
+    | 'general'
+    | 'professional'
+    | 'academic'
+    | 'creative'
+    | 'children'
+    | 'senior';
   complexity: 'simple' | 'moderate' | 'complex';
   sentiment: 'positive' | 'negative' | 'neutral' | 'mixed';
   keywords: string[];
@@ -16,8 +28,19 @@ export interface ContentAnalysis {
 export interface VisualStyle {
   colorPalette: string[];
   composition: 'centered' | 'rule-of-thirds' | 'asymmetric' | 'minimalist';
-  mood: 'calm' | 'energetic' | 'serious' | 'playful' | 'inspirational' | 'professional';
-  style: 'realistic' | 'illustrative' | 'abstract' | 'photographic' | 'artistic';
+  mood:
+    | 'calm'
+    | 'energetic'
+    | 'serious'
+    | 'playful'
+    | 'inspirational'
+    | 'professional';
+  style:
+    | 'realistic'
+    | 'illustrative'
+    | 'abstract'
+    | 'photographic'
+    | 'artistic';
   lighting: 'natural' | 'artificial' | 'dramatic' | 'soft';
 }
 
@@ -48,35 +71,36 @@ export interface ImageMatch {
     prompt?: string;
     tags: string[];
   };
+  [key: string]: unknown;
 }
 
 export class SemanticImageMatcher {
-  private readonly CONTENT_ANALYSIS_PROMPT = `
-    Analyze the following text content and extract:
-    1. Main topics and themes
-    2. Emotional tone and sentiment
-    3. Target audience characteristics
-    4. Complexity level
-    5. Cultural context
-    6. Key visual elements mentioned
-    
-    Content: {content}
-    
-    Provide a structured analysis in JSON format.
-  `;
+  // private readonly CONTENT_ANALYSIS_PROMPT = `
+  //   Analyze the following text content and extract:
+  //   1. Main topics and themes
+  //   2. Emotional tone and sentiment
+  //   3. Target audience characteristics
+  //   4. Complexity level
+  //   5. Cultural context
+  //   6. Key visual elements mentioned
+  //
+  //   Content: {content}
+  //
+  //   Provide a structured analysis in JSON format.
+  // `;
 
-  private readonly STYLE_MATCHING_PROMPT = `
-    Given the following content analysis, suggest visual style characteristics:
-    1. Color palette preferences
-    2. Composition style
-    3. Mood and atmosphere
-    4. Artistic style
-    5. Lighting preferences
-    
-    Analysis: {analysis}
-    
-    Provide visual style recommendations in JSON format.
-  `;
+  // private readonly STYLE_MATCHING_PROMPT = `
+  //   Given the following content analysis, suggest visual style characteristics:
+  //   1. Color palette preferences
+  //   2. Composition style
+  //   3. Mood and atmosphere
+  //   4. Artistic style
+  //   5. Lighting preferences
+  //
+  //   Analysis: {analysis}
+  //
+  //   Provide visual style recommendations in JSON format.
+  // `;
 
   /**
    * Analyzes text content to extract semantic information
@@ -86,7 +110,7 @@ export class SemanticImageMatcher {
       // Simulate AI-powered content analysis
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const words = text.toLowerCase().split(/\s+/);
+      // const words = text.toLowerCase().split(/\s+/);
       const topics = this.extractTopics(text);
       const emotions = this.analyzeEmotions(text);
       const tone = this.determineTone(text);
@@ -106,7 +130,7 @@ export class SemanticImageMatcher {
         sentiment,
         keywords,
         themes,
-        culturalContext
+        culturalContext,
       };
     } catch (error) {
       console.error('Error analyzing content:', error);
@@ -123,14 +147,14 @@ export class SemanticImageMatcher {
 
       const visualStyle = await this.generateVisualStyle(analysis);
       const mockImages = this.generateMockImages(analysis, visualStyle);
-      
+
       return mockImages.map(image => ({
         id: image.id,
         url: image.url,
         caption: image.caption,
         source: image.source,
         semanticMatch: image.semanticMatch,
-        metadata: image.metadata
+        metadata: image.metadata,
       }));
     } catch (error) {
       console.error('Error finding matching images:', error);
@@ -141,23 +165,37 @@ export class SemanticImageMatcher {
   /**
    * Validates the contextual relevance of an image match
    */
-  async validateContextualRelevance(image: ImageMatch, content: string): Promise<number> {
+  async validateContextualRelevance(
+    image: ImageMatch,
+    content: string
+  ): Promise<number> {
     try {
       const contentAnalysis = await this.analyzeContent(content);
-      
+
       // Calculate relevance based on multiple factors
-      const topicRelevance = this.calculateTopicRelevance(image.semanticMatch.contextMatch.topics, contentAnalysis.topics);
-      const emotionalRelevance = this.calculateEmotionalRelevance(image.semanticMatch.contextMatch.emotions, contentAnalysis.emotions);
-      const toneRelevance = this.calculateToneRelevance(image.semanticMatch.contextMatch.tone, contentAnalysis.tone);
-      const audienceRelevance = this.calculateAudienceRelevance(image.semanticMatch.contextMatch.audience, contentAnalysis.audience);
-      
+      const topicRelevance = this.calculateTopicRelevance(
+        image.semanticMatch.contextMatch.topics,
+        contentAnalysis.topics
+      );
+      const emotionalRelevance = this.calculateEmotionalRelevance(
+        image.semanticMatch.contextMatch.emotions,
+        contentAnalysis.emotions
+      );
+      const toneRelevance = this.calculateToneRelevance(
+        image.semanticMatch.contextMatch.tone,
+        contentAnalysis.tone
+      );
+      const audienceRelevance = this.calculateAudienceRelevance(
+        image.semanticMatch.contextMatch.audience,
+        contentAnalysis.audience
+      );
+
       // Weighted average of all relevance factors
-      const relevanceScore = (
+      const relevanceScore =
         topicRelevance * 0.4 +
         emotionalRelevance * 0.25 +
         toneRelevance * 0.2 +
-        audienceRelevance * 0.15
-      );
+        audienceRelevance * 0.15;
 
       return Math.min(Math.max(relevanceScore, 0), 1);
     } catch (error) {
@@ -169,7 +207,9 @@ export class SemanticImageMatcher {
   /**
    * Generates visual style recommendations based on content analysis
    */
-  private async generateVisualStyle(analysis: ContentAnalysis): Promise<VisualStyle> {
+  private async generateVisualStyle(
+    analysis: ContentAnalysis
+  ): Promise<VisualStyle> {
     const colorPalette = this.determineColorPalette(analysis);
     const composition = this.determineComposition(analysis);
     const mood = this.determineMood(analysis);
@@ -181,7 +221,7 @@ export class SemanticImageMatcher {
       composition,
       mood,
       style,
-      lighting
+      lighting,
     };
   }
 
@@ -190,13 +230,28 @@ export class SemanticImageMatcher {
    */
   private extractTopics(text: string): string[] {
     const topics = new Set<string>();
-    const words = text.toLowerCase().split(/\s+/);
-    
+    // const words = text.toLowerCase().split(/\s+/);
+
     // Simple keyword extraction (in a real implementation, this would use NLP)
     const topicKeywords = [
-      'business', 'technology', 'science', 'health', 'education', 'finance',
-      'art', 'culture', 'sports', 'politics', 'environment', 'food',
-      'travel', 'fashion', 'music', 'film', 'literature', 'history'
+      'business',
+      'technology',
+      'science',
+      'health',
+      'education',
+      'finance',
+      'art',
+      'culture',
+      'sports',
+      'politics',
+      'environment',
+      'food',
+      'travel',
+      'fashion',
+      'music',
+      'film',
+      'literature',
+      'history',
     ];
 
     topicKeywords.forEach(keyword => {
@@ -222,7 +277,13 @@ export class SemanticImageMatcher {
       fear: ['afraid', 'scared', 'terrified', 'anxious', 'worried'],
       surprise: ['surprised', 'shocked', 'amazed', 'astonished', 'stunned'],
       trust: ['confident', 'trusting', 'reliable', 'secure', 'assured'],
-      anticipation: ['eager', 'excited', 'hopeful', 'optimistic', 'enthusiastic']
+      anticipation: [
+        'eager',
+        'excited',
+        'hopeful',
+        'optimistic',
+        'enthusiastic',
+      ],
     };
 
     Object.entries(emotionKeywords).forEach(([emotion, keywords]) => {
@@ -239,23 +300,43 @@ export class SemanticImageMatcher {
    */
   private determineTone(text: string): ContentAnalysis['tone'] {
     const textLower = text.toLowerCase();
-    
-    if (textLower.includes('research') || textLower.includes('study') || textLower.includes('analysis')) {
+
+    if (
+      textLower.includes('research') ||
+      textLower.includes('study') ||
+      textLower.includes('analysis')
+    ) {
       return 'academic';
     }
-    if (textLower.includes('business') || textLower.includes('corporate') || textLower.includes('professional')) {
+    if (
+      textLower.includes('business') ||
+      textLower.includes('corporate') ||
+      textLower.includes('professional')
+    ) {
       return 'professional';
     }
-    if (textLower.includes('creative') || textLower.includes('artistic') || textLower.includes('imaginative')) {
+    if (
+      textLower.includes('creative') ||
+      textLower.includes('artistic') ||
+      textLower.includes('imaginative')
+    ) {
       return 'creative';
     }
-    if (textLower.includes('technical') || textLower.includes('code') || textLower.includes('system')) {
+    if (
+      textLower.includes('technical') ||
+      textLower.includes('code') ||
+      textLower.includes('system')
+    ) {
       return 'technical';
     }
-    if (textLower.includes('casual') || textLower.includes('informal') || textLower.includes('friendly')) {
+    if (
+      textLower.includes('casual') ||
+      textLower.includes('informal') ||
+      textLower.includes('friendly')
+    ) {
       return 'casual';
     }
-    
+
     return 'formal';
   }
 
@@ -264,23 +345,43 @@ export class SemanticImageMatcher {
    */
   private determineAudience(text: string): ContentAnalysis['audience'] {
     const textLower = text.toLowerCase();
-    
-    if (textLower.includes('children') || textLower.includes('kids') || textLower.includes('young')) {
+
+    if (
+      textLower.includes('children') ||
+      textLower.includes('kids') ||
+      textLower.includes('young')
+    ) {
       return 'children';
     }
-    if (textLower.includes('academic') || textLower.includes('research') || textLower.includes('scholarly')) {
+    if (
+      textLower.includes('academic') ||
+      textLower.includes('research') ||
+      textLower.includes('scholarly')
+    ) {
       return 'academic';
     }
-    if (textLower.includes('professional') || textLower.includes('business') || textLower.includes('corporate')) {
+    if (
+      textLower.includes('professional') ||
+      textLower.includes('business') ||
+      textLower.includes('corporate')
+    ) {
       return 'professional';
     }
-    if (textLower.includes('creative') || textLower.includes('artistic') || textLower.includes('design')) {
+    if (
+      textLower.includes('creative') ||
+      textLower.includes('artistic') ||
+      textLower.includes('design')
+    ) {
       return 'creative';
     }
-    if (textLower.includes('senior') || textLower.includes('elderly') || textLower.includes('retirement')) {
+    if (
+      textLower.includes('senior') ||
+      textLower.includes('elderly') ||
+      textLower.includes('retirement')
+    ) {
       return 'senior';
     }
-    
+
     return 'general';
   }
 
@@ -289,7 +390,8 @@ export class SemanticImageMatcher {
    */
   private assessComplexity(text: string): ContentAnalysis['complexity'] {
     const words = text.split(/\s+/);
-    const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / words.length;
+    const avgWordLength =
+      words.reduce((sum, word) => sum + word.length, 0) / words.length;
     const sentenceCount = text.split(/[.!?]+/).length;
     const avgSentenceLength = words.length / sentenceCount;
 
@@ -306,12 +408,32 @@ export class SemanticImageMatcher {
    * Analyzes overall sentiment
    */
   private analyzeSentiment(text: string): ContentAnalysis['sentiment'] {
-    const positiveWords = ['good', 'great', 'excellent', 'amazing', 'wonderful', 'positive', 'success'];
-    const negativeWords = ['bad', 'terrible', 'awful', 'horrible', 'negative', 'failure', 'problem'];
-    
+    const positiveWords = [
+      'good',
+      'great',
+      'excellent',
+      'amazing',
+      'wonderful',
+      'positive',
+      'success',
+    ];
+    const negativeWords = [
+      'bad',
+      'terrible',
+      'awful',
+      'horrible',
+      'negative',
+      'failure',
+      'problem',
+    ];
+
     const textLower = text.toLowerCase();
-    const positiveCount = positiveWords.filter(word => textLower.includes(word)).length;
-    const negativeCount = negativeWords.filter(word => textLower.includes(word)).length;
+    const positiveCount = positiveWords.filter(word =>
+      textLower.includes(word)
+    ).length;
+    const negativeCount = negativeWords.filter(word =>
+      textLower.includes(word)
+    ).length;
 
     if (positiveCount > negativeCount) return 'positive';
     if (negativeCount > positiveCount) return 'negative';
@@ -324,10 +446,25 @@ export class SemanticImageMatcher {
    */
   private extractKeywords(text: string): string[] {
     const words = text.toLowerCase().split(/\s+/);
-    const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by']);
-    
+    const stopWords = new Set([
+      'the',
+      'a',
+      'an',
+      'and',
+      'or',
+      'but',
+      'in',
+      'on',
+      'at',
+      'to',
+      'for',
+      'of',
+      'with',
+      'by',
+    ]);
+
     return words
-      .filter(word => word.length > 3 && !stopWords.has(word))
+      .filter((word: string) => word.length > 3 && !stopWords.has(word))
       .slice(0, 10);
   }
 
@@ -339,12 +476,12 @@ export class SemanticImageMatcher {
     const textLower = text.toLowerCase();
 
     const themePatterns = {
-      'innovation': ['innovation', 'creative', 'new', 'breakthrough'],
-      'growth': ['growth', 'development', 'progress', 'improvement'],
-      'collaboration': ['team', 'collaboration', 'partnership', 'together'],
-      'sustainability': ['environment', 'sustainable', 'green', 'eco-friendly'],
-      'technology': ['technology', 'digital', 'tech', 'software'],
-      'wellness': ['health', 'wellness', 'fitness', 'wellbeing']
+      innovation: ['innovation', 'creative', 'new', 'breakthrough'],
+      growth: ['growth', 'development', 'progress', 'improvement'],
+      collaboration: ['team', 'collaboration', 'partnership', 'together'],
+      sustainability: ['environment', 'sustainable', 'green', 'eco-friendly'],
+      technology: ['technology', 'digital', 'tech', 'software'],
+      wellness: ['health', 'wellness', 'fitness', 'wellbeing'],
     };
 
     Object.entries(themePatterns).forEach(([theme, keywords]) => {
@@ -364,12 +501,12 @@ export class SemanticImageMatcher {
     const textLower = text.toLowerCase();
 
     const culturalPatterns = {
-      'western': ['western', 'american', 'european'],
-      'asian': ['asian', 'chinese', 'japanese', 'korean'],
-      'middle_eastern': ['middle eastern', 'arabic', 'islamic'],
-      'african': ['african', 'tribal', 'traditional'],
-      'latin': ['latin', 'hispanic', 'spanish'],
-      'indigenous': ['indigenous', 'native', 'tribal']
+      western: ['western', 'american', 'european'],
+      asian: ['asian', 'chinese', 'japanese', 'korean'],
+      middle_eastern: ['middle eastern', 'arabic', 'islamic'],
+      african: ['african', 'tribal', 'traditional'],
+      latin: ['latin', 'hispanic', 'spanish'],
+      indigenous: ['indigenous', 'native', 'tribal'],
     };
 
     Object.entries(culturalPatterns).forEach(([context, keywords]) => {
@@ -400,14 +537,16 @@ export class SemanticImageMatcher {
     if (analysis.sentiment === 'negative') {
       return ['#EF4444', '#F87171', '#FCA5A5', '#FEE2E2'];
     }
-    
+
     return ['#6B7280', '#9CA3AF', '#D1D5DB', '#F9FAFB'];
   }
 
   /**
    * Determines composition style
    */
-  private determineComposition(analysis: ContentAnalysis): VisualStyle['composition'] {
+  private determineComposition(
+    analysis: ContentAnalysis
+  ): VisualStyle['composition'] {
     if (analysis.tone === 'professional') return 'centered';
     if (analysis.tone === 'creative') return 'asymmetric';
     if (analysis.complexity === 'simple') return 'minimalist';
@@ -438,7 +577,9 @@ export class SemanticImageMatcher {
   /**
    * Determines lighting style
    */
-  private determineLighting(analysis: ContentAnalysis): VisualStyle['lighting'] {
+  private determineLighting(
+    analysis: ContentAnalysis
+  ): VisualStyle['lighting'] {
     if (analysis.sentiment === 'positive') return 'natural';
     if (analysis.sentiment === 'negative') return 'dramatic';
     if (analysis.tone === 'professional') return 'artificial';
@@ -448,7 +589,10 @@ export class SemanticImageMatcher {
   /**
    * Generates mock images based on analysis
    */
-  private generateMockImages(analysis: ContentAnalysis, visualStyle: VisualStyle): ImageMatch[] {
+  private generateMockImages(
+    analysis: ContentAnalysis,
+    visualStyle: VisualStyle
+  ): ImageMatch[] {
     const mockImages = [
       {
         id: 'semantic-1',
@@ -463,17 +607,17 @@ export class SemanticImageMatcher {
             topics: analysis.topics.slice(0, 3),
             emotions: analysis.emotions.slice(0, 2),
             tone: analysis.tone,
-            audience: analysis.audience
+            audience: analysis.audience,
           },
           visualStyle,
           culturalAppropriateness: 0.9,
-          accessibilityScore: 0.85
+          accessibilityScore: 0.85,
         },
         metadata: {
           author: 'Professional Photographer',
           platform: 'Unsplash',
-          tags: analysis.keywords.slice(0, 5)
-        }
+          tags: analysis.keywords.slice(0, 5),
+        },
       },
       {
         id: 'semantic-2',
@@ -488,18 +632,18 @@ export class SemanticImageMatcher {
             topics: analysis.topics.slice(0, 2),
             emotions: analysis.emotions.slice(0, 1),
             tone: analysis.tone,
-            audience: analysis.audience
+            audience: analysis.audience,
           },
           visualStyle,
           culturalAppropriateness: 0.85,
-          accessibilityScore: 0.8
+          accessibilityScore: 0.8,
         },
         metadata: {
           platform: 'AI Generator',
           prompt: `Create a ${visualStyle.style} image about ${analysis.topics[0] || 'business'}`,
-          tags: analysis.keywords.slice(0, 4)
-        }
-      }
+          tags: analysis.keywords.slice(0, 4),
+        },
+      },
     ];
 
     return mockImages;
@@ -508,33 +652,54 @@ export class SemanticImageMatcher {
   /**
    * Calculates topic relevance score
    */
-  private calculateTopicRelevance(imageTopics: string[], contentTopics: string[]): number {
-    const intersection = imageTopics.filter(topic => contentTopics.includes(topic));
-    return intersection.length / Math.max(imageTopics.length, contentTopics.length);
+  private calculateTopicRelevance(
+    imageTopics: string[],
+    contentTopics: string[]
+  ): number {
+    const intersection = imageTopics.filter(topic =>
+      contentTopics.includes(topic)
+    );
+    return (
+      intersection.length / Math.max(imageTopics.length, contentTopics.length)
+    );
   }
 
   /**
    * Calculates emotional relevance score
    */
-  private calculateEmotionalRelevance(imageEmotions: string[], contentEmotions: string[]): number {
-    const intersection = imageEmotions.filter(emotion => contentEmotions.includes(emotion));
-    return intersection.length / Math.max(imageEmotions.length, contentEmotions.length);
+  private calculateEmotionalRelevance(
+    imageEmotions: string[],
+    contentEmotions: string[]
+  ): number {
+    const intersection = imageEmotions.filter(emotion =>
+      contentEmotions.includes(emotion)
+    );
+    return (
+      intersection.length /
+      Math.max(imageEmotions.length, contentEmotions.length)
+    );
   }
 
   /**
    * Calculates tone relevance score
    */
-  private calculateToneRelevance(imageTone: string, contentTone: string): number {
+  private calculateToneRelevance(
+    imageTone: string,
+    contentTone: string
+  ): number {
     return imageTone === contentTone ? 1 : 0.3;
   }
 
   /**
    * Calculates audience relevance score
    */
-  private calculateAudienceRelevance(imageAudience: string, contentAudience: string): number {
+  private calculateAudienceRelevance(
+    imageAudience: string,
+    contentAudience: string
+  ): number {
     return imageAudience === contentAudience ? 1 : 0.4;
   }
 }
 
 // Export singleton instance
-export const semanticImageMatcher = new SemanticImageMatcher(); 
+export const semanticImageMatcher = new SemanticImageMatcher();
