@@ -50,7 +50,12 @@
     "improve": "node scripts/improve-codebase.js",
     "pre-commit": "npm run lint:strict && npm run type-check:strict && npm test",
     "lint:snapshot": "git diff > lint-snapshot.patch",
-    "lint:restore": "git apply lint-snapshot.patch || echo 'No snapshot found'"
+    "lint:restore": "git apply lint-snapshot.patch || echo 'No snapshot found'",
+    "typecheck:prod": "tsc --noEmit -p tsconfig.prod.json",
+    "typecheck:test": "tsc --noEmit -p tsconfig.test.json",
+    "build:prod": "vite build",
+    "verify:prod": "npm run typecheck:prod && npm run build:prod",
+    "prune": "ts-prune --ignore \"__tests__\""
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.450.0",
@@ -116,6 +121,7 @@
     "prettier": "^3.6.2",
     "tailwindcss": "^3.4.0",
     "ts-jest": "^29.4.0",
+    "ts-prune": "^0.10.3",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "vite": "^5.4.19",

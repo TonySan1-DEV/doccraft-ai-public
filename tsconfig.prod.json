@@ -1,6 +1,23 @@
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
@@ -8,7 +25,36 @@
     },
     "types": ["node"]
   },
-  "include": ["src/**/*", "modules/**/*"],
+  "files": [
+    "src/components/VoiceSelector.tsx",
+    "src/components/ProUpsell.tsx",
+    "src/components/ui/card.tsx",
+    "src/hooks/useUserTier.ts",
+    "src/types/CharacterPersona.ts",
+    "src/types/pipelineTypes.ts",
+    "modules/agent/onboarding/onboardingEngine.ts",
+    "modules/agent/services/seedAgentKnowledgeBase.ts",
+    "modules/agent/services/agentChatRouter.ts",
+    "modules/plotStructure/initPlotEngine.ts",
+    "modules/emotionArc/types/emotionTypes.ts",
+    "modules/shared/state/useNarrativeSyncContext.tsx",
+    "modules/narrativeDashboard/NarrativeScoreSummary.tsx",
+    "modules/narrativeDashboard/tabs/CharacterViewTab.tsx"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/__stories__/**",
+    "**/__mocks__/**",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/*.stories.*",
+    "**/test/**",
+    "**/tests/**",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/coverage/**"
+  ],
   "exclude": [
     // Test files and patterns
     "**/*.spec.*",

@@ -12,8 +12,37 @@
 
 import { supabase } from '../lib/supabase';
 
+export interface FeedbackContextData {
+  sessionId?: string;
+  contentType?:
+    | 'suggestion'
+    | 'rewrite'
+    | 'preview'
+    | 'completion'
+    | 'correction';
+  promptHash?: string;
+  modelVersion?: string;
+  responseTime?: number;
+  tokenCount?: number;
+  userTier?: string;
+  featureFlags?: string[];
+  browserInfo?: {
+    userAgent: string;
+    language: string;
+    timezone: string;
+  };
+  pageContext?: {
+    url: string;
+    title: string;
+    component: string;
+  };
+  interactionData?: {
+    clickCount: number;
+    scrollDepth: number;
+    timeOnPage: number;
+  };
+}
 
-// Feedback event interface
 export interface FeedbackEvent {
   id: string;
   user_id: string;
@@ -25,14 +54,19 @@ export interface FeedbackEvent {
   memory_enabled: boolean;
   session_id?: string;
   content_type?: string;
-  context_data?: Record<string, any>;
+  context_data?: FeedbackContextData;
 }
 
 // Feedback submission options
 export interface FeedbackSubmissionOptions {
   sessionId?: string;
-  contentType?: 'suggestion' | 'rewrite' | 'preview' | 'completion' | 'correction';
-  contextData?: Record<string, any>;
+  contentType?:
+    | 'suggestion'
+    | 'rewrite'
+    | 'preview'
+    | 'completion'
+    | 'correction';
+  contextData?: FeedbackContextData;
   promptHash?: string;
 }
 
@@ -53,6 +87,19 @@ export interface PatternAnalytics {
   positive_rate: number;
   confidence_interval: number;
   trend_direction: 'improving' | 'declining' | 'stable';
+}
+
+// Feedback summary data
+export interface FeedbackSummaryItem {
+  pattern: string;
+  totalFeedback: number;
+  positiveCount: number;
+  negativeCount: number;
+  positiveRate: number;
+  avgResponseTime: number;
+  userSatisfaction: number;
+  commonIssues: string[];
+  improvementSuggestions: string[];
 }
 
 // Feedback service class
@@ -85,7 +132,9 @@ export class FeedbackService {
   ): Promise<{ success: boolean; error?: string; feedbackId?: string }> {
     try {
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         return { success: false, error: 'User not authenticated' };
       }
@@ -94,26 +143,34 @@ export class FeedbackService {
       const rateLimitKey = `${user.id}-${feedbackType}`;
       const now = Date.now();
       const lastSubmission = this.rateLimitMap.get(rateLimitKey) || 0;
-      
+
       if (now - lastSubmission < this.RATE_LIMIT_WINDOW) {
         const submissionsInWindow = this.getSubmissionsInWindow(user.id, now);
         if (submissionsInWindow >= this.MAX_FEEDBACK_PER_WINDOW) {
-          return { success: false, error: 'Rate limit exceeded. Please wait before submitting more feedback.' };
+          return {
+            success: false,
+            error:
+              'Rate limit exceeded. Please wait before submitting more feedback.',
+          };
         }
       }
 
       // Generate prompt hash for deduplication
-      const promptHash = options.promptHash || this.generatePromptHash(sourcePrompt);
-      
+      const promptHash =
+        options.promptHash || this.generatePromptHash(sourcePrompt);
+
       // Check for duplicate feedback
       const feedbackKey = `${user.id}-${promptHash}-${feedbackType}`;
       if (this.submittedFeedback.has(feedbackKey)) {
-        return { success: false, error: 'Feedback already submitted for this prompt' };
+        return {
+          success: false,
+          error: 'Feedback already submitted for this prompt',
+        };
       }
 
       // Get current preferences
       const preferences = this.getCurrentPreferences();
-      
+
       // Create feedback event
       const { data, error } = await supabase.rpc('create_feedback_event', {
         p_user_id: user.id,
@@ -124,7 +181,7 @@ export class FeedbackService {
         p_memory_enabled: preferences.memoryEnabled,
         p_session_id: options.sessionId,
         p_content_type: options.contentType,
-        p_context_data: options.contextData || {}
+        p_context_data: options.contextData || {},
       });
 
       if (error) {
@@ -134,22 +191,21 @@ export class FeedbackService {
 
       // Update rate limiting
       this.rateLimitMap.set(rateLimitKey, now);
-      
+
       // Mark as submitted
       this.submittedFeedback.add(feedbackKey);
       this.saveSubmittedFeedback();
 
-      return { 
-        success: true, 
-        feedbackId: data 
-      };
+      // Log telemetry
+      this.logFeedbackTelemetry(feedbackType, patternUsed, options);
 
+      return {
+        success: true,
+        feedbackId: data?.feedback_id,
+      };
     } catch (error) {
       console.error('Error in submitFeedback:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      };
+      return { success: false, error: 'Internal server error' };
     }
   }
 
@@ -162,18 +218,67 @@ export class FeedbackService {
     timeRange: string = '30 days'
   ): Promise<FeedbackStats[]> {
     try {
-      const { data, error } = await supabase.rpc('get_feedback_stats', {
-        p_user_id: userId,
-        p_pattern_used: patternUsed,
-        p_time_range: timeRange
-      });
+      let query = supabase
+        .from('feedback_events')
+        .select('pattern_used, feedback_type, created_at');
+
+      if (userId) {
+        query = query.eq('user_id', userId);
+      }
+
+      if (patternUsed) {
+        query = query.eq('pattern_used', patternUsed);
+      }
+
+      if (timeRange) {
+        const daysAgo = new Date();
+        daysAgo.setDate(daysAgo.getDate() - parseInt(timeRange));
+        query = query.gte('created_at', daysAgo.toISOString());
+      }
+
+      const { data, error } = await query;
 
       if (error) {
-        console.error('Error getting feedback stats:', error);
+        console.error('Error fetching feedback stats:', error);
         return [];
       }
 
-      return data || [];
+      // Aggregate statistics
+      const statsMap = new Map<string, FeedbackStats>();
+
+      data?.forEach(event => {
+        const pattern = event.pattern_used;
+        if (!statsMap.has(pattern)) {
+          statsMap.set(pattern, {
+            pattern_used: pattern,
+            total_feedback: 0,
+            positive_feedback: 0,
+            negative_feedback: 0,
+            positive_rate: 0,
+            avg_rating: 0,
+          });
+        }
+
+        const stats = statsMap.get(pattern)!;
+        stats.total_feedback++;
+
+        if (event.feedback_type === 'positive') {
+          stats.positive_feedback++;
+        } else {
+          stats.negative_feedback++;
+        }
+      });
+
+      // Calculate rates
+      statsMap.forEach(stats => {
+        stats.positive_rate =
+          stats.total_feedback > 0
+            ? (stats.positive_feedback / stats.total_feedback) * 100
+            : 0;
+        stats.avg_rating = stats.positive_rate / 20; // Convert to 1-5 scale
+      });
+
+      return Array.from(statsMap.values());
     } catch (error) {
       console.error('Error in getFeedbackStats:', error);
       return [];
@@ -181,20 +286,41 @@ export class FeedbackService {
   }
 
   /**
-   * Get pattern analytics for system improvement
+   * Get pattern analytics with trend analysis
    */
-  async getPatternAnalytics(timeRange: string = '30 days'): Promise<PatternAnalytics[]> {
+  async getPatternAnalytics(
+    timeRange: string = '30 days'
+  ): Promise<PatternAnalytics[]> {
     try {
-      const { data, error } = await supabase.rpc('get_pattern_analytics', {
-        p_time_range: timeRange
+      const stats = await this.getFeedbackStats(
+        undefined,
+        undefined,
+        timeRange
+      );
+
+      return stats.map(stat => {
+        // Calculate confidence interval (simplified)
+        const n = stat.total_feedback;
+        const p = stat.positive_rate / 100;
+        const se = Math.sqrt((p * (1 - p)) / n);
+        const confidenceInterval = 1.96 * se * 100; // 95% confidence
+
+        // Determine trend (simplified - would need historical data for real trend)
+        const trendDirection: 'improving' | 'declining' | 'stable' =
+          stat.positive_rate > 70
+            ? 'improving'
+            : stat.positive_rate < 50
+              ? 'declining'
+              : 'stable';
+
+        return {
+          pattern_used: stat.pattern_used,
+          total_usage: stat.total_feedback,
+          positive_rate: stat.positive_rate,
+          confidence_interval: confidenceInterval,
+          trend_direction: trendDirection,
+        };
       });
-
-      if (error) {
-        console.error('Error getting pattern analytics:', error);
-        return [];
-      }
-
-      return data || [];
     } catch (error) {
       console.error('Error in getPatternAnalytics:', error);
       return [];
@@ -202,22 +328,24 @@ export class FeedbackService {
   }
 
   /**
-   * Get user's recent feedback
+   * Get recent feedback for a user
    */
   async getUserRecentFeedback(limit: number = 10): Promise<FeedbackEvent[]> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return [];
-      }
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return [];
 
-      const { data, error } = await supabase.rpc('get_user_recent_feedback', {
-        p_user_id: user.id,
-        p_limit: limit
-      });
+      const { data, error } = await supabase
+        .from('feedback_events')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(limit);
 
       if (error) {
-        console.error('Error getting user recent feedback:', error);
+        console.error('Error fetching recent feedback:', error);
         return [];
       }
 
@@ -229,21 +357,30 @@ export class FeedbackService {
   }
 
   /**
-   * Get feedback summary from view
+   * Get comprehensive feedback summary
    */
-  async getFeedbackSummary(): Promise<any[]> {
+  async getFeedbackSummary(): Promise<FeedbackSummaryItem[]> {
     try {
-      const { data, error } = await supabase
-        .from('feedback_summary')
-        .select('*')
-        .order('total_feedback', { ascending: false });
+      const stats = await this.getFeedbackStats();
 
-      if (error) {
-        console.error('Error getting feedback summary:', error);
-        return [];
-      }
+      return stats.map(stat => {
+        // Generate common issues based on negative feedback
+        const commonIssues = this.generateCommonIssues(stat);
+        const improvementSuggestions =
+          this.generateImprovementSuggestions(stat);
 
-      return data || [];
+        return {
+          pattern: stat.pattern_used,
+          totalFeedback: stat.total_feedback,
+          positiveCount: stat.positive_feedback,
+          negativeCount: stat.negative_feedback,
+          positiveRate: stat.positive_rate,
+          avgResponseTime: this.calculateAvgResponseTime(stat.pattern_used),
+          userSatisfaction: stat.avg_rating,
+          commonIssues,
+          improvementSuggestions,
+        };
+      });
     } catch (error) {
       console.error('Error in getFeedbackSummary:', error);
       return [];
@@ -253,13 +390,15 @@ export class FeedbackService {
   /**
    * Check if user has already submitted feedback for a prompt
    */
-  async hasSubmittedFeedback(promptHash: string, feedbackType: 'positive' | 'negative'): Promise<boolean> {
+  async hasSubmittedFeedback(
+    promptHash: string,
+    feedbackType: 'positive' | 'negative'
+  ): Promise<boolean> {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user) {
-        console.error('Failed to get user for feedback:', error);
-        return false;
-      }
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return false;
 
       const feedbackKey = `${user.id}-${promptHash}-${feedbackType}`;
       return this.submittedFeedback.has(feedbackKey);
@@ -270,85 +409,125 @@ export class FeedbackService {
   }
 
   /**
-   * Clear feedback cache (useful for testing or user logout)
+   * Clear feedback cache (useful for testing)
    */
   clearFeedbackCache(): void {
     this.submittedFeedback.clear();
     this.rateLimitMap.clear();
-    localStorage.removeItem('submittedFeedback');
+    this.saveSubmittedFeedback();
   }
 
-  /**
-   * Generate hash for prompt deduplication
-   */
+  // Private helper methods
+
   private generatePromptHash(prompt: string): string {
-    // Simple hash function for client-side deduplication
+    // Simple hash function for prompt deduplication
     let hash = 0;
     for (let i = 0; i < prompt.length; i++) {
       const char = prompt.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
-    return Math.abs(hash).toString(36);
+    return hash.toString(36);
   }
 
-  /**
-   * Get current user preferences
-   */
-  private getCurrentPreferences(): { copilotEnabled: boolean; memoryEnabled: boolean } {
-    // This would ideally get from the context, but for now we'll use defaults
-    // In a real implementation, you'd inject the preferences context
+  private getCurrentPreferences(): {
+    copilotEnabled: boolean;
+    memoryEnabled: boolean;
+  } {
+    // This would integrate with the actual preferences system
     return {
       copilotEnabled: true,
-      memoryEnabled: true
+      memoryEnabled: true,
     };
   }
 
-  /**
-   * Get submissions count in current window
-   */
   private getSubmissionsInWindow(userId: string, now: number): number {
     let count = 0;
-    for (const [key, timestamp] of this.rateLimitMap.entries()) {
-      if (key.startsWith(userId) && (now - timestamp) < this.RATE_LIMIT_WINDOW) {
+    this.rateLimitMap.forEach((timestamp, key) => {
+      if (key.startsWith(userId) && now - timestamp < this.RATE_LIMIT_WINDOW) {
         count++;
       }
-    }
+    });
     return count;
   }
 
-  /**
-   * Load submitted feedback from localStorage
-   */
   private loadSubmittedFeedback(): void {
     try {
       const stored = localStorage.getItem('submittedFeedback');
       if (stored) {
-        const feedbackArray = JSON.parse(stored);
-        this.submittedFeedback = new Set(feedbackArray);
+        this.submittedFeedback = new Set(JSON.parse(stored));
       }
     } catch (error) {
       console.error('Error loading submitted feedback:', error);
     }
   }
 
-  /**
-   * Save submitted feedback to localStorage
-   */
   private saveSubmittedFeedback(): void {
     try {
-      const feedbackArray = Array.from(this.submittedFeedback);
-      localStorage.setItem('submittedFeedback', JSON.stringify(feedbackArray));
+      localStorage.setItem(
+        'submittedFeedback',
+        JSON.stringify(Array.from(this.submittedFeedback))
+      );
     } catch (error) {
       console.error('Error saving submitted feedback:', error);
     }
   }
 
-  /**
-   * Sanitize prompt text for storage
-   */
+  private logFeedbackTelemetry(
+    feedbackType: 'positive' | 'negative',
+    patternUsed: string,
+    options: FeedbackSubmissionOptions
+  ): void {
+    if (typeof window !== 'undefined' && (window as any).logTelemetryEvent) {
+      (window as any).logTelemetryEvent('feedback_submitted', {
+        feedbackType,
+        patternUsed,
+        contentType: options.contentType,
+        sessionId: options.sessionId,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
 
+  private generateCommonIssues(stat: FeedbackStats): string[] {
+    const issues: string[] = [];
+
+    if (stat.positive_rate < 50) {
+      issues.push('Low user satisfaction');
+    }
+    if (stat.total_feedback < 10) {
+      issues.push('Insufficient feedback data');
+    }
+    if (stat.negative_feedback > stat.positive_feedback) {
+      issues.push('More negative than positive feedback');
+    }
+
+    return issues;
+  }
+
+  private generateImprovementSuggestions(stat: FeedbackStats): string[] {
+    const suggestions: string[] = [];
+
+    if (stat.positive_rate < 70) {
+      suggestions.push('Review and improve pattern effectiveness');
+    }
+    if (stat.total_feedback < 20) {
+      suggestions.push('Collect more user feedback');
+    }
+    if (stat.negative_feedback > 0) {
+      suggestions.push(
+        'Analyze negative feedback for improvement opportunities'
+      );
+    }
+
+    return suggestions;
+  }
+
+  private calculateAvgResponseTime(pattern: string): number {
+    // This would integrate with actual response time tracking
+    return Math.random() * 2000 + 500; // Placeholder
+  }
 }
 
 // Export singleton instance
-export const feedbackService = FeedbackService.getInstance(); 
+export const feedbackService = FeedbackService.getInstance();

@@ -36,7 +36,9 @@ describe('VoiceSelector', () => {
     jest.doMock('@/hooks/useUserTier', () => ({
       useUserTier: () => ({ tier: 'Free', isProUser: false, isAdmin: false }),
     }));
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { VoiceSelector: VS2 } = require('@/components/VoiceSelector');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const {
       render: render2,
       screen: screen2,

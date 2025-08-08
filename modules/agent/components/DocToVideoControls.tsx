@@ -22,6 +22,8 @@ import {
   Image as ImageIcon,
   Zap,
 } from 'lucide-react';
+import { VoiceSelector } from '@/components/VoiceSelector';
+import { ConfirmNarrationDialog } from '@/components/ConfirmNarrationDialog';
 
 export interface DocToVideoOptions {
   mode: 'auto' | 'hybrid' | 'manual';
@@ -67,6 +69,8 @@ export const DocToVideoControls: React.FC<DocToVideoControlsProps> = ({
   });
 
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState<string>('emma');
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleOptionChange = (key: keyof DocToVideoOptions, value: any) => {
     setOptions(prev => ({ ...prev, [key]: value }));
@@ -74,7 +78,31 @@ export const DocToVideoControls: React.FC<DocToVideoControlsProps> = ({
 
   const handleExecute = () => {
     const command = `/doc2video ${options.mode}`;
-    onExecute(command, options);
+    // Include the selected voice in the pipeline options
+    const pipelineOptions = {
+      ...options,
+      voice: selectedVoice,
+    };
+    onExecute(command, pipelineOptions);
+  };
+
+  const handleStartNarration = () => {
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmNarration = () => {
+    setConfirmOpen(false);
+    // Execute narration pipeline with current settings
+    const command = '/doc2video voiceoverOnly';
+    const pipelineOptions = {
+      ...options,
+      voice: selectedVoice,
+    };
+    onExecute(command, pipelineOptions);
+  };
+
+  const handleCancelNarration = () => {
+    setConfirmOpen(false);
   };
 
   const getModeIcon = (mode: string) => {
@@ -215,7 +243,10 @@ export const DocToVideoControls: React.FC<DocToVideoControlsProps> = ({
 
           {/* Slide Count */}
           <div>
-            <label htmlFor="slide-count" className="block text-sm text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="slide-count"
+              className="block text-sm text-gray-700 dark:text-gray-300 mb-2"
+            >
               Number of Slides
             </label>
             <input
@@ -233,7 +264,10 @@ export const DocToVideoControls: React.FC<DocToVideoControlsProps> = ({
 
           {/* Narration Style */}
           <div>
-            <label htmlFor="narration-style" className="block text-sm text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="narration-style"
+              className="block text-sm text-gray-700 dark:text-gray-300 mb-2"
+            >
               Narration Style
             </label>
             <select
@@ -250,27 +284,21 @@ export const DocToVideoControls: React.FC<DocToVideoControlsProps> = ({
             </select>
           </div>
 
-          {/* TTS Voice */}
-          <div>
-            <label htmlFor="tts-voice" className="block text-sm text-gray-700 dark:text-gray-300 mb-2">
-              TTS Voice
-            </label>
-            <select
-              id="tts-voice"
-              value={options.ttsVoice}
-              onChange={e => handleOptionChange('ttsVoice', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="en-US-JennyNeural">Jenny (US Female)</option>
-              <option value="en-US-GuyNeural">Guy (US Male)</option>
-              <option value="en-GB-RyanNeural">Ryan (UK Male)</option>
-              <option value="en-GB-SoniaNeural">Sonia (UK Female)</option>
-            </select>
-          </div>
+          {/* Narration Voice */}
+          <section aria-label="Narration Voice" className="mt-4">
+            <h3 className="text-sm font-semibold mb-2">Narration Voice</h3>
+            <VoiceSelector
+              selectedVoice={selectedVoice}
+              onChange={setSelectedVoice}
+            />
+          </section>
 
           {/* Speaking Pace */}
           <div>
-            <label htmlFor="speaking-pace" className="block text-sm text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="speaking-pace"
+              className="block text-sm text-gray-700 dark:text-gray-300 mb-2"
+            >
               Speaking Pace
             </label>
             <select
@@ -324,11 +352,11 @@ export const DocToVideoControls: React.FC<DocToVideoControlsProps> = ({
               <span>Preview Slides</span>
             </button>
             <button
-              onClick={() => onPreview('narration')}
-              className="flex items-center space-x-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              onClick={handleStartNarration}
+              className="flex items-center space-x-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
             >
               <Volume2 className="w-4 h-4" />
-              <span>Preview Audio</span>
+              <span>Start Narration</span>
             </button>
           </>
         )}
@@ -366,6 +394,18 @@ export const DocToVideoControls: React.FC<DocToVideoControlsProps> = ({
           ))}
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmNarrationDialog
+        open={confirmOpen}
+        onClose={handleCancelNarration}
+        onConfirm={handleConfirmNarration}
+        summary={{
+          genre: options.narrationStyle,
+          voice: selectedVoice,
+          preview: `Narration will be generated in ${options.narrationStyle} style with ${selectedVoice} voice.`,
+        }}
+      />
     </div>
   );
 };

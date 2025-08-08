@@ -1,5 +1,3 @@
-/** TEMP STUB — replace with real implementation */
-
 export interface EmotionalBeat {
   id: string;
   sceneId: string;
@@ -27,6 +25,23 @@ export interface EmotionAnalysis {
   empathyScore: number;
 }
 
+export interface CharacterEmotionData {
+  characterId: string;
+  primaryEmotion: string;
+  intensity: number;
+  secondaryEmotions: string[];
+  confidence: number;
+  context: string;
+}
+
+export interface ProcessingMetadata {
+  modelVersion: string;
+  processingTime: number;
+  confidence: number;
+  analysisMethod: string;
+  timestamp: number;
+}
+
 export interface SceneEmotionData {
   sceneId: string;
   emotions: EmotionalBeat[];
@@ -35,9 +50,9 @@ export interface SceneEmotionData {
   sceneText?: string;
   overallSentiment?: string;
   tensionLevel?: number;
-  characterEmotions?: Map<string, any>;
+  characterEmotions?: Map<string, CharacterEmotionData>;
   emotionalBeats?: EmotionalBeat[];
-  processingMetadata?: any;
+  processingMetadata?: ProcessingMetadata;
 }
 
 // Additional interfaces used by components
@@ -149,7 +164,7 @@ export interface ValidationResult {
 
 export interface AnalysisCache {
   key: string;
-  data: any;
+  data: AnalysisResponse;
   timestamp: number;
   ttl: number;
 }

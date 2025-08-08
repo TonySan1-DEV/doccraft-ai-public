@@ -1,4 +1,24 @@
-/** TEMP STUB — replace with real implementation */
+export interface CharacterMemory {
+  id: string;
+  timestamp: number;
+  type: 'interaction' | 'event' | 'relationship' | 'development';
+  content: string;
+  relatedCharacterId?: string;
+  sceneId?: string;
+  emotionalImpact: number;
+  importance: 'low' | 'medium' | 'high';
+}
+
+export interface CharacterTrait {
+  id: string;
+  name: string;
+  category: 'personality' | 'psychological' | 'social' | 'emotional';
+  value: string;
+  strength: number; // 0-10 scale
+  description: string;
+  mbtiType?: string;
+  enneagramType?: string;
+}
 
 export interface CharacterPersona {
   id: string;
@@ -8,11 +28,10 @@ export interface CharacterPersona {
   goals: string[];
   conflicts: string[];
   arc: string;
-  // Additional properties expected by existing code
-  /** Character memory and development notes stored as key-value pairs */
-  memory?: Record<string, any>;
-  /** Character personality traits and psychological assessments (MBTI, Enneagram, etc.) */
-  traits?: Record<string, any>;
+  /** Character memory and development notes stored as structured data */
+  memory?: CharacterMemory[];
+  /** Character personality traits and psychological assessments */
+  traits?: CharacterTrait[];
   developmentNotes?: string[];
   archetype?: string;
   voiceStyle?: string;

@@ -110,6 +110,27 @@ interface ExportMetadata {
   format: 'csv' | 'json';
 }
 
+interface ExportDataWithMetadata {
+  _metadata: ExportMetadata;
+  _data: (
+    | AssetDownloadStats
+    | ShareableLinkStats
+    | TierUsageAnalytics
+    | UsageAlert
+  )[];
+}
+
+interface DownloadEvent {
+  user_id: string;
+  asset_type: string;
+  tier_at_time: string;
+}
+
+interface PipelineEvent {
+  user_id: string;
+  tier: string;
+}
+
 // Initialize Supabase client with error handling
 let supabase: any = null;
 try {
@@ -359,7 +380,7 @@ export default function AdminUsageDashboard() {
                 schema: 'public',
                 table: 'asset_download_events',
               },
-              payload => {
+              (payload: { new: any; old: any; eventType: string }) => {
                 console.log('Asset download event received:', payload);
                 setRealtimeStats(prev => ({
                   ...prev,
@@ -383,7 +404,7 @@ export default function AdminUsageDashboard() {
                 schema: 'public',
                 table: 'shareable_link_events',
               },
-              payload => {
+              (payload: { new: any; old: any; eventType: string }) => {
                 console.log('Shareable link event received:', payload);
                 setRealtimeStats(prev => ({
                   ...prev,
@@ -648,7 +669,7 @@ export default function AdminUsageDashboard() {
         >();
 
         // Process download events
-        downloadEvents?.forEach(event => {
+        downloadEvents?.forEach((event: DownloadEvent) => {
           const userId = event.user_id;
           const current = userUsage.get(userId) || {
             downloads: 0,
@@ -667,7 +688,7 @@ export default function AdminUsageDashboard() {
         });
 
         // Process pipeline events
-        pipelineEvents?.forEach(event => {
+        pipelineEvents?.forEach((event: PipelineEvent) => {
           const userId = event.user_id;
           const current = userUsage.get(userId) || {
             downloads: 0,
@@ -805,9 +826,15 @@ export default function AdminUsageDashboard() {
       try {
         setExporting(true);
 
-        let data: any[] = [];
+        let data: (
+          | AssetDownloadStats
+          | ShareableLinkStats
+          | TierUsageAnalytics
+          | UsageAlert
+        )[] = [];
         let filename = '';
         let exportMetadata: ExportMetadata;
+        let exportDataWithMetadata: ExportDataWithMetadata | null = null;
 
         switch (dataType) {
           case 'downloads':
@@ -862,12 +889,10 @@ export default function AdminUsageDashboard() {
 
         // Add metadata if requested
         if (exportOptions.includeMetadata) {
-          data = [
-            {
-              _metadata: exportMetadata,
-              _data: data,
-            },
-          ];
+          exportDataWithMetadata = {
+            _metadata: exportMetadata,
+            _data: data,
+          };
         }
 
         const timestamp = new Date()
@@ -889,16 +914,24 @@ export default function AdminUsageDashboard() {
           }
 
           if (data.length > 0) {
-            const actualData = exportOptions.includeMetadata
-              ? data[0]._data
-              : data;
+            const actualData =
+              exportOptions.includeMetadata && exportDataWithMetadata
+                ? exportDataWithMetadata._data
+                : data;
             const headers = Object.keys(actualData[0] || {}).join(',');
-            const rows = actualData.map(row =>
-              Object.values(row)
-                .map(value =>
-                  typeof value === 'string' ? `"${value}"` : value
-                )
-                .join(',')
+            const rows = actualData.map(
+              (
+                row:
+                  | AssetDownloadStats
+                  | ShareableLinkStats
+                  | TierUsageAnalytics
+                  | UsageAlert
+              ) =>
+                Object.values(row)
+                  .map(value =>
+                    typeof value === 'string' ? `"${value}"` : value
+                  )
+                  .join(',')
             );
             csvContent += [headers, ...rows].join('\n');
           }
@@ -921,13 +954,10 @@ export default function AdminUsageDashboard() {
           }
         } else {
           // JSON export
-          const jsonContent = exportOptions.includeMetadata
-            ? JSON.stringify(data, null, 2)
-            : JSON.stringify(
-                exportOptions.includeMetadata ? data[0]._data : data,
-                null,
-                2
-              );
+          const jsonContent =
+            exportOptions.includeMetadata && exportDataWithMetadata
+              ? JSON.stringify(exportDataWithMetadata, null, 2)
+              : JSON.stringify(data, null, 2);
 
           try {
             const blob = new Blob([jsonContent], { type: 'application/json' });
@@ -973,7 +1003,12 @@ export default function AdminUsageDashboard() {
       dataType: 'downloads' | 'links' | 'tiers' | 'alerts'
     ) => {
       try {
-        let data: any[] = [];
+        let data: (
+          | AssetDownloadStats
+          | ShareableLinkStats
+          | TierUsageAnalytics
+          | UsageAlert
+        )[] = [];
 
         switch (dataType) {
           case 'downloads':

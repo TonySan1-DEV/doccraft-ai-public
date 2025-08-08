@@ -8,6 +8,37 @@ theme: "telemetry"
 
 import { supabase } from '../lib/supabase';
 
+// Types for telemetry metadata
+export interface TelemetryMetadata {
+  // User context
+  userId?: string;
+  userTier?: string;
+  sessionId?: string;
+
+  // Application context
+  pageUrl?: string;
+  componentName?: string;
+  actionType?: string;
+
+  // Performance metrics
+  responseTime?: number;
+  tokenCount?: number;
+  errorCount?: number;
+
+  // Feature usage
+  featureFlags?: string[];
+  enabledFeatures?: string[];
+
+  // Device/browser info
+  userAgent?: string;
+  screenResolution?: string;
+  timezone?: string;
+  language?: string;
+
+  // Custom data
+  customData?: Record<string, string | number | boolean>;
+}
+
 // Types for telemetry events
 export interface TelemetryEvent {
   event_type: string;
@@ -16,7 +47,7 @@ export interface TelemetryEvent {
   token?: string;
   referrer?: string;
   user_agent?: string;
-  metadata?: Record<string, any>;
+  metadata?: TelemetryMetadata;
   timestamp?: string;
 }
 
@@ -34,7 +65,7 @@ export interface TelemetryResult {
  */
 export async function logTelemetryEvent(
   eventType: string,
-  metadata: Record<string, any> = {}
+  metadata: TelemetryMetadata = {}
 ): Promise<TelemetryResult> {
   try {
     // Get current user if available
@@ -46,7 +77,14 @@ export async function logTelemetryEvent(
       event_type: eventType,
       user_id: user?.id,
       timestamp: new Date().toISOString(),
-      ...metadata,
+      metadata: {
+        ...metadata,
+        userId: user?.id,
+        userAgent: navigator.userAgent,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        language: navigator.language,
+        screenResolution: `${screen.width}x${screen.height}`,
+      },
     };
 
     // Log to Supabase
@@ -93,21 +131,22 @@ export async function logTelemetryEvent(
 export async function logShareableLinkAccess(
   pipelineId: string,
   token: string,
-  metadata: Record<string, any> = {}
+  metadata: TelemetryMetadata = {}
 ): Promise<TelemetryResult> {
   return logTelemetryEvent('shareable_link_accessed', {
-    pipeline_id: pipelineId,
-    token,
-    referrer: document.referrer,
-    user_agent: navigator.userAgent,
     ...metadata,
+    customData: {
+      pipelineId,
+      token,
+      referrer: document.referrer,
+    },
   });
 }
 
 /**
  * Log pipeline creation events
  * @param pipelineId - Pipeline ID created
- * @param mode - Pipeline mode
+ * @param mode - Creation mode
  * @param tier - User tier
  * @param metadata - Additional metadata
  * @returns Promise<TelemetryResult>
@@ -116,32 +155,38 @@ export async function logPipelineCreation(
   pipelineId: string,
   mode: string,
   tier: string,
-  metadata: Record<string, any> = {}
+  metadata: TelemetryMetadata = {}
 ): Promise<TelemetryResult> {
   return logTelemetryEvent('pipeline_created', {
-    pipeline_id: pipelineId,
-    mode,
-    tier,
     ...metadata,
+    userTier: tier,
+    customData: {
+      pipelineId,
+      mode,
+      tier,
+    },
   });
 }
 
 /**
  * Log pipeline completion events
  * @param pipelineId - Pipeline ID completed
- * @param duration - Processing duration in ms
+ * @param duration - Completion duration in ms
  * @param metadata - Additional metadata
  * @returns Promise<TelemetryResult>
  */
 export async function logPipelineCompletion(
   pipelineId: string,
   duration: number,
-  metadata: Record<string, any> = {}
+  metadata: TelemetryMetadata = {}
 ): Promise<TelemetryResult> {
   return logTelemetryEvent('pipeline_completed', {
-    pipeline_id: pipelineId,
-    duration,
     ...metadata,
+    responseTime: duration,
+    customData: {
+      pipelineId,
+      duration,
+    },
   });
 }
 
@@ -155,11 +200,82 @@ export async function logPipelineCompletion(
 export async function logError(
   errorType: string,
   errorMessage: string,
-  metadata: Record<string, any> = {}
+  metadata: TelemetryMetadata = {}
 ): Promise<TelemetryResult> {
-  return logTelemetryEvent('error', {
-    error_type: errorType,
-    error_message: errorMessage,
+  return logTelemetryEvent('error_occurred', {
     ...metadata,
+    errorCount: 1,
+    customData: {
+      errorType,
+      errorMessage,
+    },
+  });
+}
+
+/**
+ * Log feature usage events
+ * @param featureName - Name of feature used
+ * @param action - Action performed
+ * @param metadata - Additional metadata
+ * @returns Promise<TelemetryResult>
+ */
+export async function logFeatureUsage(
+  featureName: string,
+  action: string,
+  metadata: TelemetryMetadata = {}
+): Promise<TelemetryResult> {
+  return logTelemetryEvent('feature_used', {
+    ...metadata,
+    actionType: action,
+    customData: {
+      featureName,
+      action,
+    },
+  });
+}
+
+/**
+ * Log performance metrics
+ * @param metricName - Name of metric
+ * @param value - Metric value
+ * @param unit - Unit of measurement
+ * @param metadata - Additional metadata
+ * @returns Promise<TelemetryResult>
+ */
+export async function logPerformanceMetric(
+  metricName: string,
+  value: number,
+  unit: string,
+  metadata: TelemetryMetadata = {}
+): Promise<TelemetryResult> {
+  return logTelemetryEvent('performance_metric', {
+    ...metadata,
+    customData: {
+      metricName,
+      value,
+      unit,
+    },
+  });
+}
+
+/**
+ * Log user interaction events
+ * @param interactionType - Type of interaction
+ * @param target - Target of interaction
+ * @param metadata - Additional metadata
+ * @returns Promise<TelemetryResult>
+ */
+export async function logUserInteraction(
+  interactionType: string,
+  target: string,
+  metadata: TelemetryMetadata = {}
+): Promise<TelemetryResult> {
+  return logTelemetryEvent('user_interaction', {
+    ...metadata,
+    actionType: interactionType,
+    customData: {
+      interactionType,
+      target,
+    },
   });
 }
