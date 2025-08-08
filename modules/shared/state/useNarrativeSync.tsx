@@ -11,7 +11,7 @@
 */
 
 import { createContext, useContext, useRef } from 'react';
-import create, { StateCreator } from 'zustand';
+import { create, StateCreator } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { PlotBeatAlignment } from '../plotEmotionTypes';
 
@@ -30,25 +30,31 @@ export interface NarrativeSyncState {
 // --- Zustand Store Factory (SSR-safe) ---
 const isClient = typeof window !== 'undefined';
 
-const createStore: StateCreator<NarrativeSyncState> = (set) => ({
+const createStore: StateCreator<NarrativeSyncState> = set => ({
   currentSceneId: null,
   characterFocusId: null,
   activePlotFramework: null,
   arcOverlay: [],
-  setScene: (sceneId) => set({ currentSceneId: sceneId }),
-  setCharacter: (characterId) => set({ characterFocusId: characterId }),
-  setFramework: (framework) => set({ activePlotFramework: framework }),
-  updateOverlay: (overlay) => set({ arcOverlay: overlay })
+  setScene: sceneId => set({ currentSceneId: sceneId }),
+  setCharacter: characterId => set({ characterFocusId: characterId }),
+  setFramework: framework => set({ activePlotFramework: framework }),
+  updateOverlay: overlay => set({ arcOverlay: overlay }),
 });
 
 const useStore = isClient
-  ? create<NarrativeSyncState>(devtools(createStore, { name: 'NarrativeSyncStore' }))
-  : create<NarrativeSyncState>(createStore);
+  ? create<NarrativeSyncState>()(
+      devtools(createStore, { name: 'NarrativeSyncStore' })
+    )
+  : create<NarrativeSyncState>()(createStore);
 
 // --- Context Provider ---
-const NarrativeSyncContext = createContext<ReturnType<typeof useStore> | null>(null);
+const NarrativeSyncContext = createContext<ReturnType<typeof useStore> | null>(
+  null
+);
 
-export const NarrativeSyncProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const NarrativeSyncProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   // Ensure store is not recreated on every render
   const storeRef = useRef<ReturnType<typeof useStore>>();
   if (!storeRef.current) {
@@ -65,7 +71,9 @@ export const NarrativeSyncProvider: React.FC<{ children: React.ReactNode }> = ({
 export function useNarrativeSync() {
   const store = useContext(NarrativeSyncContext);
   if (!store) {
-    throw new Error('useNarrativeSync must be used within a NarrativeSyncProvider');
+    throw new Error(
+      'useNarrativeSync must be used within a NarrativeSyncProvider'
+    );
   }
-  return store();
-} 
+  return store;
+}

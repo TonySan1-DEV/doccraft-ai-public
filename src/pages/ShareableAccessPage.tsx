@@ -154,10 +154,12 @@ export default function ShareableAccessPage() {
 
       // Log telemetry
       logTelemetryEvent('shareable_link_accessed', {
-        pipeline_id: pipeline_data.id,
-        token: token,
-        referrer: document.referrer,
-        user_agent: navigator.userAgent,
+        customData: {
+          pipelineId: pipeline_data.id,
+          token: token,
+          referrer: document.referrer,
+        },
+        userAgent: navigator.userAgent,
       });
 
       setState(prev => ({

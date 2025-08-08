@@ -1,9 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import {
-  CharacterPersona,
-  CharacterMemory,
-  CharacterTrait,
-} from '../../../src/types/CharacterPersona';
+import { CharacterPersona } from '../../../src/types/CharacterPersona';
 
 export interface CharacterViewData {
   id: string;
@@ -28,9 +24,6 @@ const CharacterViewTab: React.FC<CharacterViewTabProps> = ({
   characters = [],
   onCharacterSelect,
   selectedCharacterId,
-  showDevelopmentArcs = true,
-  showRelationships = true,
-  showEmotionalTimeline = true,
 }) => {
   const [sortBy, setSortBy] = useState<
     'name' | 'screenTime' | 'developmentScore' | 'relationshipCount'

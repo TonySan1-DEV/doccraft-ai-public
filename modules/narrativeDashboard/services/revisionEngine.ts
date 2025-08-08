@@ -23,8 +23,11 @@ async function fetchOriginalSceneText(sceneId: string): Promise<string> {
 }
 
 // Helper to build a targeted LLM prompt
-function buildRevisionPrompt(original: string, suggestion: OptimizationSuggestion): string {
-  return `You are an expert fiction editor. Given the following scene and a targeted suggestion, rewrite the scene to address the suggestion while preserving the author's style and intent.\n\n---\nOriginal Scene:\n${original}\n\n---\nSuggestion:\n${suggestion.title}: ${suggestion.description}\nSpecific changes: ${suggestion.specificChanges.join('; ')}\n\nRewrite the scene accordingly. Return only the revised scene text.`;
+function buildRevisionPrompt(
+  original: string,
+  suggestion: OptimizationSuggestion
+): string {
+  return `You are an expert fiction editor. Given the following scene and a targeted suggestion, rewrite the scene to address the suggestion while preserving the author's style and intent.\n\n---\nOriginal Scene:\n${original}\n\n---\nSuggestion:\n${suggestion.title}: ${suggestion.description}\nSpecific changes: ${suggestion.specificChanges?.join('; ') || 'No specific changes provided'}\n\nRewrite the scene accordingly. Return only the revised scene text.`;
 }
 
 // Main function: proposeEdit
@@ -43,29 +46,31 @@ export async function proposeEdit(
         model: 'gpt-4',
         messages: [
           { role: 'system', content: 'You are a helpful fiction editor.' },
-          { role: 'user', content: prompt }
+          { role: 'user', content: prompt },
         ],
         temperature: 0.7,
-        max_tokens: 1200
-      })
+        max_tokens: 1200,
+      }),
     });
     if (!res.ok) throw new Error('LLM API error');
     const data = await res.json();
-    const revisedText = data.choices?.[0]?.message?.content?.trim() || '[No revision produced]';
+    const revisedText =
+      data.choices?.[0]?.message?.content?.trim() || '[No revision produced]';
     // Simple change summary (could be improved with diffing or LLM)
     const changeSummary = [
       `Applied suggestion: ${suggestion.title}`,
-      ...suggestion.specificChanges
+      ...(suggestion.specificChanges || []),
     ];
     // Confidence: use LLM logprobs or set a default
-    const confidenceScore = typeof data.choices?.[0]?.message?.confidence === 'number'
-      ? data.choices[0].message.confidence
-      : 0.85;
+    const confidenceScore =
+      typeof data.choices?.[0]?.message?.confidence === 'number'
+        ? data.choices[0].message.confidence
+        : 0.85;
     return {
       revisedText,
       changeSummary,
       confidenceScore,
-      appliedSuggestionId: suggestion.id
+      appliedSuggestionId: suggestion.id,
     };
   } catch (err) {
     // Fallback: return original with a message
@@ -73,7 +78,7 @@ export async function proposeEdit(
       revisedText: '[AI revision unavailable. Please try again later.]',
       changeSummary: ['AI service failed or is unavailable.'],
       confidenceScore: 0,
-      appliedSuggestionId: suggestion.id
+      appliedSuggestionId: suggestion.id,
     };
   }
-} 
+}

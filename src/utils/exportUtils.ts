@@ -11,7 +11,7 @@ import { logTelemetryEvent } from './telemetryLogger';
 export interface ExportOptions {
   format: 'pdf' | 'md';
   includeWatermark: boolean;
-  userTier: string;
+  userTier: 'Free' | 'Pro' | 'Enterprise' | undefined;
   fileName?: string;
   metadata?: {
     title?: string;
@@ -284,7 +284,11 @@ export async function exportScript(
     await logTelemetryEvent('script_export_error', {
       format: options.format,
       userTier: options.userTier,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: {
+        type: 'export_error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      },
     });
 
     return {

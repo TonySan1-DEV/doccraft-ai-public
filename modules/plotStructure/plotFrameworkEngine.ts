@@ -10,7 +10,11 @@
 }
 */
 
-import type { PlotFramework, PlotBeat, ScenePlacementSuggestion, PlotStructureAnalysis } from '../initPlotEngine';
+import type {
+  PlotFramework,
+  PlotBeat,
+  PlotStructureAnalysis,
+} from './initPlotEngine';
 import type { EmotionalBeat } from '../../emotionArc/types/emotionTypes';
 import type { CharacterPersona } from '../../../src/types/CharacterPersona';
 
@@ -40,18 +44,48 @@ export interface PersonaAlignmentOverlay {
 export class PlotFrameworkEngine {
   constructor(public framework: PlotFramework) {}
 
-  mapScenesToBeats(scenes: { id: string; text: string; emotionalBeats?: EmotionalBeat[] }[]): PlotBeat[] {
+  /**
+   * Maps scenes to plot beats using framework configuration
+   * TODO: Unit test - test mapping with different scene types and emotional beats
+   * TODO: refine mapping - implement proper scene-to-beat classification
+   */
+  mapScenesToBeats(
+    scenes: { id: string; text: string; emotionalBeats?: EmotionalBeat[] }[]
+  ): PlotBeat[] {
     // TODO: Implement mapping logic using framework configs and emotion data
-    return [];
+    // For now, return minimal pass-through with framework structure
+    return this.framework.beats.map((beat: PlotBeat) => ({
+      ...beat,
+      // Add scene-specific data when mapping is implemented
+    }));
   }
 
-  classifyScene(scene: { id: string; text: string; emotionalBeats?: EmotionalBeat[] }): string {
+  /**
+   * Classifies a scene to a plot beat type
+   * TODO: Unit test - test classification with different scene content and emotional beats
+   * TODO: refine mapping - implement proper scene classification logic
+   */
+  classifyScene(scene: {
+    id: string;
+    text: string;
+    emotionalBeats?: EmotionalBeat[];
+  }): string {
     // TODO: Classify scene to a plot beat (e.g., Catalyst, Climax)
+    // For now, return empty string as placeholder
     return '';
   }
 
-  compareStructureToFramework(analysis: PlotStructureAnalysis): { missingBeats: string[]; extraScenes: string[] } {
+  /**
+   * Compares mapped structure to framework and identifies gaps
+   * TODO: Unit test - test comparison with missing and extra scenes
+   * TODO: refine mapping - implement proper structure analysis
+   */
+  compareStructureToFramework(analysis: PlotStructureAnalysis): {
+    missingBeats: string[];
+    extraScenes: string[];
+  } {
     // TODO: Compare mapped beats to framework and find gaps
+    // For now, return empty arrays as placeholder
     return { missingBeats: [], extraScenes: [] };
   }
 
@@ -61,7 +95,11 @@ export class PlotFrameworkEngine {
     options?: { endingBeatId?: string }
   ): PersonaAlignmentOverlay {
     // Extract arcType, desire, flaw from persona.traits or fallback
-    const arcType = persona.traits?.arcType || persona.traits?.arc_type || persona.traits?.arc || undefined;
+    const arcType =
+      persona.traits?.arcType ||
+      persona.traits?.arc_type ||
+      persona.traits?.arc ||
+      undefined;
     const desire = persona.traits?.desire || persona.goals || undefined;
     const flaw = persona.traits?.flaw || undefined;
     // Example mapping: align arcType to expected framework stages
@@ -89,21 +127,23 @@ export class PlotFrameworkEngine {
       }
       return {
         beatId: beat.id,
-        beatLabel: beat.label,
+        beatLabel: beat.label || beat.id,
         expectedArcStage,
         actualArcStage: arcType,
         match,
-        notes: notes || undefined
+        notes: notes || undefined,
       };
     });
     // Highlight mismatches
-    const mismatches = alignment.filter(a => a.match === false).map(a => ({
-      beatId: a.beatId,
-      beatLabel: a.beatLabel,
-      expectedArcType: a.expectedArcStage || '',
-      actualArcType: arcType || '',
-      description: a.notes || 'Mismatch between arc type and plot stage.'
-    }));
+    const mismatches = alignment
+      .filter(a => a.match === false)
+      .map(a => ({
+        beatId: a.beatId,
+        beatLabel: a.beatLabel,
+        expectedArcType: a.expectedArcStage || '',
+        actualArcType: arcType || '',
+        description: a.notes || 'Mismatch between arc type and plot stage.',
+      }));
     return {
       characterId: persona.id,
       characterName: persona.name,
@@ -111,7 +151,7 @@ export class PlotFrameworkEngine {
       desire,
       flaw,
       alignment,
-      mismatches
+      mismatches,
     };
   }
-} 
+}

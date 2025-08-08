@@ -23,6 +23,14 @@ export interface PlotBeat {
   requiredElements?: string[];
 }
 
+export interface PlotGap {
+  id: string;
+  beatId: string;
+  description: string;
+  severity: 'low' | 'medium' | 'high';
+  suggestions: string[];
+}
+
 export interface ScenePlacementSuggestion {
   sceneId: string;
   suggestedBeatId: string;
@@ -219,11 +227,12 @@ export class PlotEngine {
     if (!framework) return [];
 
     return scenes.map(scene => {
-      const avgTension =
-        scene.events.reduce(
-          (sum, event) => sum + (event.tensionLevel || 5),
-          0
-        ) / scene.events.length;
+      // Calculate average tension (unused but kept for future use)
+      // const avgTension =
+      //   scene.events.reduce(
+      //     (sum, event) => sum + (event.tensionLevel || 5),
+      //     0
+      //   ) / scene.events.length;
       const position = this.estimateScenePosition(scene);
       const suggestedBeat = this.findClosestBeat(framework.beats, position);
 

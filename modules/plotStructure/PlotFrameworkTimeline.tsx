@@ -63,7 +63,7 @@ const BeatButton = React.memo<{
         isFocused ? 'ring-2 ring-blue-400' : ''
       }`}
       aria-pressed={isSelected}
-      aria-label={`${beat.label} beat at ${Math.round(beat.position * 100)}% of story`}
+      aria-label={`${beat.label} beat at ${Math.round((beat.position || 0) * 100)}% of story`}
       tabIndex={isFocused ? 0 : -1}
     >
       <span className="text-xs font-medium text-gray-700 mb-1">
@@ -77,7 +77,7 @@ const BeatButton = React.memo<{
         {beat.act}
       </span>
       <span className="text-[10px] text-gray-400 mt-1">
-        {Math.round(beat.position * 100)}%
+        {Math.round((beat.position || 0) * 100)}%
       </span>
     </button>
   );
@@ -108,7 +108,9 @@ function PlotFrameworkTimeline({
 
   // Memoize sorted beats
   const sortedBeats = useMemo(() => {
-    return [...debouncedBeats].sort((a, b) => a.position - b.position);
+    return [...debouncedBeats].sort(
+      (a, b) => (a.position || 0) - (b.position || 0)
+    );
   }, [debouncedBeats]);
 
   // State for keyboard navigation

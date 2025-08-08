@@ -10,8 +10,12 @@
 }
 */
 
-import create from 'zustand';
-import type { NarrativeSceneMeta, PlotBeatAlignment, CharacterArcAlignment } from './plotEmotionTypes';
+import { create } from 'zustand';
+import type {
+  NarrativeSceneMeta,
+  PlotBeatAlignment,
+  CharacterArcAlignment,
+} from './plotEmotionTypes';
 
 interface NarrativeStoreState {
   sceneMeta: Record<string, NarrativeSceneMeta>;
@@ -26,19 +30,22 @@ interface NarrativeStoreState {
  * Centralized Zustand store for narrative state
  * Used by Emotion Arc, Persona Builder, and Plot Engine modules
  */
-export const useNarrativeStore = create<NarrativeStoreState>((set, get) => ({
+export const useNarrativeStore = create<NarrativeStoreState>(set => ({
   sceneMeta: {},
   plotBeatAlignments: [],
   characterArcAlignments: [],
-  updateSceneMeta: (sceneId, meta) => set(state => ({
-    sceneMeta: {
-      ...state.sceneMeta,
-      [sceneId]: {
-        ...state.sceneMeta[sceneId],
-        ...meta
-      }
-    }
-  })),
-  setPlotBeatAlignments: (alignments) => set({ plotBeatAlignments: alignments }),
-  setCharacterArcAlignments: (alignments) => set({ characterArcAlignments: alignments })
-})); 
+  updateSceneMeta: (sceneId: string, meta: Partial<NarrativeSceneMeta>) =>
+    set((state: NarrativeStoreState) => ({
+      sceneMeta: {
+        ...state.sceneMeta,
+        [sceneId]: {
+          ...state.sceneMeta[sceneId],
+          ...meta,
+        },
+      },
+    })),
+  setPlotBeatAlignments: (alignments: PlotBeatAlignment[]) =>
+    set({ plotBeatAlignments: alignments }),
+  setCharacterArcAlignments: (alignments: CharacterArcAlignment[]) =>
+    set({ characterArcAlignments: alignments }),
+}));

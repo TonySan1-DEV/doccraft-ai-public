@@ -13,7 +13,7 @@ import { logTelemetryEvent } from '../utils/telemetryLogger';
 interface ProUpgradeNudgeProps {
   message: string;
   feature?: string;
-  userTier: string;
+  userTier: 'Free' | 'Pro' | 'Enterprise' | undefined;
   onUpgrade?: () => void;
   onDismiss?: () => void;
   variant?: 'inline' | 'modal' | 'banner';

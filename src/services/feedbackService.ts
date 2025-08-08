@@ -122,7 +122,8 @@ export class FeedbackService {
   }
 
   /**
-   * Submit feedback for an AI-generated suggestion
+   * Submit user feedback for a pattern
+   * TODO: Unit test - test feedback submission with different types and options
    */
   async submitFeedback(
     feedbackType: 'positive' | 'negative',
@@ -211,6 +212,7 @@ export class FeedbackService {
 
   /**
    * Get feedback statistics for patterns
+   * TODO: Unit test - test stats retrieval with different filters and time ranges
    */
   async getFeedbackStats(
     userId?: string,
@@ -357,7 +359,8 @@ export class FeedbackService {
   }
 
   /**
-   * Get comprehensive feedback summary
+   * Get comprehensive feedback summary with insights
+   * TODO: Unit test - test summary generation with different feedback datasets
    */
   async getFeedbackSummary(): Promise<FeedbackSummaryItem[]> {
     try {
@@ -523,6 +526,10 @@ export class FeedbackService {
     return suggestions;
   }
 
+  /**
+   * Calculate average response time for a pattern
+   * TODO: Unit test - test response time calculation with different patterns
+   */
   private calculateAvgResponseTime(pattern: string): number {
     // This would integrate with actual response time tracking
     return Math.random() * 2000 + 500; // Placeholder

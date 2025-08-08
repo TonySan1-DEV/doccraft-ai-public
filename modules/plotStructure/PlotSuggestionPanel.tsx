@@ -65,7 +65,7 @@ export default function PlotSuggestionPanel({
                 <div className="text-xs text-gray-500 mt-1">
                   Confidence: {Math.round(s.confidence * 100)}%
                 </div>
-                {s.notes.length > 0 && (
+                {s.notes && s.notes.length > 0 && (
                   <ul className="text-xs text-gray-400 mt-1 list-disc list-inside">
                     {s.notes.map((note, idx) => (
                       <li key={idx}>{note}</li>

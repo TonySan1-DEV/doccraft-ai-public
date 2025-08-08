@@ -1,92 +1,82 @@
-import * as Y from 'yjs'
-import { WebsocketProvider } from 'y-websocket'
-import { AuditLogger } from '../audit/auditLogger'
+import * as Y from 'yjs';
+import { WebsocketProvider } from 'y-websocket';
+import { AuditLogger } from '../audit/auditLogger';
+import { MCPContext, AuditDetails } from '@/types/domain';
 
 interface YjsProviderOptions {
-  roomId: string
-  userId: string
-  userName: string
-  userColor: string
-  mcpContext: {
-    tier: string
-    role: string
-    allowedActions: string[]
-  }
+  roomId: string;
+  userId: string;
+  userName: string;
+  userColor: string;
+  mcpContext: MCPContext;
 }
 
 interface CollabProvider {
-  provider: WebsocketProvider
-  ydoc: Y.Doc
+  provider: WebsocketProvider;
+  ydoc: Y.Doc;
 }
 
-// In-memory store for active providers to prevent multiple connections
-const activeProviders = new Map<string, CollabProvider>()
+// Global provider registry
+const providers = new Map<string, CollabProvider>();
 
 export function getCollabProvider(docId: string): CollabProvider {
-  // Return existing provider if already connected
-  if (activeProviders.has(docId)) {
-    return activeProviders.get(docId)!
-  }
-
-  // Create new Y.Doc for this document
-  const ydoc = new Y.Doc()
-
-  // Create WebSocket provider for real-time collaboration
-  // Using a local WebSocket server for development
-  const provider = new WebsocketProvider(
-    'ws://localhost:1234', // Development WebSocket server
-    `builder-doc-${docId}`, // Room name based on document ID
-    ydoc
-  )
-
-  // Store the provider for reuse
-  const collabProvider: CollabProvider = { provider, ydoc }
-  activeProviders.set(docId, collabProvider)
-  
-  // Clean up provider when document is closed
-  provider.on('connection-close', () => {
-    activeProviders.delete(docId)
-  })
-
-  return collabProvider
+  return providers.get(docId)!;
 }
 
 export function disconnectProvider(docId: string): void {
-  const provider = activeProviders.get(docId)
+  const provider = providers.get(docId);
   if (provider) {
-    provider.provider.destroy()
-    activeProviders.delete(docId)
+    provider.provider.disconnect();
+    providers.delete(docId);
   }
 }
 
 export function getActiveProviders(): string[] {
-  return Array.from(activeProviders.keys())
+  return Array.from(providers.keys());
 }
 
 export class YjsProvider {
-  private doc: Y.Doc
-  private provider: WebsocketProvider | null = null
-  private options: YjsProviderOptions
+  private doc: Y.Doc;
+  private provider: WebsocketProvider | null = null;
+  private options: YjsProviderOptions;
 
   constructor(options: YjsProviderOptions) {
-    this.options = options
-    this.doc = new Y.Doc()
+    this.options = options;
+    this.doc = new Y.Doc();
   }
 
   async connect(): Promise<void> {
     try {
-      const wsUrl = import.meta.env.VITE_COLLAB_SERVER_URL || 'ws://localhost:1234'
-      const roomId = this.options.roomId
-      const userId = this.options.userId
-      const userName = this.options.userName
-      const userColor = this.options.userColor
+      const wsUrl =
+        process.env.NEXT_PUBLIC_COLLABORATION_WS_URL || 'ws://localhost:1234';
+      const roomId = this.options.roomId;
+      const userName = this.options.userName;
+      const userColor = this.options.userColor;
 
-      // Create WebSocket provider with user info
-      const wsUrlWithParams = `${wsUrl}?roomId=${roomId}&userId=${userId}&userName=${encodeURIComponent(userName)}&userColor=${encodeURIComponent(userColor)}`
-      
-      this.provider = new WebsocketProvider(wsUrlWithParams, roomId, this.doc, {
-        connect: true
-      })
+      this.provider = new WebsocketProvider(wsUrl, roomId, this.doc, {
+        connect: true,
+        awareness: {
+          clientID:
+            parseInt(this.options.userId) ||
+            Math.floor(Math.random() * 1000000),
+          states: new Map([
+            [
+              parseInt(this.options.userId) ||
+                Math.floor(Math.random() * 1000000),
+              {
+                name: userName,
+                color: userColor,
+              },
+            ],
+          ]),
+        },
+      });
+
+      // Store provider in registry
+      providers.set(roomId, {
+        provider: this.provider,
+        ydoc: this.doc,
+      });
 
       // Log collaboration join event
       await AuditLogger.logAuditEvent({
@@ -94,46 +84,54 @@ export class YjsProvider {
         action: 'collaboration_join',
         resource: 'collaboration',
         details: {
-          roomId,
-          userName,
-          userColor,
-          wsUrl: wsUrl
-        },
-        mcpContext: this.options.mcpContext
-      })
+          resourceId: roomId,
+          resourceType: 'collaboration_room',
+          parameters: {
+            roomId,
+            userName,
+            userColor,
+            wsUrl: wsUrl,
+          },
+        } as AuditDetails,
+        mcpContext: this.options.mcpContext,
+      });
 
       // Handle connection events
       this.provider.on('status', ({ status }: { status: string }) => {
-        console.log('Yjs connection status:', status)
-        
+        console.log('Yjs connection status:', status);
+
         if (status === 'connected') {
-          console.log('✅ Connected to collaboration server')
+          console.log('✅ Connected to collaboration server');
         } else if (status === 'disconnected') {
-          console.log('❌ Disconnected from collaboration server')
+          console.log('❌ Disconnected from collaboration server');
         }
-      })
+      });
 
       // Handle sync events
       this.provider.on('sync', (isSynced: boolean) => {
-        console.log('Yjs sync status:', isSynced ? 'synced' : 'syncing')
-      })
-
+        console.log('Yjs sync status:', isSynced ? 'synced' : 'syncing');
+      });
     } catch (error) {
-      console.error('Error connecting to Yjs provider:', error)
-      
+      console.error('Error connecting to Yjs provider:', error);
+
       // Log collaboration connection failure
       await AuditLogger.logAuditEvent({
         userId: this.options.userId,
         action: 'collaboration_connect_failed',
         resource: 'collaboration',
         details: {
-          roomId: this.options.roomId,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        },
-        mcpContext: this.options.mcpContext
-      })
-      
-      throw error
+          resourceId: this.options.roomId,
+          resourceType: 'collaboration_room',
+          error: {
+            code: 'CONNECTION_FAILED',
+            message: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined,
+          },
+        } as AuditDetails,
+        mcpContext: this.options.mcpContext,
+      });
+
+      throw error;
     }
   }
 
@@ -146,46 +144,50 @@ export class YjsProvider {
           action: 'collaboration_leave',
           resource: 'collaboration',
           details: {
-            roomId: this.options.roomId,
-            userName: this.options.userName
-          },
-          mcpContext: this.options.mcpContext
-        })
+            resourceId: this.options.roomId,
+            resourceType: 'collaboration_room',
+            parameters: {
+              roomId: this.options.roomId,
+              userName: this.options.userName,
+            },
+          } as AuditDetails,
+          mcpContext: this.options.mcpContext,
+        });
 
-        this.provider.disconnect()
-        this.provider = null
-        console.log('✅ Disconnected from collaboration server')
+        this.provider.disconnect();
+        this.provider = null;
+        console.log('✅ Disconnected from collaboration server');
       }
     } catch (error) {
-      console.error('Error disconnecting from Yjs provider:', error)
+      console.error('Error disconnecting from Yjs provider:', error);
     }
   }
 
   getDocument(): Y.Doc {
-    return this.doc
+    return this.doc;
   }
 
   getProvider(): WebsocketProvider | null {
-    return this.provider
+    return this.provider;
   }
 
   isConnected(): boolean {
-    return this.provider?.wsconnected || false
+    return this.provider?.wsconnected || false;
   }
 
   getRoomId(): string {
-    return this.options.roomId
+    return this.options.roomId;
   }
 
   getUserId(): string {
-    return this.options.userId
+    return this.options.userId;
   }
 
   getUserName(): string {
-    return this.options.userName
+    return this.options.userName;
   }
 
   getUserColor(): string {
-    return this.options.userColor
+    return this.options.userColor;
   }
-} 
+}

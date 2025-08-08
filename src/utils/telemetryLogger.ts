@@ -7,55 +7,11 @@ theme: "telemetry"
 */
 
 import { supabase } from '../lib/supabase';
-
-// Types for telemetry metadata
-export interface TelemetryMetadata {
-  // User context
-  userId?: string;
-  userTier?: string;
-  sessionId?: string;
-
-  // Application context
-  pageUrl?: string;
-  componentName?: string;
-  actionType?: string;
-
-  // Performance metrics
-  responseTime?: number;
-  tokenCount?: number;
-  errorCount?: number;
-
-  // Feature usage
-  featureFlags?: string[];
-  enabledFeatures?: string[];
-
-  // Device/browser info
-  userAgent?: string;
-  screenResolution?: string;
-  timezone?: string;
-  language?: string;
-
-  // Custom data
-  customData?: Record<string, string | number | boolean>;
-}
-
-// Types for telemetry events
-export interface TelemetryEvent {
-  event_type: string;
-  user_id?: string;
-  pipeline_id?: string;
-  token?: string;
-  referrer?: string;
-  user_agent?: string;
-  metadata?: TelemetryMetadata;
-  timestamp?: string;
-}
-
-export interface TelemetryResult {
-  success: boolean;
-  event_id?: string;
-  error?: string;
-}
+import {
+  TelemetryMetadata,
+  TelemetryEvent,
+  TelemetryResult,
+} from '@/types/domain';
 
 /**
  * Log telemetry events to Supabase
@@ -159,7 +115,7 @@ export async function logPipelineCreation(
 ): Promise<TelemetryResult> {
   return logTelemetryEvent('pipeline_created', {
     ...metadata,
-    userTier: tier,
+    userTier: tier as 'Free' | 'Pro' | 'Enterprise',
     customData: {
       pipelineId,
       mode,
@@ -205,6 +161,10 @@ export async function logError(
   return logTelemetryEvent('error_occurred', {
     ...metadata,
     errorCount: 1,
+    error: {
+      type: errorType,
+      message: errorMessage,
+    },
     customData: {
       errorType,
       errorMessage,
@@ -227,6 +187,11 @@ export async function logFeatureUsage(
   return logTelemetryEvent('feature_used', {
     ...metadata,
     actionType: action,
+    usage: {
+      featureName,
+      action,
+      success: true,
+    },
     customData: {
       featureName,
       action,
@@ -273,6 +238,10 @@ export async function logUserInteraction(
   return logTelemetryEvent('user_interaction', {
     ...metadata,
     actionType: interactionType,
+    usage: {
+      action: interactionType,
+      success: true,
+    },
     customData: {
       interactionType,
       target,

@@ -15,7 +15,7 @@ import {
   EmotionalArc,
   EmotionAnalysisResult,
   ValidationResult,
-  SceneEmotionData
+  SceneEmotionData,
 } from '../types/emotionTypes';
 import { EMOTION_CATEGORIES } from '../constants/emotions';
 
@@ -48,7 +48,7 @@ export function validateEmotionalBeat(beat: EmotionalBeat): ValidationResult {
     errors.push('intensity must be between 0 and 100');
   }
 
-  if (beat.narrativePosition < 0 || beat.narrativePosition > 1) {
+  if ((beat.narrativePosition || 0) < 0 || (beat.narrativePosition || 0) > 1) {
     errors.push('narrativePosition must be between 0 and 1');
   }
 
@@ -73,18 +73,22 @@ export function validateEmotionalBeat(beat: EmotionalBeat): ValidationResult {
 
   // Business logic validation
   if (beat.intensity > 80 && beat.confidence && beat.confidence < 50) {
-    warnings.push('High intensity with low confidence - consider manual review');
+    warnings.push(
+      'High intensity with low confidence - consider manual review'
+    );
   }
 
   if (beat.narrativePosition === 0 && beat.intensity > 70) {
-    suggestions.push('High intensity at story start - consider building tension gradually');
+    suggestions.push(
+      'High intensity at story start - consider building tension gradually'
+    );
   }
 
   return {
     isValid: errors.length === 0,
     errors,
     warnings,
-    suggestions
+    suggestions,
   };
 }
 
@@ -115,7 +119,11 @@ export function validateEmotionalArc(arc: EmotionalArc): ValidationResult {
         errors.push(`Beat ${index}: ${beatValidation.errors.join(', ')}`);
       }
       warnings.push(...beatValidation.warnings.map(w => `Beat ${index}: ${w}`));
-      suggestions.push(...beatValidation.suggestions.map(s => `Beat ${index}: ${s}`));
+      if (beatValidation.suggestions) {
+        suggestions.push(
+          ...beatValidation.suggestions.map(s => `Beat ${index}: ${s}`)
+        );
+      }
     });
   }
 
@@ -138,28 +146,42 @@ export function validateEmotionalArc(arc: EmotionalArc): ValidationResult {
 
   // Business logic validation
   if (arc.beats.length === 0) {
-    warnings.push('No emotional beats found - story may lack emotional content');
+    warnings.push(
+      'No emotional beats found - story may lack emotional content'
+    );
   }
 
   if (arc.beats.length > 0) {
-    const avgIntensity = arc.beats.reduce((sum, beat) => sum + beat.intensity, 0) / arc.beats.length;
+    const avgIntensity =
+      arc.beats.reduce((sum, beat) => sum + beat.intensity, 0) /
+      arc.beats.length;
     if (avgIntensity < 20) {
-      warnings.push('Low average emotional intensity - consider adding more emotional content');
+      warnings.push(
+        'Low average emotional intensity - consider adding more emotional content'
+      );
     }
     if (avgIntensity > 80) {
-      warnings.push('High average emotional intensity - consider adding relief moments');
+      warnings.push(
+        'High average emotional intensity - consider adding relief moments'
+      );
     }
   }
 
   // Check for emotional progression
   if (arc.beats.length > 1) {
-    const sortedBeats = [...arc.beats].sort((a, b) => a.narrativePosition - b.narrativePosition);
-    const hasProgression = sortedBeats.some((beat, index) => 
-      index > 0 && Math.abs(beat.intensity - sortedBeats[index - 1].intensity) > 10
+    const sortedBeats = [...arc.beats].sort(
+      (a, b) => (a.narrativePosition || 0) - (b.narrativePosition || 0)
     );
-    
+    const hasProgression = sortedBeats.some(
+      (beat, index) =>
+        index > 0 &&
+        Math.abs(beat.intensity - sortedBeats[index - 1].intensity) > 10
+    );
+
     if (!hasProgression) {
-      suggestions.push('Consider adding more emotional variation throughout the story');
+      suggestions.push(
+        'Consider adding more emotional variation throughout the story'
+      );
     }
   }
 
@@ -167,14 +189,16 @@ export function validateEmotionalArc(arc: EmotionalArc): ValidationResult {
     isValid: errors.length === 0,
     errors,
     warnings,
-    suggestions
+    suggestions,
   };
 }
 
 /**
  * Validates an EmotionAnalysisResult object
  */
-export function validateEmotionAnalysisResult(result: EmotionAnalysisResult): ValidationResult {
+export function validateEmotionAnalysisResult(
+  result: EmotionAnalysisResult
+): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
   const suggestions: string[] = [];
@@ -228,21 +252,25 @@ export function validateEmotionAnalysisResult(result: EmotionAnalysisResult): Va
   }
 
   if (result.emotionalComplexity > 80 && result.secondaryEmotions.length < 2) {
-    suggestions.push('High complexity with few secondary emotions - consider adding more emotional layers');
+    suggestions.push(
+      'High complexity with few secondary emotions - consider adding more emotional layers'
+    );
   }
 
   return {
     isValid: errors.length === 0,
     errors,
     warnings,
-    suggestions
+    suggestions,
   };
 }
 
 /**
  * Validates a SceneEmotionData object
  */
-export function validateSceneEmotionData(scene: SceneEmotionData): ValidationResult {
+export function validateSceneEmotionData(
+  scene: SceneEmotionData
+): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
   const suggestions: string[] = [];
@@ -272,18 +300,24 @@ export function validateSceneEmotionData(scene: SceneEmotionData): ValidationRes
     scene.emotionalBeats.forEach((beat, index) => {
       const beatValidation = validateEmotionalBeat(beat);
       if (!beatValidation.isValid) {
-        errors.push(`Emotional beat ${index}: ${beatValidation.errors.join(', ')}`);
+        errors.push(
+          `Emotional beat ${index}: ${beatValidation.errors.join(', ')}`
+        );
       }
     });
   }
 
   // Business logic validation
   if (scene.characterEmotions.size === 0) {
-    warnings.push('No character emotions found - scene may lack character interaction');
+    warnings.push(
+      'No character emotions found - scene may lack character interaction'
+    );
   }
 
   if (scene.sceneText.length < 50) {
-    warnings.push('Short scene text - may not provide enough context for analysis');
+    warnings.push(
+      'Short scene text - may not provide enough context for analysis'
+    );
   }
 
   if (scene.tensionLevel > 80) {
@@ -298,14 +332,16 @@ export function validateSceneEmotionData(scene: SceneEmotionData): ValidationRes
     isValid: errors.length === 0,
     errors,
     warnings,
-    suggestions
+    suggestions,
   };
 }
 
 /**
  * Validates an array of emotional beats for consistency
  */
-export function validateEmotionalBeatArray(beats: EmotionalBeat[]): ValidationResult {
+export function validateEmotionalBeatArray(
+  beats: EmotionalBeat[]
+): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
   const suggestions: string[] = [];
@@ -322,7 +358,9 @@ export function validateEmotionalBeatArray(beats: EmotionalBeat[]): ValidationRe
       errors.push(`Beat ${index}: ${beatValidation.errors.join(', ')}`);
     }
     warnings.push(...beatValidation.warnings.map(w => `Beat ${index}: ${w}`));
-    suggestions.push(...beatValidation.suggestions.map(s => `Beat ${index}: ${s}`));
+    suggestions.push(
+      ...beatValidation.suggestions.map(s => `Beat ${index}: ${s}`)
+    );
   });
 
   // Check for consistency across beats
@@ -331,21 +369,31 @@ export function validateEmotionalBeatArray(beats: EmotionalBeat[]): ValidationRe
     const sceneIds = new Set(beats.map(beat => beat.sceneId));
 
     if (characterIds.size === 1) {
-      suggestions.push('All beats are for the same character - consider multi-character analysis');
+      suggestions.push(
+        'All beats are for the same character - consider multi-character analysis'
+      );
     }
 
     if (sceneIds.size === 1) {
-      suggestions.push('All beats are from the same scene - consider cross-scene analysis');
+      suggestions.push(
+        'All beats are from the same scene - consider cross-scene analysis'
+      );
     }
 
     // Check for emotional progression
-    const sortedBeats = [...beats].sort((a, b) => a.narrativePosition - b.narrativePosition);
-    const hasProgression = sortedBeats.some((beat, index) => 
-      index > 0 && Math.abs(beat.intensity - sortedBeats[index - 1].intensity) > 15
+    const sortedBeats = [...beats].sort(
+      (a, b) => (a.narrativePosition || 0) - (b.narrativePosition || 0)
+    );
+    const hasProgression = sortedBeats.some(
+      (beat, index) =>
+        index > 0 &&
+        Math.abs(beat.intensity - sortedBeats[index - 1].intensity) > 15
     );
 
     if (!hasProgression) {
-      suggestions.push('Limited emotional variation - consider adding more emotional dynamics');
+      suggestions.push(
+        'Limited emotional variation - consider adding more emotional dynamics'
+      );
     }
   }
 
@@ -353,7 +401,7 @@ export function validateEmotionalBeatArray(beats: EmotionalBeat[]): ValidationRe
     isValid: errors.length === 0,
     errors,
     warnings,
-    suggestions
+    suggestions,
   };
 }
 
@@ -370,13 +418,23 @@ export function createValidationReport(
   recommendations: string[];
 } {
   const arcValidation = validateEmotionalArc(arc);
-  const sceneValidations = sceneData.map(scene => validateSceneEmotionData(scene));
-  
-  const totalErrors = arcValidation.errors.length + 
-    sceneValidations.reduce((sum, validation) => sum + validation.errors.length, 0);
-  
-  const totalWarnings = arcValidation.warnings.length + 
-    sceneValidations.reduce((sum, validation) => sum + validation.warnings.length, 0);
+  const sceneValidations = sceneData.map(scene =>
+    validateSceneEmotionData(scene)
+  );
+
+  const totalErrors =
+    arcValidation.errors.length +
+    sceneValidations.reduce(
+      (sum, validation) => sum + validation.errors.length,
+      0
+    );
+
+  const totalWarnings =
+    arcValidation.warnings.length +
+    sceneValidations.reduce(
+      (sum, validation) => sum + validation.warnings.length,
+      0
+    );
 
   let overallHealth: 'excellent' | 'good' | 'fair' | 'poor';
   if (totalErrors === 0 && totalWarnings === 0) {
@@ -390,14 +448,14 @@ export function createValidationReport(
   }
 
   const recommendations = [
-    ...arcValidation.suggestions,
-    ...sceneValidations.flatMap(validation => validation.suggestions)
+    ...(arcValidation.suggestions || []),
+    ...sceneValidations.flatMap(validation => validation.suggestions),
   ];
 
   return {
     arcValidation,
     sceneValidations,
     overallHealth,
-    recommendations
+    recommendations,
   };
-} 
+}

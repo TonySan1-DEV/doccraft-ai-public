@@ -64,6 +64,7 @@ export interface OptimizationSuggestion {
   difficulty: 'easy' | 'medium' | 'hard';
   category: string;
   confidence: number;
+  specificChanges?: string[];
 }
 
 export interface StoryOptimizationPlan {
@@ -160,6 +161,7 @@ export interface ValidationResult {
   isValid: boolean;
   errors: string[];
   warnings: string[];
+  suggestions?: string[];
 }
 
 export interface AnalysisCache {

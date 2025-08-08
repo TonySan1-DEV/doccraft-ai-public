@@ -1,29 +1,5 @@
-import { supabase } from '../supabase'
-
-export interface AuditEvent {
-  userId: string
-  action: string
-  resource: string
-  details?: Record<string, any>
-  mcpContext: {
-    tier: string
-    role: string
-    allowedActions: string[]
-  }
-}
-
-export interface AuditLog {
-  id: string
-  user_id: string
-  action: string
-  resource: string
-  details: Record<string, any>
-  timestamp: string
-  tier: string
-  role: string
-  mcp_json: Record<string, any>
-  created_at: string
-}
+import { supabase } from '../supabase';
+import { AuditEvent, AuditLog, MCPContext } from '@/types/domain';
 
 export class AuditLogger {
   /**
@@ -33,8 +9,10 @@ export class AuditLogger {
     try {
       // Validate MCP context
       if (!this.validateMCPAction(event.action, event.mcpContext)) {
-        console.warn(`Audit: Action '${event.action}' not allowed for tier '${event.mcpContext.tier}'`)
-        return false
+        console.warn(
+          `Audit: Action '${event.action}' not allowed for tier '${event.mcpContext.tier}'`
+        );
+        return false;
       }
 
       // Prepare log entry
@@ -50,143 +28,153 @@ export class AuditLogger {
           tier: event.mcpContext.tier,
           role: event.mcpContext.role,
           allowedActions: event.mcpContext.allowedActions,
-          timestamp: new Date().toISOString()
-        }
-      }
+          timestamp: new Date().toISOString(),
+          requestId: event.mcpContext.requestId,
+        } as MCPContext,
+      };
 
       // Insert into audit_logs table
-      const { error } = await supabase
-        .from('audit_logs')
-        .insert(logEntry)
+      const { error } = await supabase.from('audit_logs').insert(logEntry);
 
       if (error) {
-        console.error('Audit: Failed to log event:', error)
-        return false
+        console.error('Audit: Failed to log event:', error);
+        return false;
       }
 
-      console.log(`Audit: Logged '${event.action}' on '${event.resource}' for user ${event.userId}`)
-      return true
+      console.log(
+        `Audit: Logged '${event.action}' on '${event.resource}' for user ${event.userId}`
+      );
+      return true;
     } catch (error) {
-      console.error('Audit: Error logging event:', error)
-      return false
+      console.error('Audit: Error logging event:', error);
+      return false;
     }
   }
 
   /**
    * Validate if action is allowed in MCP context
    */
-  private static validateMCPAction(action: string, mcpContext: AuditEvent['mcpContext']): boolean {
+  private static validateMCPAction(
+    action: string,
+    mcpContext: MCPContext
+  ): boolean {
     // Admin can do everything
-    if (mcpContext.role === 'admin') return true
+    if (mcpContext.role === 'admin') return true;
 
     // Check if action is in allowed actions
-    return mcpContext.allowedActions.includes(action)
+    return mcpContext.allowedActions.includes(action);
   }
 
   /**
    * Get audit logs for a user (scoped by tier/role)
    */
   static async getUserAuditLogs(
-    userId: string, 
+    userId: string,
     mcpContext: { tier: string; role: string },
     filters?: {
-      action?: string
-      resource?: string
-      startDate?: string
-      endDate?: string
-      limit?: number
+      action?: string;
+      resource?: string;
+      startDate?: string;
+      endDate?: string;
+      limit?: number;
     }
   ): Promise<AuditLog[]> {
     try {
       let query = supabase
         .from('audit_logs')
         .select('*')
-        .order('timestamp', { ascending: false })
+        .order('timestamp', { ascending: false });
 
       // Apply filters
       if (filters?.action) {
-        query = query.eq('action', filters.action)
+        query = query.eq('action', filters.action);
       }
       if (filters?.resource) {
-        query = query.eq('resource', filters.resource)
+        query = query.eq('resource', filters.resource);
       }
       if (filters?.startDate) {
-        query = query.gte('timestamp', filters.startDate)
+        query = query.gte('timestamp', filters.startDate);
       }
       if (filters?.endDate) {
-        query = query.lte('timestamp', filters.endDate)
+        query = query.lte('timestamp', filters.endDate);
       }
       if (filters?.limit) {
-        query = query.limit(filters.limit)
+        query = query.limit(filters.limit);
       }
 
       // Scope by user role/tier
       if (mcpContext.role === 'admin') {
         // Admins can see all logs
-        const { data, error } = await query
-        if (error) throw error
-        return data as AuditLog[]
+        const { data, error } = await query;
+        if (error) throw error;
+        return data as AuditLog[];
       } else {
         // Regular users can only see their own logs
-        const { data, error } = await query.eq('user_id', userId)
-        if (error) throw error
-        return data as AuditLog[]
+        const { data, error } = await query.eq('user_id', userId);
+        if (error) throw error;
+        return data as AuditLog[];
       }
     } catch (error) {
-      console.error('Audit: Error fetching logs:', error)
-      return []
+      console.error('Audit: Error fetching logs:', error);
+      return [];
     }
   }
 
   /**
    * Get audit statistics for dashboard
    */
-  static async getAuditStats(mcpContext: { tier: string; role: string }): Promise<{
-    totalEvents: number
-    eventsByAction: Record<string, number>
-    eventsByResource: Record<string, number>
-    recentActivity: AuditLog[]
+  static async getAuditStats(mcpContext: {
+    tier: string;
+    role: string;
+  }): Promise<{
+    totalEvents: number;
+    eventsByAction: Record<string, number>;
+    eventsByResource: Record<string, number>;
+    recentActivity: AuditLog[];
   }> {
     try {
-      let query = supabase.from('audit_logs').select('*')
+      let query = supabase.from('audit_logs').select('*');
 
       // Scope by role
       if (mcpContext.role !== 'admin') {
         // Non-admins can only see their own stats
-        const { data: { user } } = await supabase.auth.getUser()
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (user) {
-          query = query.eq('user_id', user.id)
+          query = query.eq('user_id', user.id);
         }
       }
 
-      const { data, error } = await query
-      if (error) throw error
+      const { data, error } = await query;
+      if (error) throw error;
 
-      const logs = data as AuditLog[]
+      const logs = data as AuditLog[];
 
       // Calculate statistics
-      const eventsByAction: Record<string, number> = {}
-      const eventsByResource: Record<string, number> = {}
+      const eventsByAction: Record<string, number> = {};
+      const eventsByResource: Record<string, number> = {};
 
       logs.forEach(log => {
-        eventsByAction[log.action] = (eventsByAction[log.action] || 0) + 1
-        eventsByResource[log.resource] = (eventsByResource[log.resource] || 0) + 1
-      })
+        eventsByAction[log.action] = (eventsByAction[log.action] || 0) + 1;
+        eventsByResource[log.resource] =
+          (eventsByResource[log.resource] || 0) + 1;
+      });
 
       return {
         totalEvents: logs.length,
         eventsByAction,
         eventsByResource,
-        recentActivity: logs.slice(0, 10) // Last 10 events
-      }
+        recentActivity: logs.slice(0, 10), // Last 10 events
+      };
     } catch (error) {
-      console.error('Audit: Error fetching stats:', error)
+      console.error('Audit: Error fetching stats:', error);
       return {
         totalEvents: 0,
         eventsByAction: {},
         eventsByResource: {},
-        recentActivity: []
-      }
+        recentActivity: [],
+      };
     }
   }
 
@@ -200,7 +188,7 @@ export class AuditLogger {
   ): Promise<AuditLog[]> {
     try {
       if (mcpContext.role !== 'admin') {
-        throw new Error('Only admins can export audit logs')
+        throw new Error('Only admins can export audit logs');
       }
 
       const { data, error } = await supabase
@@ -208,13 +196,13 @@ export class AuditLogger {
         .select('*')
         .gte('timestamp', startDate)
         .lte('timestamp', endDate)
-        .order('timestamp', { ascending: false })
+        .order('timestamp', { ascending: false });
 
-      if (error) throw error
-      return data as AuditLog[]
+      if (error) throw error;
+      return data as AuditLog[];
     } catch (error) {
-      console.error('Audit: Error exporting logs:', error)
-      return []
+      console.error('Audit: Error exporting logs:', error);
+      return [];
     }
   }
-} 
+}
