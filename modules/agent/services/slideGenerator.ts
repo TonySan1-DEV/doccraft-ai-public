@@ -218,6 +218,12 @@ function createSlidesFromSections(
  * Generate mock slide deck for testing
  * @returns SlideDeck
  */
+/** TEMP STUB — replace with real implementation */
+export const slideGenerator = {
+  generate: generateSlides,
+  generateMock: generateMockSlideDeck,
+};
+
 export function generateMockSlideDeck(): SlideDeck {
   return {
     title: 'Introduction to DocCraft-AI',

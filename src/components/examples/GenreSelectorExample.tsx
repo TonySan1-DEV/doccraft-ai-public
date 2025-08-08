@@ -10,7 +10,7 @@
 }
 */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { GenreSelector } from '../GenreSelector';
 import { Genre } from '../../constants/genreConstants';
 

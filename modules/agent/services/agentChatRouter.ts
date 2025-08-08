@@ -10,42 +10,8 @@ theme: "agent_llm"
 import { queryLLMFallback } from './useLLMFallback';
 import { enrichAgentMessage } from './enrichAgentMessage';
 import { docToVideoRouter } from './docToVideoRouter';
-
-// Mock implementations for missing dependencies
-const getKBEntry = (query: string, _role: string, _tier: string) => {
-  // Mock KB lookup - in real implementation, this would search the knowledge base
-  const mockKB = [
-    {
-      id: 'kb-emotion-drift',
-      content:
-        'To check for emotional drift, use the Emotion Timeline Chart in the dashboard.',
-      mcp: {
-        role: 'frontend-developer',
-        tier: 'Pro',
-        theme: 'emotion_analysis',
-      },
-    },
-    {
-      id: 'kb-theme-conflicts',
-      content:
-        'Theme conflicts can be detected using the Theme Matrix Panel in the dashboard.',
-      mcp: { role: 'frontend-developer', tier: 'Pro', theme: 'theme_analysis' },
-    },
-  ];
-
-  return mockKB.filter(
-    _entry =>
-      query.toLowerCase().includes('emotion') ||
-      query.toLowerCase().includes('theme') ||
-      query.toLowerCase().includes('drift')
-  );
-};
-
-const OnboardingEngine = {
-  startFlow: (flowId: string) => {
-    console.log(`Starting onboarding flow: ${flowId}`);
-  },
-};
+import { getKBEntry } from './seedAgentKnowledgeBase';
+import { onboardingEngine } from '../onboarding/onboardingEngine';
 
 export type AgentMessage = {
   type: 'user' | 'agent' | 'system';
@@ -82,7 +48,7 @@ export async function agentChatRouter(
     if (input.startsWith('/onboarding')) {
       const [, flowId] = input.split(' ');
       if (flowId) {
-        OnboardingEngine.startFlow(flowId);
+        onboardingEngine.startFlow(flowId);
         matchFound = true;
         response = {
           type: 'agent',
@@ -229,7 +195,7 @@ Please ensure you have valid document content and try again.`,
       .flatMap(f => f.steps)
       .find(step => input.toLowerCase().includes(step.title.toLowerCase()));
     if (onboardingMatch) {
-      OnboardingEngine.startFlow(onboardingMatch.id);
+      onboardingEngine.startFlow(onboardingMatch.id);
       matchFound = true;
       response = {
         type: 'agent',

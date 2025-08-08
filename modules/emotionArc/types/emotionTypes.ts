@@ -1,271 +1,155 @@
-// MCP Context Block
-/*
-{
-  file: "modules/emotionArc/types/emotionTypes.ts",
-  role: "developer",
-  allowedActions: ["scaffold", "structure", "define"],
-  tier: "Pro",
-  contentSensitivity: "medium",
-  theme: "writing_suite"
-}
-*/
+/** TEMP STUB — replace with real implementation */
 
-// Core Emotional Data Types
-export type EmotionalBeat = {
+export interface EmotionalBeat {
+  id: string;
   sceneId: string;
   characterId: string;
-  emotion: string; // e.g. "joy", "fear", "conflict"
-  intensity: number; // 0–100
-  narrativePosition: number; // 0–1 (normalized)
+  emotion: string;
+  intensity: number;
   timestamp: number;
+  // Additional properties used by components
+  narrativePosition?: number;
   context?: string;
   confidence?: number;
   secondaryEmotions?: string[];
-};
+}
 
-export type ArcSegment = {
-  start: number;
-  end: number;
-  tensionLevel: number;
-  sentiment: string;
-  feedback: string[];
-  characterIds: string[];
-  sceneIds: string[];
-  emotionalComplexity: number;
-};
-
-export type ReaderSimResult = {
-  empathyScore: number;
-  predictedEngagementDrop: boolean;
-  notes: string[];
-  emotionalPeaks: number[];
-  tensionCurve: Array<{position: number, tension: number}>;
-  engagementDrops: number[];
-  highEngagementSections: number[];
-};
-
-export type EmotionalArc = {
-  id: string;
-  title: string;
+export interface EmotionTimeline {
   beats: EmotionalBeat[];
-  segments: ArcSegment[];
-  readerSimulation: ReaderSimResult;
-  overallTension: number;
-  emotionalComplexity: number;
-  pacingScore: number;
-  metadata?: {
-    totalScenes: number;
-    totalCharacters: number;
-    analysisTimestamp: number;
-    modelUsed: string;
-  };
-};
+  tensionCurve: number[];
+  empathyCurve: number[];
+}
 
-export type CharacterEmotionalProfile = {
-  characterId: string;
-  characterName: string;
-  emotionalRange: string[];
-  defaultEmotion: string;
-  emotionalStability: number; // 0-100
-  empathyPotential: number; // 0-100
-  arcBeats: EmotionalBeat[];
-  dominantEmotions: Array<{emotion: string, frequency: number}>;
-};
+export interface EmotionAnalysis {
+  dominantEmotion: string;
+  emotionalArc: string;
+  tensionScore: number;
+  empathyScore: number;
+}
 
-export type StoryEmotionalMap = {
-  storyId: string;
-  title: string;
-  characters: CharacterEmotionalProfile[];
-  overallArc: EmotionalArc;
-  chapterArcs: EmotionalArc[];
-  tensionThresholds: {
-    low: number;
-    medium: number;
-    high: number;
-  };
-  readerProfile?: ReaderProfile;
-};
-
-// Analysis Result Types
-export type EmotionAnalysisResult = {
-  primaryEmotion: string;
-  intensity: number;
-  confidence: number;
-  secondaryEmotions: string[];
-  emotionalComplexity: number;
-  contextClues: string[];
-  modelConfidence: number;
-  processingTime: number;
-};
-
-export type SceneEmotionData = {
+export interface SceneEmotionData {
   sceneId: string;
-  sceneText: string;
-  characterEmotions: Map<string, EmotionAnalysisResult>;
-  overallSentiment: string;
-  tensionLevel: number;
-  emotionalBeats: EmotionalBeat[];
-  processingMetadata: {
-    wordCount: number;
-    characterCount: number;
-    analysisTime: number;
-  };
-};
+  emotions: EmotionalBeat[];
+  analysis: EmotionAnalysis;
+  // Additional properties used by components
+  sceneText?: string;
+  overallSentiment?: string;
+  tensionLevel?: number;
+  characterEmotions?: Map<string, any>;
+  emotionalBeats?: EmotionalBeat[];
+  processingMetadata?: any;
+}
 
-// Simulation Types
-export type TensionCurve = {
-  position: number;
-  tension: number;
-  empathy: number;
-  engagement: number;
-  emotionalComplexity: number;
-};
-
-export type ArcSimulationResult = {
-  tensionCurve: TensionCurve[];
-  emotionalPeaks: number[];
-  pacingAnalysis: {
-    slowSections: number[];
-    fastSections: number[];
-    optimalPacing: number[];
-    pacingScore: number;
-  };
-  readerEngagement: {
-    predictedDrops: number[];
-    highEngagementSections: number[];
-    emotionalComplexity: number;
-    overallEngagement: number;
-  };
-};
-
-// Optimization Types
-export type OptimizationSuggestion = {
+// Additional interfaces used by components
+export interface OptimizationSuggestion {
   id: string;
-  type: 'pacing' | 'tension' | 'empathy' | 'engagement' | 'complexity';
-  priority: 'high' | 'medium' | 'low';
   title: string;
   description: string;
-  specificChanges: string[];
-  expectedImpact: {
-    tensionChange: number;
-    empathyChange: number;
-    engagementChange: number;
-    complexityChange: number;
-  };
-  targetPositions: number[];
-  riskLevel: 'low' | 'medium' | 'high';
-  implementationDifficulty: 'easy' | 'medium' | 'hard';
-  estimatedTime: number; // minutes
-};
+  impact: 'high' | 'medium' | 'low';
+  difficulty: 'easy' | 'medium' | 'hard';
+  category: string;
+  confidence: number;
+}
 
-export type StoryOptimizationPlan = {
+export interface StoryOptimizationPlan {
   suggestions: OptimizationSuggestion[];
-  overallScore: number;
-  implementationOrder: string[];
-  riskAssessment: {
-    highRisk: string[];
-    mediumRisk: string[];
-    lowRisk: string[];
-  };
-  estimatedImprovement: {
-    tension: number;
-    empathy: number;
-    engagement: number;
-    overall: number;
-  };
-};
+  priority: 'high' | 'medium' | 'low';
+  estimatedImpact: number;
+}
 
-// Configuration Types
-export type EmotionAnalyzerConfig = {
-  modelProvider: ModelProvider;
-  modelName: string;
-  temperature: number;
-  maxTokens: number;
-  batchSize: number;
-  enableCache: boolean;
-  cacheExpiry: number; // seconds
-  confidenceThreshold: number;
-  maxRetries: number;
-  timeout: number; // milliseconds
-};
+export interface ArcSimulationResult {
+  emotionalArc: string;
+  tensionCurve: number[];
+  empathyCurve: number[];
+  optimizationSuggestions: OptimizationSuggestion[];
+}
 
-export type ModelProvider = 'openai' | 'anthropic' | 'local' | 'custom';
+export interface TensionCurve {
+  points: number[];
+  analysis: string;
+}
 
-export type ReaderProfile = {
-  empathyLevel: number; // 0-100
-  tensionTolerance: number; // 0-100
-  emotionalComplexity: number; // 0-100
-  preferredGenres: string[];
-  readingSpeed: 'slow' | 'medium' | 'fast';
-  attentionSpan: number; // minutes
-};
+export interface EmotionalArc {
+  id: string;
+  name: string;
+  beats: EmotionalBeat[];
+  analysis: EmotionAnalysis;
+}
 
-// Input/Output Types
-export type SceneInput = {
-  sceneId: string;
+export interface ArcSegment {
+  id: string;
+  startPosition: number;
+  endPosition: number;
+  emotionalTheme: string;
+  intensity: number;
+}
+
+export interface ReaderSimResult {
+  emotionalResponse: string;
+  engagement: number;
+  empathy: number;
+}
+
+export interface CharacterEmotionalProfile {
+  characterId: string;
+  emotionalRange: string[];
+  defaultEmotion: string;
+  emotionalTriggers: string[];
+}
+
+export interface StoryEmotionalMap {
+  scenes: SceneEmotionData[];
+  overallArc: EmotionalArc;
+  characterProfiles: CharacterEmotionalProfile[];
+}
+
+export interface EmotionAnalyzerConfig {
+  model: string;
+  sensitivity: number;
+  contextWindow: number;
+}
+
+export interface ModelProvider {
+  name: string;
+  apiKey?: string;
+  endpoint?: string;
+}
+
+export interface ReaderProfile {
+  id: string;
+  preferences: string[];
+  emotionalSensitivity: number;
+  genrePreferences: string[];
+}
+
+export interface SceneInput {
+  id: string;
   text: string;
-  characterIds: string[];
-  metadata?: {
-    chapter?: number;
-    wordCount?: number;
-    timestamp?: number;
-  };
-};
+  characters: string[];
+  context: string;
+}
 
-export type AnalysisRequest = {
+export interface AnalysisRequest {
   scenes: SceneInput[];
-  config?: Partial<EmotionAnalyzerConfig>;
   readerProfile?: ReaderProfile;
-  focusCharacter?: string;
-};
+  config?: EmotionAnalyzerConfig;
+}
 
-export type AnalysisResponse = {
-  emotionalArc: EmotionalArc;
-  sceneData: SceneEmotionData[];
-  simulation: ArcSimulationResult;
-  optimizationPlan: StoryOptimizationPlan;
-  processingTime: number;
-  modelInfo: {
-    provider: ModelProvider;
-    modelName: string;
-    version: string;
-  };
-};
+export interface AnalysisResponse {
+  results: SceneEmotionData[];
+  overallAnalysis: EmotionAnalysis;
+  optimizationPlan?: StoryOptimizationPlan;
+}
 
-// Error Types
-export type EmotionAnalysisError = {
-  code: 'MODEL_ERROR' | 'VALIDATION_ERROR' | 'TIMEOUT_ERROR' | 'RATE_LIMIT_ERROR';
-  message: string;
-  details?: any;
-  retryable: boolean;
-  suggestedAction?: string;
-};
-
-// Event Types
-export type EmotionAnalysisEvent = {
-  type: 'analysis_started' | 'analysis_completed' | 'analysis_failed' | 'optimization_suggested';
-  timestamp: number;
-  data: any;
-  sessionId: string;
-};
-
-// Validation Types
-export type ValidationResult = {
+export interface ValidationResult {
   isValid: boolean;
   errors: string[];
   warnings: string[];
-  suggestions: string[];
-};
+}
 
-// Cache Types
-export type AnalysisCache = {
+export interface AnalysisCache {
   key: string;
-  result: AnalysisResponse;
+  data: any;
   timestamp: number;
-  expiry: number;
-  metadata: {
-    sceneCount: number;
-    characterCount: number;
-    modelUsed: string;
-  };
-}; 
+  ttl: number;
+}

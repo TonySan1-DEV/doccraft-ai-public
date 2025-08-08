@@ -10,7 +10,7 @@
 }
 */
 
-import React, { useMemo, useCallback, useRef, useEffect, useState } from 'react';
+import React, { useMemo, useCallback, useRef, useEffect } from 'react';
 import type { PlotFramework, PlotBeat } from './initPlotEngine';
 import { useNarrativeSync } from '../../shared/state/useNarrativeSyncContext';
 
@@ -42,7 +42,7 @@ const BeatButton = React.memo<{
   onKeyDown: (event: React.KeyboardEvent, beat: PlotBeat) => void;
 }>(({ beat, isSelected, isFocused, onClick, onKeyDown }) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
-  
+
   // Focus management
   useEffect(() => {
     if (isFocused && buttonRef.current) {
@@ -54,9 +54,11 @@ const BeatButton = React.memo<{
     <button
       ref={buttonRef}
       onClick={() => onClick(beat)}
-      onKeyDown={(e) => onKeyDown(e, beat)}
+      onKeyDown={e => onKeyDown(e, beat)}
       className={`flex flex-col items-center px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-        beat.isStructural ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'
+        beat.isStructural
+          ? 'bg-blue-50 border-blue-300'
+          : 'bg-gray-50 border-gray-200'
       } ${isSelected ? 'ring-2 ring-blue-600' : ''} ${
         isFocused ? 'ring-2 ring-blue-400' : ''
       }`}
@@ -64,15 +66,19 @@ const BeatButton = React.memo<{
       aria-label={`${beat.label} beat at ${Math.round(beat.position * 100)}% of story`}
       tabIndex={isFocused ? 0 : -1}
     >
-      <span className="text-xs font-medium text-gray-700 mb-1">{beat.label}</span>
-      <span 
-        className="w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold text-white" 
+      <span className="text-xs font-medium text-gray-700 mb-1">
+        {beat.label}
+      </span>
+      <span
+        className="w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold text-white"
         style={{ background: beat.isStructural ? '#2563EB' : '#6B7280' }}
         aria-hidden="true"
       >
         {beat.act}
       </span>
-      <span className="text-[10px] text-gray-400 mt-1">{Math.round(beat.position * 100)}%</span>
+      <span className="text-[10px] text-gray-400 mt-1">
+        {Math.round(beat.position * 100)}%
+      </span>
     </button>
   );
 });
@@ -85,7 +91,7 @@ function PlotFrameworkTimeline({
   currentSceneId: propCurrentSceneId,
   onBeatClick,
   className = '',
-  'aria-label': ariaLabel = 'Plot Framework Timeline'
+  'aria-label': ariaLabel = 'Plot Framework Timeline',
 }: PlotFrameworkTimelineProps) {
   // --- Shared Narrative State ---
   const narrativeSync = useNarrativeSync();
@@ -109,20 +115,23 @@ function PlotFrameworkTimeline({
   const timelineRef = useRef<HTMLDivElement>(null);
 
   // Keyboard navigation
-  const handleKeyDown = useCallback((event: React.KeyboardEvent, beat: PlotBeat) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      onBeatClick?.(beat);
-      // Announce selection for screen readers
-      if (narrativeSync?.setScene) {
-        narrativeSync.setScene(beat.id);
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent, beat: PlotBeat) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        onBeatClick?.(beat);
+        // Announce selection for screen readers
+        if (narrativeSync?.setScene) {
+          narrativeSync.setScene(beat.id);
+        }
       }
-    }
-  }, [onBeatClick, narrativeSync]);
+    },
+    [onBeatClick, narrativeSync]
+  );
 
   // const handleTimelineKeyDown = useCallback((event: React.KeyboardEvent) => {
   //   if (!sortedBeats.length) return;
-    
+
   //   switch (event.key) {
   //     case 'ArrowLeft':
   //       event.preventDefault();
@@ -153,11 +162,11 @@ function PlotFrameworkTimeline({
   //   const touch = event.touches[0];
   //   const rect = timelineRef.current?.getBoundingClientRect();
   //   if (!rect) return;
-    
+
   //   const x = touch.clientX - rect.left;
   //   const beatWidth = rect.width / sortedBeats.length;
   //   const beatIndex = Math.floor(x / beatWidth);
-    
+
   //   if (beatIndex >= 0 && beatIndex < sortedBeats.length) {
   //     setFocusedBeatIndex(beatIndex);
   //     const beat = sortedBeats[beatIndex];
@@ -168,7 +177,10 @@ function PlotFrameworkTimeline({
   // Dev logging for context-driven prop changes
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('[PlotFrameworkTimeline] context-driven props:', { currentSceneId, activeFramework });
+      console.log('[PlotFrameworkTimeline] context-driven props:', {
+        currentSceneId,
+        activeFramework,
+      });
     }
   }, [currentSceneId, activeFramework]);
 
@@ -178,18 +190,20 @@ function PlotFrameworkTimeline({
       role="region"
       aria-label={ariaLabel}
     >
-      <h3 className="text-lg font-semibold mb-2">{activeFramework} Structure</h3>
-      
-      <div 
+      <h3 className="text-lg font-semibold mb-2">
+        {activeFramework} Structure
+      </h3>
+
+      <div
         ref={timelineRef}
-        className="flex flex-row items-end space-x-2 overflow-x-auto" 
+        className="flex flex-row items-end space-x-2 overflow-x-auto"
         style={{ minHeight: 120 }}
         role="list"
         aria-label="Plot beats timeline"
       >
         {sortedBeats.map((beat, idx) => {
           const isSelected = debouncedCurrentSceneId === beat.id;
-          
+
           return (
             <BeatButton
               key={beat.id}
@@ -202,7 +216,7 @@ function PlotFrameworkTimeline({
           );
         })}
       </div>
-      
+
       <div className="mt-2 text-xs text-gray-500">
         Click a beat for details. Acts and structural beats are highlighted.
       </div>
@@ -215,4 +229,4 @@ function PlotFrameworkTimeline({
   );
 }
 
-export default React.memo(PlotFrameworkTimeline); 
+export default React.memo(PlotFrameworkTimeline);

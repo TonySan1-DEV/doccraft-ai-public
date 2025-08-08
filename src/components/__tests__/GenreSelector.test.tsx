@@ -130,7 +130,8 @@ describe('GenreSelector', () => {
       const mockUpdatePreferences = jest.fn();
       jest
         .mocked(
-          require('../../contexts/AgentPreferencesContext').useAgentPreferences
+          jest.requireMock('../../contexts/AgentPreferencesContext')
+            .useAgentPreferences
         )
         .mockReturnValue({
           preferences: {

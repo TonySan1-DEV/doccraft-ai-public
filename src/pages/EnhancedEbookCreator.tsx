@@ -6,6 +6,7 @@ import { exportService, ExportOptions } from '../services/exportService';
 import {
   ebookTemplateService,
   EbookTemplate,
+  TemplateCustomization,
 } from '../services/ebookTemplateService';
 import {
   longFormContentGenerator,
@@ -18,7 +19,6 @@ import {
 } from '../services/contentQualityValidator';
 import { ebookIntegrationService } from '../services/ebookIntegrationService';
 import { GenreSelector } from '../components/GenreSelector';
-import { getGenreById } from '../constants/genreConstants';
 
 import {
   BookOpen,
@@ -55,47 +55,54 @@ interface EbookCreationState {
   generatedContent: Record<string, unknown>;
   validationResults: QualityValidationResult | null;
   selectedTemplate: EbookTemplate | null;
-  templateCustomizations: Record<string, unknown>;
+  templateCustomizations: TemplateCustomization;
   isGenerating: boolean;
   isValidating: boolean;
   progress: number;
 }
 
 // Helper functions for safe property access
-const safeGetString = (obj: any, key: string): string => {
-  return typeof obj[key] === 'string' ? obj[key] : '';
+const safeGetString = (obj: Record<string, unknown>, key: string): string => {
+  return typeof obj[key] === 'string' ? (obj[key] as string) : '';
 };
 
-const safeGetNumber = (obj: any, key: string): number => {
-  return typeof obj[key] === 'number' ? obj[key] : 0;
+const safeGetNumber = (obj: Record<string, unknown>, key: string): number => {
+  return typeof obj[key] === 'number' ? (obj[key] as number) : 0;
 };
 
-const safeGetArray = (obj: any, key: string): any[] => {
-  return Array.isArray(obj[key]) ? obj[key] : [];
+const safeGetArray = (obj: Record<string, unknown>, key: string): unknown[] => {
+  return Array.isArray(obj[key]) ? (obj[key] as unknown[]) : [];
 };
 
-const safeGetObject = (obj: any, key: string): Record<string, any> => {
-  return typeof obj[key] === 'object' && obj[key] !== null ? obj[key] : {};
+const safeGetObject = (
+  obj: Record<string, unknown>,
+  key: string
+): Record<string, unknown> => {
+  return typeof obj[key] === 'object' && obj[key] !== null
+    ? (obj[key] as Record<string, unknown>)
+    : {};
 };
 
 // Safe content access
-const getContentTitle = (content: any): string => {
+const getContentTitle = (content: Record<string, unknown>): string => {
   return safeGetString(content, 'title');
 };
 
-const getContentChapters = (content: any): any[] => {
+const getContentChapters = (content: Record<string, unknown>): unknown[] => {
   return safeGetArray(content, 'chapters');
 };
 
-const getContentWordCount = (content: any): number => {
+const getContentWordCount = (content: Record<string, unknown>): number => {
   return safeGetNumber(content, 'totalWordCount');
 };
 
-const getContentQualityScore = (content: any): number => {
+const getContentQualityScore = (content: Record<string, unknown>): number => {
   return safeGetNumber(content, 'qualityScore');
 };
 
-const getContentMetadata = (content: any): Record<string, any> => {
+const getContentMetadata = (
+  content: Record<string, unknown>
+): Record<string, unknown> => {
   return safeGetObject(content, 'metadata');
 };
 
@@ -107,7 +114,7 @@ const EnhancedEbookCreator: React.FC = () => {
     generatedContent: {} as Record<string, unknown>,
     validationResults: null,
     selectedTemplate: null,
-    templateCustomizations: {},
+    templateCustomizations: {} as TemplateCustomization,
     isGenerating: false,
     isValidating: false,
     progress: 0,
@@ -298,7 +305,10 @@ const EnhancedEbookCreator: React.FC = () => {
       setState(prev => ({ ...prev, isValidating: true }));
       const validationResults = await contentQualityValidator.validateContent(
         getContentChapters(content)
-          .map((c: { content: string }) => c.content)
+          .map((c: unknown) => {
+            const chapter = c as { content: string };
+            return chapter.content;
+          })
           .join('\n\n'),
         config.genre,
         {
@@ -404,7 +414,9 @@ const EnhancedEbookCreator: React.FC = () => {
     }
   };
 
-  const handleTemplateCustomization = (customizations: any) => {
+  const handleTemplateCustomization = (
+    customizations: TemplateCustomization
+  ) => {
     setState(prev => ({
       ...prev,
       templateCustomizations: customizations,
@@ -1353,7 +1365,9 @@ const EnhancedEbookCreator: React.FC = () => {
                 <TemplatePreview
                   template={state.selectedTemplate}
                   content={state.generatedContent}
-                  customizations={state.templateCustomizations}
+                  customizations={
+                    state.templateCustomizations as Record<string, unknown>
+                  }
                   onExport={(format: string) =>
                     handleExport(format as 'pdf' | 'epub' | 'pptx' | 'docx')
                   }
@@ -1432,8 +1446,8 @@ const EnhancedEbookCreator: React.FC = () => {
                 </span>
                 <span className="font-medium text-gray-900 dark:text-white">
                   {Math.round(
-                    (getContentMetadata(state.generatedContent)
-                      .generationTime || 0) / 1000
+                    ((getContentMetadata(state.generatedContent)
+                      .generationTime as number) || 0) / 1000
                   )}
                   s
                 </span>

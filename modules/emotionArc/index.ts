@@ -48,17 +48,20 @@ export type {
   EmotionAnalysisError,
   EmotionAnalysisEvent,
   ValidationResult,
-  AnalysisCache
+  AnalysisCache,
 } from './types/emotionTypes';
 
 // Utilities
-export { validateEmotionalBeat, validateEmotionalArc } from './utils/validation';
+export {
+  validateEmotionalBeat,
+  validateEmotionalArc,
+} from './utils/validation';
 
 // Constants
 export { EMOTION_CATEGORIES, EMOTION_COLORS } from './constants/emotions';
 
 // Test utilities (for consumers who want to test the module)
-export * from './components/__tests__/testHooks';
+// export * from './components/__tests__/testHooks'; // Removed test file export
 
 // Storybook stories (for documentation)
 export * from './components/__stories__/EmotionArcStories';
@@ -71,11 +74,12 @@ export const PACKAGE_NAME = '@doccraft/emotion-arc';
 export const MODULE_INFO = {
   name: PACKAGE_NAME,
   version: VERSION,
-  description: 'AI-powered emotional analysis and optimization for narrative storytelling',
+  description:
+    'AI-powered emotional analysis and optimization for narrative storytelling',
   author: 'DocCraft AI Team',
   license: 'MIT',
   repository: 'https://github.com/your-org/doccraft-ai',
-  homepage: 'https://doccraft-ai.com/docs/emotion-arc'
+  homepage: 'https://doccraft-ai.com/docs/emotion-arc',
 } as const;
 
 // Import components and services for default export
@@ -101,5 +105,5 @@ export default {
   SceneSentimentPanel,
   CharacterArcSwitch,
   VERSION,
-  MODULE_INFO
-}; 
+  MODULE_INFO,
+};

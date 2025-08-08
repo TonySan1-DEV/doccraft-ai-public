@@ -17,6 +17,7 @@ import {
   generateAudioFileName,
   validateAudioFile,
 } from './supabaseStorage';
+import { supabase } from './supabaseStorage';
 
 /**
  * TTS Narration result with audio file and timeline
@@ -201,7 +202,7 @@ async function generateAudioBlob(
 
   // Combine all narration text for processing
   const fullNarration = narratedDeck.slides
-    .map(slide => slide.narration)
+    .map((slide: any) => slide.narration)
     .filter(Boolean)
     .join(' ');
 
@@ -326,6 +327,15 @@ export async function generateTTSNarrationForUser(
  * Generate mock TTS narration for testing (without storage)
  * @returns TTSNarration
  */
+/** TEMP STUB — replace with real implementation */
+export const ttsSyncEngine = {
+  generate: generateTTSNarration,
+  generateForUser: generateTTSNarrationForUser,
+  generateMock: generateMockTTSNarration,
+  regenerateFromScript,
+  validateOptions: validateTTSSyncOptions,
+};
+
 export function generateMockTTSNarration(): TTSNarration {
   return {
     audioFileUrl:

@@ -10,7 +10,7 @@
 }
 */
 
-import React from 'react';
+// React import removed - not used directly
 import type { ScenePlacementSuggestion } from './initPlotEngine';
 
 interface PlotSuggestionPanelProps {
@@ -28,7 +28,7 @@ export default function PlotSuggestionPanel({
   error = null,
   onSuggestionClick,
   className = '',
-  'aria-label': ariaLabel = 'Plot Suggestion Panel'
+  'aria-label': ariaLabel = 'Plot Suggestion Panel',
 }: PlotSuggestionPanelProps) {
   return (
     <div
@@ -40,12 +40,14 @@ export default function PlotSuggestionPanel({
       {isLoading ? (
         <div className="text-blue-600">Analyzing structure...</div>
       ) : error ? (
-        <div className="text-red-600" role="alert">{error}</div>
+        <div className="text-red-600" role="alert">
+          {error}
+        </div>
       ) : suggestions.length === 0 ? (
         <div className="text-gray-500">No suggestions available.</div>
       ) : (
         <ul className="space-y-2">
-          {suggestions.map((s) => (
+          {suggestions.map(s => (
             <li key={s.sceneId}>
               <button
                 onClick={() => onSuggestionClick?.(s)}
@@ -53,10 +55,16 @@ export default function PlotSuggestionPanel({
                 aria-label={`Suggestion for scene ${s.sceneId}`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-800">Scene {s.sceneId}</span>
-                  <span className="text-xs text-blue-600">Act {s.recommendedAct} – {s.recommendedBeat}</span>
+                  <span className="font-medium text-gray-800">
+                    Scene {s.sceneId}
+                  </span>
+                  <span className="text-xs text-blue-600">
+                    Act {s.recommendedAct} – {s.recommendedBeat}
+                  </span>
                 </div>
-                <div className="text-xs text-gray-500 mt-1">Confidence: {Math.round(s.confidence * 100)}%</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  Confidence: {Math.round(s.confidence * 100)}%
+                </div>
                 {s.notes.length > 0 && (
                   <ul className="text-xs text-gray-400 mt-1 list-disc list-inside">
                     {s.notes.map((note, idx) => (
@@ -71,4 +79,4 @@ export default function PlotSuggestionPanel({
       )}
     </div>
   );
-} 
+}

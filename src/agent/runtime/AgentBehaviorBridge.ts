@@ -12,14 +12,10 @@
 
 
 
+// Import the main AgentPrefs interface from shared types
+import { AgentPrefs } from '../../types/agentPreferences';
+
 // Interface definitions
-export interface AgentPrefs {
-  tone: "friendly" | "formal" | "concise";
-  language: string;
-  copilotEnabled: boolean;
-  memoryEnabled: boolean;
-  defaultCommandView: "list" | "grid";
-}
 
 export interface BridgeOptions {
   onSyncPrompt?: (tone: string, language: string) => void;

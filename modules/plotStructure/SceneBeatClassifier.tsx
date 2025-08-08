@@ -10,7 +10,7 @@
 }
 */
 
-import React from 'react';
+// React import removed - not used directly
 import type { PlotBeat } from './initPlotEngine';
 
 interface SceneBeatClassifierProps {
@@ -30,7 +30,7 @@ export default function SceneBeatClassifier({
   selectedBeatId,
   onClassify,
   className = '',
-  'aria-label': ariaLabel = 'Scene Beat Classifier'
+  'aria-label': ariaLabel = 'Scene Beat Classifier',
 }: SceneBeatClassifierProps) {
   return (
     <div
@@ -38,16 +38,24 @@ export default function SceneBeatClassifier({
       role="region"
       aria-label={ariaLabel}
     >
-      <h3 className="text-lg font-semibold mb-2">Classify Scene to Plot Beat</h3>
-      <div className="mb-2 text-xs text-gray-500">Scene: <span className="font-mono text-gray-700">{sceneId}</span></div>
-      <div className="mb-3 p-2 bg-gray-50 rounded text-xs text-gray-700 max-h-24 overflow-y-auto">{sceneText}</div>
+      <h3 className="text-lg font-semibold mb-2">
+        Classify Scene to Plot Beat
+      </h3>
+      <div className="mb-2 text-xs text-gray-500">
+        Scene: <span className="font-mono text-gray-700">{sceneId}</span>
+      </div>
+      <div className="mb-3 p-2 bg-gray-50 rounded text-xs text-gray-700 max-h-24 overflow-y-auto">
+        {sceneText}
+      </div>
       <div className="flex flex-wrap gap-2">
-        {beats.map((beat) => (
+        {beats.map(beat => (
           <button
             key={beat.id}
             onClick={() => onClassify(sceneId, beat.id)}
             className={`px-3 py-1 rounded text-xs font-medium border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              selectedBeatId === beat.id ? 'bg-blue-600 text-white border-blue-700' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-blue-50'
+              selectedBeatId === beat.id
+                ? 'bg-blue-600 text-white border-blue-700'
+                : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-blue-50'
             }`}
             aria-pressed={selectedBeatId === beat.id}
             aria-label={`Classify as ${beat.label}`}
@@ -59,4 +67,4 @@ export default function SceneBeatClassifier({
       </div>
     </div>
   );
-} 
+}

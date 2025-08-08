@@ -597,7 +597,7 @@ function validateNarratedSlideDeck(deck: NarratedSlideDeck): void {
       'Invalid NarratedSlideDeck: must contain at least one slide'
     );
   }
-  deck.slides.forEach((slide, index) => {
+  deck.slides.forEach((slide: any, index) => {
     if (!slide.narration) {
       throw new Error(
         `Invalid NarratedSlideDeck: slide ${index} missing narration`
@@ -739,12 +739,12 @@ export async function storeNarratedDeck(
     validateNarratedSlideDeck(deck);
 
     const totalNarrationLength = deck.slides.reduce(
-      (acc, slide) => acc + slide.narration.length,
+      (acc, slide: any) => acc + slide.narration.length,
       0
     );
     const averageNarrationLength = totalNarrationLength / deck.slides.length;
     const totalWords = deck.slides.reduce(
-      (acc, slide) => acc + slide.narration.split(' ').length,
+      (acc, slide: any) => acc + slide.narration.split(' ').length,
       0
     );
 

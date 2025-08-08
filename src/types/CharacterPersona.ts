@@ -1,27 +1,28 @@
-// CharacterPersona interface for CCI module
+/** TEMP STUB — replace with real implementation */
+
 export interface CharacterPersona {
   id: string;
-  user_id: string;
-  story_id?: string;
   name: string;
-  archetype: string;
-  goals: string; // Legacy field - kept for backwards compatibility
-  voiceStyle: string;
-  worldview: string;
-  personality: string; // Legacy field - kept for backwards compatibility
-  knownConnections: Array<{
+  description: string;
+  personality: string[];
+  goals: string[];
+  conflicts: string[];
+  arc: string;
+  // Additional properties expected by existing code
+  /** Character memory and development notes stored as key-value pairs */
+  memory?: Record<string, any>;
+  /** Character personality traits and psychological assessments (MBTI, Enneagram, etc.) */
+  traits?: Record<string, any>;
+  developmentNotes?: string[];
+  archetype?: string;
+  voiceStyle?: string;
+  worldview?: string;
+  backstory?: string;
+  knownConnections?: Array<{
     name: string;
     relationship: string;
     description?: string;
   }>;
-  backstory?: string;
-  traits?: Record<string, any>;
-  memory?: Record<string, any>;
-  created_at?: string;
-  updated_at?: string;
-
-  // TODO: Confirm this field structure with upstream schema
-  // Extended fields to match actual usage patterns
   personalityDetails?: {
     traits: string[];
     strengths: string[];
@@ -29,20 +30,30 @@ export interface CharacterPersona {
     fears: string[];
     desires: string[];
   };
-
   goalsDetails?: {
     primary: string;
     secondary: string[];
     internal: string;
     external: string;
   };
-
   relationships?: Array<{
     name: string;
     relationship: string;
     description?: string;
   }>;
+}
 
-  // TODO: Add developmentNotes field to match Character interface usage
-  developmentNotes?: string[];
+export interface CharacterProfile {
+  id: string;
+  persona: CharacterPersona;
+  emotionalRange: string[];
+  defaultEmotion: string;
+  relationships: CharacterRelationship[];
+}
+
+export interface CharacterRelationship {
+  targetCharacterId: string;
+  relationshipType: string;
+  description: string;
+  tension: number;
 }

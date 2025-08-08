@@ -21,6 +21,7 @@ type Slide = {
   bullets: string[];
   suggestedImagePrompt?: string;
   speakerNotes?: string;
+  narration?: string; // Optional narration property
 };
 
 /**
@@ -140,7 +141,11 @@ function createBaseNarration(
   slide: Slide,
   tone: string,
   genre?: string,
-  genreContext?: any
+  genreContext?: {
+    category: 'fiction' | 'nonfiction' | 'special';
+    subgenre?: string;
+    targetAudience?: string[];
+  }
 ): string {
   const { title, bullets } = slide;
 
@@ -228,6 +233,12 @@ function adjustNarrationLength(narration: string, length: string): string {
  * Generate mock narrated slide deck for testing
  * @returns NarratedSlideDeck
  */
+/** TEMP STUB — replace with real implementation */
+export const scriptGenerator = {
+  generate: generateNarration,
+  generateMock: generateMockNarratedSlideDeck,
+};
+
 export function generateMockNarratedSlideDeck(): NarratedSlideDeck {
   return {
     title: 'Introduction to DocCraft-AI',

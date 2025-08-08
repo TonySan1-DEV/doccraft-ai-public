@@ -21,7 +21,9 @@ function getGoalsPrimary(character: CharacterPersona): string {
   if (character.goalsDetails?.primary) {
     return character.goalsDetails.primary;
   }
-  return character.goals || '';
+  return Array.isArray(character.goals)
+    ? character.goals[0] || ''
+    : character.goals || '';
 }
 
 function getGoalsInternal(character: CharacterPersona): string {
@@ -348,13 +350,15 @@ export class EnhancedCharacterInteractionService {
     // Create a basic character structure based on interaction
     const character: CharacterPersona = {
       id: characterId,
-      user_id: 'system',
       name: `Character_${characterId}`,
+      description: 'Dynamic character created from interaction',
       archetype: 'dynamic',
-      goals: 'To engage meaningfully in conversations',
+      goals: ['To engage meaningfully in conversations'],
+      conflicts: ['Internal growth vs external expectations'],
+      arc: 'Character development through meaningful interactions',
       voiceStyle: 'conversational',
       worldview: 'Open to new experiences and learning',
-      personality: 'Adaptive and responsive',
+      personality: ['Adaptive and responsive'],
       knownConnections: [],
       // TODO: Confirm this field structure with upstream schema
       personalityDetails: {

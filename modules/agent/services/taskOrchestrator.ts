@@ -137,54 +137,23 @@ export async function getUserPipelines(
   return data || [];
 }
 
-// Pipeline execution modes
-export type PipelineMode = 'auto' | 'hybrid' | 'manual';
-export type PipelineFeature = 'script' | 'slides' | 'voiceover';
+// Import shared pipeline types
+import {
+  PipelineMode,
+  PipelineFeature,
+  PipelineOptions,
+  PipelineResult,
+  PipelineStatus,
+  PipelineMetrics,
+  GenreContext,
+  MCPMetadata,
+  validatePipelineInput,
+  validatePipelineOptions
+} from '../../../src/types/pipelineTypes';
 
-// Pipeline options interface
-export interface PipelineOptions {
-  features?: PipelineFeature[];
-  userId?: string;
-  tier?: string;
-  documentText?: string;
-  mcpMetadata?: {
-    role: string;
-    tier: string;
-    theme: string;
-  };
-}
+// Pipeline execution result - using shared PipelineResult type
 
-// Pipeline execution result
-export interface PipelineResult {
-  success: boolean;
-  outputs: {
-    slides?: SlideDeck;
-    narratedDeck?: NarratedSlideDeck;
-    tts?: TTSNarration;
-  };
-  storedRecords?: {
-    slideDeck?: SlideDeckRecord;
-    narratedDeck?: NarratedSlideDeckRecord;
-    ttsNarration?: TTSNarrationRecord;
-  };
-  errors: string[];
-  processingTime: number;
-  mode: PipelineMode;
-  features: PipelineFeature[];
-}
-
-// Pipeline status tracking
-export interface PipelineStatus {
-  id: string;
-  status: 'processing' | 'completed' | 'failed' | 'paused';
-  currentStep: string;
-  progress: number;
-  errors: string[];
-  startTime: Date;
-  endTime?: Date;
-  pausedAt?: Date;
-  pauseReason?: string;
-}
+// Pipeline status tracking - using shared PipelineStatus type
 
 // Utility functions for validation and sanitization
 function sanitizeDocumentText(text: string): string {
@@ -309,7 +278,11 @@ export async function runDoc2VideoPipeline(
         );
 
         console.log('🔄 Generating slides...');
-        outputs.slides = await generateSlides(sanitizedText, { maxSlides: 5 });
+        outputs.slides = await generateSlides(sanitizedText, {
+          maxSlides: 5,
+          genre: options.genre,
+          genreContext: options.genreContext,
+        });
 
         console.log('💾 Storing slide deck...');
         storedRecords.slideDeck = await storeSlideDeck(
@@ -352,10 +325,14 @@ export async function runDoc2VideoPipeline(
         if (!outputs.slides) {
           outputs.slides = await generateSlides(sanitizedText, {
             maxSlides: 5,
+            genre: options.genre,
+            genreContext: options.genreContext,
           });
         }
         outputs.narratedDeck = await generateNarration(outputs.slides, {
           tone: 'conversational',
+          genre: options.genre,
+          genreContext: options.genreContext,
         });
 
         console.log('💾 Storing narrated deck...');
@@ -376,10 +353,13 @@ export async function runDoc2VideoPipeline(
         );
 
         // Pause pipeline for user review in hybrid/manual modes
-        if ((mode === 'hybrid' || mode === 'manual') && pipelineFeatures.includes('voiceover')) {
+        if (
+          (mode === 'hybrid' || mode === 'manual') &&
+          pipelineFeatures.includes('voiceover')
+        ) {
           console.log('⏸️ Pausing pipeline for user script review...');
           await pausePipeline(pipelineId!, 'script_review_required');
-          
+
           // Return early - pipeline will be resumed by user action
           return {
             success: true,
@@ -429,10 +409,14 @@ export async function runDoc2VideoPipeline(
           if (!outputs.slides) {
             outputs.slides = await generateSlides(sanitizedText, {
               maxSlides: 5,
+              genre: options.genre,
+              genreContext: options.genreContext,
             });
           }
           outputs.narratedDeck = await generateNarration(outputs.slides, {
             tone: 'conversational',
+            genre: options.genre,
+            genreContext: options.genreContext,
           });
         }
 
@@ -494,7 +478,7 @@ export async function runDoc2VideoPipeline(
       storedRecords.ttsNarration
     ) {
       try {
-        await updatePipelineStatus(
+        await updatePipelineStatusInDB(
           pipelineId!,
           'running',
           'storing_complete_pipeline',
@@ -514,7 +498,7 @@ export async function runDoc2VideoPipeline(
         const errorMsg = `Failed to store complete pipeline: ${error instanceof Error ? error.message : 'Unknown error'}`;
         errors.push(errorMsg);
         console.error(errorMsg, error);
-        await updatePipelineStatus(
+        await updatePipelineStatusInDB(
           pipelineId!,
           'failed',
           'pipeline_storage_failed',
@@ -622,7 +606,15 @@ export async function runManualPipeline(
 export async function generateSlidesOnly(
   documentText: string,
   userId?: string,
-  tier: string = 'Pro'
+  tier: string = 'Pro',
+  options?: {
+    genre?: string;
+    genreContext?: {
+      category: 'fiction' | 'nonfiction' | 'special';
+      subgenre?: string;
+      targetAudience?: string[];
+    };
+  }
 ): Promise<{ slides: SlideDeck; storedRecord?: SlideDeckRecord }> {
   const sanitizedText = sanitizeDocumentText(documentText);
 
@@ -631,7 +623,11 @@ export async function generateSlidesOnly(
     validateTierForFeatures(tier, ['slides']);
   }
 
-  const slides = await generateSlides(sanitizedText, { maxSlides: 5 });
+  const slides = await generateSlides(sanitizedText, {
+    maxSlides: 5,
+    genre: options?.genre,
+    genreContext: options?.genreContext,
+  });
 
   let storedRecord: SlideDeckRecord | undefined;
   if (userId) {
@@ -644,7 +640,15 @@ export async function generateSlidesOnly(
 export async function generateNarrationOnly(
   documentText: string,
   userId?: string,
-  tier: string = 'Pro'
+  tier: string = 'Pro',
+  options?: {
+    genre?: string;
+    genreContext?: {
+      category: 'fiction' | 'nonfiction' | 'special';
+      subgenre?: string;
+      targetAudience?: string[];
+    };
+  }
 ): Promise<{
   narratedDeck: NarratedSlideDeck;
   storedRecord?: NarratedSlideDeckRecord;
@@ -656,9 +660,15 @@ export async function generateNarrationOnly(
     validateTierForFeatures(tier, ['script']);
   }
 
-  const slides = await generateSlides(sanitizedText, { maxSlides: 5 });
+  const slides = await generateSlides(sanitizedText, {
+    maxSlides: 5,
+    genre: options?.genre,
+    genreContext: options?.genreContext,
+  });
   const narratedDeck = await generateNarration(slides, {
     tone: 'conversational',
+    genre: options?.genre,
+    genreContext: options?.genreContext,
   });
 
   let storedRecord: NarratedSlideDeckRecord | undefined;
@@ -672,7 +682,15 @@ export async function generateNarrationOnly(
 export async function generateTTSOnly(
   documentText: string,
   userId?: string,
-  tier: string = 'Pro'
+  tier: string = 'Pro',
+  options?: {
+    genre?: string;
+    genreContext?: {
+      category: 'fiction' | 'nonfiction' | 'special';
+      subgenre?: string;
+      targetAudience?: string[];
+    };
+  }
 ): Promise<{ tts: TTSNarration; storedRecord?: TTSNarrationRecord }> {
   const sanitizedText = sanitizeDocumentText(documentText);
 
@@ -688,19 +706,25 @@ export async function generateTTSOnly(
   const pipelineId = pipeline.id;
 
   try {
-    await updatePipelineStatus(
+    await updatePipelineStatusInDB(
       pipelineId,
       'running',
       'generating_tts_only',
       25
     );
 
-    const slides = await generateSlides(sanitizedText, { maxSlides: 5 });
+    const slides = await generateSlides(sanitizedText, {
+      maxSlides: 5,
+      genre: options?.genre,
+      genreContext: options?.genreContext,
+    });
     const narratedDeck = await generateNarration(slides, {
       tone: 'conversational',
+      genre: options?.genre,
+      genreContext: options?.genreContext,
     });
 
-    await updatePipelineStatus(
+    await updatePipelineStatusInDB(
       pipelineId,
       'running',
       'generating_tts_audio',
@@ -730,7 +754,7 @@ export async function generateTTSOnly(
     );
 
     // Mark pipeline as successful
-    await updatePipelineStatus(
+    await updatePipelineStatusInDB(
       pipelineId,
       'success',
       'tts_generation_completed',
@@ -740,7 +764,7 @@ export async function generateTTSOnly(
     return { tts, storedRecord };
   } catch (error) {
     const errorMsg = `TTS generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
-    await updatePipelineStatus(
+    await updatePipelineStatusInDB(
       pipelineId,
       'failed',
       'tts_generation_failed',
@@ -893,9 +917,10 @@ async function continuePipelineAfterScriptReview(
     }
 
     const narratedDeck = narratedDeckRecord.data;
-    
+
     // Use edited script if available, otherwise use original
-    const scriptToUse = narratedDeck.edited_script || 
+    const scriptToUse =
+      narratedDeck.edited_script ||
       narratedDeck.slides.map((slide: any) => slide.narration).join(' ');
 
     // Create a NarratedSlideDeck object for TTS generation
@@ -1043,14 +1068,7 @@ export async function rollbackPipeline(
 }
 
 // Performance monitoring
-export interface PipelineMetrics {
-  totalExecutions: number;
-  successfulExecutions: number;
-  failedExecutions: number;
-  averageProcessingTime: number;
-  modeDistribution: Record<PipelineMode, number>;
-  featureUsage: Record<PipelineFeature, number>;
-}
+// Pipeline metrics - using shared PipelineMetrics type
 
 const pipelineMetrics: PipelineMetrics = {
   totalExecutions: 0,

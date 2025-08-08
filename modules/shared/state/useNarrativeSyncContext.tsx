@@ -1,93 +1,45 @@
-// MCP Context Block
-/*
-{
-  file: "modules/shared/state/useNarrativeSyncContext.tsx",
-  role: "frontend-developer",
-  allowedActions: ["implement", "share", "sync"],
-  tier: "Pro",
-  contentSensitivity: "medium",
-  theme: "state_management"
-}
-*/
+/** TEMP STUB — replace with real implementation */
+import { useState, useCallback } from 'react';
 
-import React, { createContext, useContext, useReducer, useMemo, useCallback, ReactNode } from 'react';
-import type { PlotBeatAlignment } from '../plotEmotionTypes';
-
-// --- Types ---
-export interface NarrativeSyncState {
-  currentSceneId: string | null;
-  characterFocusId: string | null;
-  activePlotFramework: string | null;
-  arcOverlay: PlotBeatAlignment[];
+interface NarrativeSyncState {
+  currentSceneId?: string;
+  characterFocusId?: string;
+  activePlotFramework?: string;
+  arcOverlay?: any[];
 }
 
-export type NarrativeSyncAction =
-  | { type: 'setScene'; sceneId: string }
-  | { type: 'setCharacter'; characterId: string }
-  | { type: 'setFramework'; framework: string }
-  | { type: 'updateOverlay'; overlay: PlotBeatAlignment[] };
-
-const initialState: NarrativeSyncState = {
-  currentSceneId: null,
-  characterFocusId: null,
-  activePlotFramework: null,
-  arcOverlay: []
-};
-
-function narrativeSyncReducer(state: NarrativeSyncState, action: NarrativeSyncAction): NarrativeSyncState {
-  if (process.env.NODE_ENV === 'development') {
-     
-    console.log('[NarrativeSync] Action:', action, 'PrevState:', state);
-  }
-  switch (action.type) {
-    case 'setScene':
-      return { ...state, currentSceneId: action.sceneId };
-    case 'setCharacter':
-      return { ...state, characterFocusId: action.characterId };
-    case 'setFramework':
-      return { ...state, activePlotFramework: action.framework };
-    case 'updateOverlay':
-      return { ...state, arcOverlay: action.overlay };
-    default:
-      return state;
-  }
-}
-
-const NarrativeSyncContext = createContext<{
+interface UseNarrativeSyncReturn {
   state: NarrativeSyncState;
   setScene: (sceneId: string) => void;
   setCharacter: (characterId: string) => void;
   setFramework: (framework: string) => void;
-  updateOverlay: (overlay: PlotBeatAlignment[]) => void;
-} | null>(null);
-
-export const NarrativeSyncProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(narrativeSyncReducer, initialState);
-
-  // Memoize setters for performance
-  const setScene = useCallback((sceneId: string) => dispatch({ type: 'setScene', sceneId }), []);
-  const setCharacter = useCallback((characterId: string) => dispatch({ type: 'setCharacter', characterId }), []);
-  const setFramework = useCallback((framework: string) => dispatch({ type: 'setFramework', framework }), []);
-  const updateOverlay = useCallback((overlay: PlotBeatAlignment[]) => dispatch({ type: 'updateOverlay', overlay }), []);
-
-  const value = useMemo(() => ({ state, setScene, setCharacter, setFramework, updateOverlay }), [state]);
-
-  return (
-    <NarrativeSyncContext.Provider value={value}>
-      {children}
-    </NarrativeSyncContext.Provider>
-  );
-};
-
-export function useNarrativeSync() {
-  const ctx = useContext(NarrativeSyncContext);
-  if (!ctx) {
-    throw new Error('useNarrativeSync must be used within a NarrativeSyncProvider');
-  }
-  return ctx;
+  updateOverlay: (overlay: any[]) => void;
 }
 
-// Tree-shakable wrapper for modular use
-export const WithNarrativeSync: React.FC<{ children: ReactNode }> = ({ children }) => (
-  <NarrativeSyncProvider>{children}</NarrativeSyncProvider>
-); 
+export const useNarrativeSync = (): UseNarrativeSyncReturn => {
+  const [state, setState] = useState<NarrativeSyncState>({});
+
+  const setScene = useCallback((sceneId: string) => {
+    setState(prev => ({ ...prev, currentSceneId: sceneId }));
+  }, []);
+
+  const setCharacter = useCallback((characterId: string) => {
+    setState(prev => ({ ...prev, characterFocusId: characterId }));
+  }, []);
+
+  const setFramework = useCallback((framework: string) => {
+    setState(prev => ({ ...prev, activePlotFramework: framework }));
+  }, []);
+
+  const updateOverlay = useCallback((overlay: any[]) => {
+    setState(prev => ({ ...prev, arcOverlay: overlay }));
+  }, []);
+
+  return {
+    state,
+    setScene,
+    setCharacter,
+    setFramework,
+    updateOverlay,
+  };
+};

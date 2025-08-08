@@ -10,28 +10,23 @@
 }
 */
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   Search,
   ChevronDown,
-  ChevronUp,
   Star,
   BookOpen,
   FileText,
   Sparkles,
-  Filter,
-  X,
 } from 'lucide-react';
 import { useAgentPreferences } from '../contexts/AgentPreferencesContext';
 import {
   Genre,
-  GenreCategory,
   genreCategories,
   allGenres,
   getPopularGenres,
   searchGenres,
   getGenreById,
-  defaultGenre,
 } from '../constants/genreConstants';
 
 interface GenreSelectorProps {
@@ -80,7 +75,10 @@ export function GenreSelector({
   size = 'md',
   variant = 'dropdown',
 }: GenreSelectorProps) {
-  const { preferences, updatePreferences } = useAgentPreferences();
+  // TODO: Consider adding validation for maxSelections > 0 when allowMultiple is true
+  // TODO: Consider adding accessibility attributes for screen readers
+  // TODO: Consider adding keyboard navigation support for dropdown variant
+  const { updatePreferences } = useAgentPreferences();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -89,23 +87,46 @@ export function GenreSelector({
 
   // Initialize selected genres from props
   useEffect(() => {
-    if (selectedGenreId) {
+    if (selectedGenreId && typeof selectedGenreId === 'string') {
       const genre = getGenreById(selectedGenreId);
-      if (genre) {
+      if (
+        genre &&
+        typeof genre === 'object' &&
+        'id' in genre &&
+        'name' in genre
+      ) {
         setSelectedGenres([genre]);
+      } else {
+        console.warn(`Invalid genre found for ID: ${selectedGenreId}`);
+        setSelectedGenres([]);
       }
+    } else if (!selectedGenreId) {
+      setSelectedGenres([]);
     }
   }, [selectedGenreId]);
 
   // Load recently used genres from localStorage
   useEffect(() => {
-    const recent = localStorage.getItem('doccraft-recent-genres');
-    if (recent) {
-      try {
-        setRecentlyUsed(JSON.parse(recent));
-      } catch (error) {
-        console.warn('Failed to parse recent genres:', error);
+    try {
+      const recent = localStorage.getItem('doccraft-recent-genres');
+      if (recent) {
+        const parsed = JSON.parse(recent);
+        // Validate that parsed data is an array of strings
+        if (
+          Array.isArray(parsed) &&
+          parsed.every(item => typeof item === 'string')
+        ) {
+          setRecentlyUsed(parsed);
+        } else {
+          console.warn(
+            'Invalid recent genres format, resetting to empty array'
+          );
+          setRecentlyUsed([]);
+        }
       }
+    } catch (error) {
+      console.warn('Failed to parse recent genres:', error);
+      setRecentlyUsed([]);
     }
   }, []);
 
@@ -131,13 +152,32 @@ export function GenreSelector({
 
   // Get recently used genres
   const recentGenres = useMemo(() => {
-    return recentlyUsed.map(id => getGenreById(id)).filter(Boolean) as Genre[];
+    return recentlyUsed
+      .map(id => getGenreById(id))
+      .filter(
+        (genre): genre is Genre =>
+          genre !== undefined &&
+          typeof genre === 'object' &&
+          'id' in genre &&
+          'name' in genre
+      );
   }, [recentlyUsed]);
 
   // Handle genre selection
   const handleGenreSelect = useCallback(
     (genre: Genre) => {
       if (disabled) return;
+
+      // Validate genre object
+      if (
+        !genre ||
+        typeof genre !== 'object' ||
+        !('id' in genre) ||
+        !('name' in genre)
+      ) {
+        console.warn('Invalid genre object provided to handleGenreSelect');
+        return;
+      }
 
       let newSelectedGenres: Genre[];
 
@@ -160,19 +200,27 @@ export function GenreSelector({
 
       // Update preferences if this is the main genre selector
       if (!allowMultiple) {
-        updatePreferences({ genre: genre.id });
+        try {
+          updatePreferences({ genre: genre.id });
+        } catch (error) {
+          console.warn('Failed to update preferences:', error);
+        }
       }
 
       // Add to recently used
-      const updatedRecent = [
-        genre.id,
-        ...recentlyUsed.filter(id => id !== genre.id),
-      ].slice(0, 5);
-      setRecentlyUsed(updatedRecent);
-      localStorage.setItem(
-        'doccraft-recent-genres',
-        JSON.stringify(updatedRecent)
-      );
+      try {
+        const updatedRecent = [
+          genre.id,
+          ...recentlyUsed.filter(id => id !== genre.id),
+        ].slice(0, 5);
+        setRecentlyUsed(updatedRecent);
+        localStorage.setItem(
+          'doccraft-recent-genres',
+          JSON.stringify(updatedRecent)
+        );
+      } catch (error) {
+        console.warn('Failed to update recently used genres:', error);
+      }
 
       // Call callback
       onGenreSelected?.(genre);
@@ -196,21 +244,20 @@ export function GenreSelector({
 
   // Handle search
   const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
+    if (typeof query === 'string') {
+      setSearchQuery(query);
+    }
   }, []);
 
   // Handle category change
   const handleCategoryChange = useCallback((category: string) => {
-    setActiveCategory(category);
-  }, []);
-
-  // Clear selection
-  const handleClearSelection = useCallback(() => {
-    setSelectedGenres([]);
-    if (!allowMultiple) {
-      updatePreferences({ genre: undefined });
+    if (
+      typeof category === 'string' &&
+      (category === 'all' || genreCategories.some(cat => cat.id === category))
+    ) {
+      setActiveCategory(category);
     }
-  }, [allowMultiple, updatePreferences]);
+  }, []);
 
   // Get display value
   const displayValue = useMemo(() => {
@@ -237,7 +284,10 @@ export function GenreSelector({
                 type="text"
                 placeholder="Search genres..."
                 value={searchQuery}
-                onChange={e => handleSearch(e.target.value)}
+                onChange={e => {
+                  const target = e.target as HTMLInputElement;
+                  handleSearch(target.value);
+                }}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={disabled}
               />
@@ -339,9 +389,11 @@ export function GenreSelector({
                   type="text"
                   placeholder="Search genres..."
                   value={searchQuery}
-                  onChange={e => handleSearch(e.target.value)}
+                  onChange={e => {
+                    const target = e.target as HTMLInputElement;
+                    handleSearch(target.value);
+                  }}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  autoFocus
                 />
               </div>
             )}
@@ -374,29 +426,31 @@ export function GenreSelector({
               </div>
             )}
 
-            {showPopular && popularGenres.length > 0 && (
-              <div className="mb-4">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Star className="w-4 h-4 text-yellow-500" />
-                  <span className="text-sm font-medium text-gray-700">
-                    Popular
-                  </span>
+            {showPopular &&
+              Array.isArray(popularGenres) &&
+              popularGenres.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Star className="w-4 h-4 text-yellow-500" />
+                    <span className="text-sm font-medium text-gray-700">
+                      Popular
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    {popularGenres.slice(0, 5).map(genre => (
+                      <GenreDropdown
+                        key={genre.id}
+                        genre={genre}
+                        isSelected={selectedGenres.some(g => g.id === genre.id)}
+                        onSelect={handleGenreSelect}
+                        showSubgenres={showSubgenres}
+                      />
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  {popularGenres.slice(0, 5).map(genre => (
-                    <GenreDropdown
-                      key={genre.id}
-                      genre={genre}
-                      isSelected={selectedGenres.some(g => g.id === genre.id)}
-                      onSelect={handleGenreSelect}
-                      showSubgenres={showSubgenres}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
 
-            {recentGenres.length > 0 && (
+            {Array.isArray(recentGenres) && recentGenres.length > 0 && (
               <div className="mb-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Sparkles className="w-4 h-4 text-purple-500" />
@@ -432,7 +486,7 @@ export function GenreSelector({
 
             {filteredGenres.length === 0 && (
               <div className="text-center py-4 text-gray-500">
-                No genres found matching "{searchQuery}"
+                No genres found matching &quot;{searchQuery}&quot;
               </div>
             )}
           </div>
@@ -477,25 +531,27 @@ function GenreCard({
             {genre.description}
           </p>
 
-          {showSubgenres && genre.subgenres && genre.subgenres.length > 0 && (
-            <div className="mt-2">
-              <div className="flex flex-wrap gap-1">
-                {genre.subgenres.slice(0, 3).map(subgenre => (
-                  <span
-                    key={subgenre}
-                    className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
-                  >
-                    {subgenre}
-                  </span>
-                ))}
-                {genre.subgenres.length > 3 && (
-                  <span className="inline-block px-2 py-1 text-xs text-gray-500">
-                    +{genre.subgenres.length - 3} more
-                  </span>
-                )}
+          {showSubgenres &&
+            Array.isArray(genre.subgenres) &&
+            genre.subgenres.length > 0 && (
+              <div className="mt-2">
+                <div className="flex flex-wrap gap-1">
+                  {genre.subgenres.slice(0, 3).map((subgenre, index) => (
+                    <span
+                      key={`${subgenre}-${index}`}
+                      className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
+                    >
+                      {typeof subgenre === 'string' ? subgenre : 'Unknown'}
+                    </span>
+                  ))}
+                  {genre.subgenres.length > 3 && (
+                    <span className="inline-block px-2 py-1 text-xs text-gray-500">
+                      +{genre.subgenres.length - 3} more
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           <div className="flex items-center space-x-2 mt-2">
             <span
@@ -547,25 +603,27 @@ function GenreDropdown({
           </div>
           <p className="text-sm text-gray-600 truncate">{genre.description}</p>
 
-          {showSubgenres && genre.subgenres && genre.subgenres.length > 0 && (
-            <div className="mt-1">
-              <div className="flex flex-wrap gap-1">
-                {genre.subgenres.slice(0, 2).map(subgenre => (
-                  <span
-                    key={subgenre}
-                    className="inline-block px-1 py-0.5 text-xs bg-gray-100 text-gray-700 rounded"
-                  >
-                    {subgenre}
-                  </span>
-                ))}
-                {genre.subgenres.length > 2 && (
-                  <span className="inline-block px-1 py-0.5 text-xs text-gray-500">
-                    +{genre.subgenres.length - 2} more
-                  </span>
-                )}
+          {showSubgenres &&
+            Array.isArray(genre.subgenres) &&
+            genre.subgenres.length > 0 && (
+              <div className="mt-1">
+                <div className="flex flex-wrap gap-1">
+                  {genre.subgenres.slice(0, 2).map((subgenre, index) => (
+                    <span
+                      key={`${subgenre}-${index}`}
+                      className="inline-block px-1 py-0.5 text-xs bg-gray-100 text-gray-700 rounded"
+                    >
+                      {typeof subgenre === 'string' ? subgenre : 'Unknown'}
+                    </span>
+                  ))}
+                  {genre.subgenres.length > 2 && (
+                    <span className="inline-block px-1 py-0.5 text-xs text-gray-500">
+                      +{genre.subgenres.length - 2} more
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
       </div>
     </button>

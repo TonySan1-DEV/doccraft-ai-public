@@ -236,8 +236,8 @@ export default function CharacterDevelopment() {
       user_id: '', // TODO: Add proper user_id handling
       name: character.name,
       archetype: character.archetype,
-      personality: character.personality.traits.join(', '), // Legacy field
-      goals: character.goals.primary, // Legacy field
+      personality: character.personality.traits, // Use array directly
+      goals: character.goals.primary ? [character.goals.primary] : [], // Convert to array
       voiceStyle: character.voiceStyle,
       worldview: character.worldview,
       backstory: character.backstory,

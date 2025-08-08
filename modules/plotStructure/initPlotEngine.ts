@@ -1,129 +1,66 @@
-// MCP Context Block
-/*
-{
-  file: "modules/plotStructure/initPlotEngine.ts",
-  role: "developer",
-  allowedActions: ["scaffold", "analyze", "structure"],
-  tier: "Pro",
-  contentSensitivity: "medium",
-  theme: "story_engineering"
-}
-*/
+/** TEMP STUB — replace with real implementation */
 
-// --- Types ---
-export type PlotFramework = 'HerosJourney' | 'SaveTheCat' | 'ThreeAct' | 'Custom';
+export interface PlotFramework {
+  id: string;
+  name: string;
+  beats: PlotBeat[];
+}
 
 export interface PlotBeat {
   id: string;
-  label: string;
+  name: string;
   description: string;
-  act: number;
-  position: number; // 0-1 normalized
-  tensionLevel: number; // 0-100
-  isStructural: boolean;
-  framework: PlotFramework;
+  // Additional properties used by components
+  label?: string;
+  position?: number;
+  act?: number;
+  isStructural?: boolean;
+  tensionLevel?: number;
+  framework?: PlotFramework;
 }
 
 export interface ScenePlacementSuggestion {
   sceneId: string;
-  recommendedAct: number;
-  recommendedBeat: string;
+  suggestedBeatId: string;
   confidence: number;
-  notes: string[];
-}
-
-export interface PlotGap {
-  missingBeat: string;
-  act: number;
-  severity: 'low' | 'medium' | 'high';
-  suggestion: string;
+  // Additional properties used by components
+  recommendedAct?: number;
+  recommendedBeat?: string;
+  notes?: string[];
 }
 
 export interface PlotStructureAnalysis {
-  framework: PlotFramework;
-  mappedBeats: PlotBeat[];
-  sceneSuggestions: ScenePlacementSuggestion[];
-  plotGaps: PlotGap[];
-  structuralTension: number[];
-  aiRecommendations: string[];
+  missingBeats: string[];
+  extraScenes: string[];
+  structureScore: number;
 }
 
-// --- Services ---
-export class PlotStructureEngine {
-  constructor(public framework: PlotFramework = 'HerosJourney') {}
-
-  mapEventsToFramework(events: { id: string; text: string }[]): PlotBeat[] {
-    // TODO: Implement AI/heuristic mapping
+export class PlotEngine {
+  mapEventsToFramework(_events: { id: string; text: string }[]): PlotBeat[] {
+    // TODO: Implement event to framework mapping
     return [];
   }
 
-  suggestScenePlacements(scenes: { id: string; text: string }[]): ScenePlacementSuggestion[] {
-    // TODO: Implement AI-based scene placement
+  suggestScenePlacements(
+    _scenes: { id: string; text: string }[]
+  ): ScenePlacementSuggestion[] {
+    // TODO: Implement scene placement suggestions
     return [];
   }
 
-  analyzePlotStructure(scenes: { id: string; text: string }[]): PlotStructureAnalysis {
-    // TODO: Integrate mapping, gap detection, tension analysis, and AI recs
+  analyzePlotStructure(
+    _scenes: { id: string; text: string }[]
+  ): PlotStructureAnalysis {
+    // TODO: Implement plot structure analysis
     return {
-      framework: this.framework,
-      mappedBeats: [],
-      sceneSuggestions: [],
-      plotGaps: [],
-      structuralTension: [],
-      aiRecommendations: []
+      missingBeats: [],
+      extraScenes: [],
+      structureScore: 0,
     };
   }
 
-  recommendStructuralEdits(analysis: PlotStructureAnalysis): string[] {
-    // TODO: Use AI to suggest edits
+  recommendStructuralEdits(_analysis: PlotStructureAnalysis): string[] {
+    // TODO: Implement structural edit recommendations
     return [];
   }
 }
-
-// --- Plot Framework Configs ---
-export const PlotFrameworkConfigs = {
-  HerosJourney: [
-    { id: 'call', label: 'Call to Adventure', act: 1, position: 0.1, isStructural: true },
-    { id: 'mentor', label: 'Meeting the Mentor', act: 1, position: 0.2, isStructural: false },
-    { id: 'threshold', label: 'Crossing the Threshold', act: 1, position: 0.25, isStructural: true },
-    { id: 'ordeal', label: 'Ordeal', act: 2, position: 0.5, isStructural: true },
-    { id: 'reward', label: 'Reward', act: 2, position: 0.6, isStructural: false },
-    { id: 'roadBack', label: 'The Road Back', act: 3, position: 0.8, isStructural: true },
-    { id: 'resurrection', label: 'Resurrection', act: 3, position: 0.9, isStructural: true },
-    { id: 'return', label: 'Return with Elixir', act: 3, position: 1.0, isStructural: true }
-  ],
-  SaveTheCat: [
-    { id: 'opening', label: 'Opening Image', act: 1, position: 0.0, isStructural: true },
-    { id: 'theme', label: 'Theme Stated', act: 1, position: 0.05, isStructural: false },
-    { id: 'setup', label: 'Set-Up', act: 1, position: 0.1, isStructural: true },
-    { id: 'catalyst', label: 'Catalyst', act: 1, position: 0.12, isStructural: true },
-    { id: 'debate', label: 'Debate', act: 1, position: 0.18, isStructural: false },
-    { id: 'break1', label: 'Break into Two', act: 2, position: 0.25, isStructural: true },
-    { id: 'bStory', label: 'B Story', act: 2, position: 0.3, isStructural: false },
-    { id: 'funGames', label: 'Fun and Games', act: 2, position: 0.4, isStructural: false },
-    { id: 'midpoint', label: 'Midpoint', act: 2, position: 0.5, isStructural: true },
-    { id: 'badGuys', label: 'Bad Guys Close In', act: 2, position: 0.65, isStructural: false },
-    { id: 'allIsLost', label: 'All Is Lost', act: 2, position: 0.75, isStructural: true },
-    { id: 'break3', label: 'Break into Three', act: 3, position: 0.85, isStructural: true },
-    { id: 'finale', label: 'Finale', act: 3, position: 0.95, isStructural: true },
-    { id: 'finalImage', label: 'Final Image', act: 3, position: 1.0, isStructural: true }
-  ],
-  ThreeAct: [
-    { id: 'setup', label: 'Set-Up', act: 1, position: 0.0, isStructural: true },
-    { id: 'inciting', label: 'Inciting Incident', act: 1, position: 0.1, isStructural: true },
-    { id: 'firstTurn', label: 'First Turning Point', act: 1, position: 0.25, isStructural: true },
-    { id: 'midpoint', label: 'Midpoint', act: 2, position: 0.5, isStructural: true },
-    { id: 'secondTurn', label: 'Second Turning Point', act: 2, position: 0.75, isStructural: true },
-    { id: 'climax', label: 'Climax', act: 3, position: 0.9, isStructural: true },
-    { id: 'resolution', label: 'Resolution', act: 3, position: 1.0, isStructural: true }
-  ]
-};
-
-// --- UI Components (stubs) ---
-// PlotStructureModule: Main orchestrator
-// PlotFrameworkSelector: Dropdown for framework choice
-// PlotTimelineChart: Visualizes acts, beats, gaps
-// ScenePlacementPanel: Shows scene suggestions
-// PlotGapPanel: Lists missing beats and suggestions
-// StructuralTensionCurve: Visualizes tension across structure
-// AIRecommendationsPanel: Shows AI edit suggestions 
