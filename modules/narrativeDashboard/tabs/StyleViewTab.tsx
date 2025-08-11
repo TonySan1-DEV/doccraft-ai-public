@@ -1,14 +1,13 @@
-// MCP Context Block
-/*
-role: frontend-developer,
-tier: Pro,
-file: "modules/narrativeDashboard/tabs/StyleViewTab.tsx",
-allowedActions: ["scaffold", "visualize", "compare"],
-theme: "style_dashboard"
-*/
+export const mcpContext = {
+  file: 'modules/narrativeDashboard/tabs/StyleViewTab.tsx',
+  role: 'developer',
+  allowedActions: ['refactor', 'type-harden', 'test'],
+  contentSensitivity: 'low',
+  theme: 'doccraft-ai',
+};
 
 import React, { Suspense, useState } from 'react';
-import { useNarrativeSync } from '../../shared/state/useNarrativeSyncContext';
+import type { NarrativeSyncState } from '../../shared/state/useNarrativeSyncContext';
 import { stylePresets } from '../../styleProfile/configs/stylePresets';
 
 // Lazy load StyleProfilePanel
@@ -22,11 +21,14 @@ const SceneInspectorPanel = React.lazy(
   () => import('../components/SceneInspectorPanel')
 );
 
-const StyleViewTab: React.FC = () => {
-  const narrativeSync = useNarrativeSync();
-  const { currentSceneId } = narrativeSync.state;
+export interface StyleViewTabProps {
+  narrativeSync?: NarrativeSyncState;
+}
+
+const StyleViewTab: React.FC<StyleViewTabProps> = ({ narrativeSync }) => {
+  const currentSceneId = narrativeSync?.currentSceneId;
   const [selectedPreset] = useState<string>('Noir');
-  const [devMode, setDevMode] = useState(false);
+  const [devMode] = useState(false);
   const [driftWarnings] = useState<string[]>([]);
 
   return (
@@ -54,7 +56,6 @@ const StyleViewTab: React.FC = () => {
             <div className="text-center text-blue-600">Loading overlays...</div>
           }
         >
-          {/* NarrativeOverlaySelector does not accept props; render as-is */}
           <NarrativeOverlaySelector />
         </Suspense>
         {devMode && (
@@ -77,9 +78,7 @@ const StyleViewTab: React.FC = () => {
             </div>
           }
         >
-          <SceneInspectorPanel
-            narrativeSync={{ currentSceneId: currentSceneId || undefined }}
-          />
+          <SceneInspectorPanel narrativeSync={narrativeSync} />
         </Suspense>
         <div className="mt-2" aria-live="polite">
           {driftWarnings.length > 0 ? (
@@ -100,13 +99,6 @@ const StyleViewTab: React.FC = () => {
             </span>
           )}
         </div>
-        <button
-          className="mt-4 px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 text-xs text-gray-700 dark:text-gray-200"
-          onClick={() => setDevMode(d => !d)}
-          aria-pressed={devMode}
-        >
-          {devMode ? 'Hide Dev Debug' : 'Show Dev Debug'}
-        </button>
       </aside>
     </section>
   );

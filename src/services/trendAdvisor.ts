@@ -85,12 +85,10 @@ function calculateTrendMatch(content: string, trend: MarketTrend): number {
   const trendLower = trend.label.toLowerCase();
   
   let matchScore = 0;
-  let keywordMatches = 0;
 
   // Check for exact trend label matches
   if (contentLower.includes(trendLower)) {
     matchScore += 0.4;
-    keywordMatches++;
   }
 
   // Check for example keyword matches
@@ -99,7 +97,6 @@ function calculateTrendMatch(content: string, trend: MarketTrend): number {
       const exampleLower = example.toLowerCase();
       if (contentLower.includes(exampleLower)) {
         matchScore += 0.2;
-        keywordMatches++;
       }
     }
   }

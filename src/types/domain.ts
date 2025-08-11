@@ -58,6 +58,7 @@ export interface TelemetryMetadata {
   userId?: string;
   userTier?: 'Free' | 'Pro' | 'Enterprise';
   sessionId?: string;
+  message?: string;
 
   /** Application context */
   pageUrl?: string;
@@ -102,6 +103,11 @@ export interface TelemetryMetadata {
     duration?: number;
     success?: boolean;
   };
+
+  /** Feature context */
+  feature?: string;
+  format?: string;
+  fileSize?: number; // TODO: tighten dimensions
 
   /** Custom data for extensibility */
   customData?: Record<string, string | number | boolean>;

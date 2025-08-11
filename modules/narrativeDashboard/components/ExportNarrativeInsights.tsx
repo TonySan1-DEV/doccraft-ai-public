@@ -1,41 +1,69 @@
-// MCP Context Block
-/*
-role: developer,
-tier: Pro,
-file: "modules/narrativeDashboard/components/ExportNarrativeInsights.tsx",
-allowedActions: ["scaffold", "export", "summarize"],
-theme: "reporting"
-*/
+export const mcpContext = {
+  file: 'modules/narrativeDashboard/components/ExportNarrativeInsights.tsx',
+  role: 'developer',
+  allowedActions: ['refactor', 'type-harden', 'test'],
+  contentSensitivity: 'low',
+  theme: 'doccraft-ai',
+};
 
 import React, { useState } from 'react';
-// import { useNarrativeSync } from '../../shared/state/useNarrativeSyncContext';
 import {
-  analyzeNarrativeStyle,
-  compareToTargetStyle,
-} from '../../styleProfile/services/styleProfiler';
-import { stylePresets } from '../../styleProfile/configs/stylePresets';
-import {
-  analyzeThemeConsistency,
-  ThemeAlignmentReport,
+  type ThemeAlignmentReport,
 } from '../../themeAnalysis/initThemeEngine';
 
 const SYSTEM_VERSION = 'DocCraft-AI v3.0';
 
-const mockNarrativeSync = {
+interface MockNarrativeSync {
+  currentSceneId: string;
+  characterFocusId: string;
+  activePlotFramework: string;
+}
+
+interface MockArcData {
+  tension: number[];
+  empathy: number[];
+  scenes: string[];
+}
+
+interface MockPlotData {
+  framework: string;
+  beats: Array<{ id: string; label: string }>;
+}
+
+interface MockSuggestion {
+  id: string;
+  message: string;
+  severity: string;
+  impact: number;
+  action: string;
+}
+
+interface MockRevisionHistory {
+  sceneId: string;
+  timestamp: number;
+  summary: string;
+  suggestion: string;
+  confidence: number;
+}
+
+const mockNarrativeSync: MockNarrativeSync = {
   currentSceneId: 'scene1',
   characterFocusId: 'char1',
   activePlotFramework: 'heros_journey',
 };
-const mockArcData = {
+
+const mockArcData: MockArcData = {
   tension: [10, 30, 60],
   empathy: [20, 40, 50],
   scenes: ['scene1', 'scene2', 'scene3'],
 };
-const mockPlotData = {
+
+const mockPlotData: MockPlotData = {
   framework: 'HerosJourney',
   beats: [{ id: 'call', label: 'Call to Adventure' }],
 };
-const mockSuggestions = [
+
+const mockSuggestions: MockSuggestion[] = [
   {
     id: '1',
     message: 'Raise tension in Act II',
@@ -44,8 +72,9 @@ const mockSuggestions = [
     action: 'Add conflict.',
   },
 ];
+
 // Mock revision history (replace with real from useNarrativeSync)
-const mockRevisionHistory = [
+const mockRevisionHistory: MockRevisionHistory[] = [
   {
     sceneId: 'scene1',
     timestamp: 1710000000000,
@@ -62,20 +91,9 @@ const mockRevisionHistory = [
   },
 ];
 
-const mockSceneTexts: Record<string, string> = {
-  scene1: 'The night was dark and stormy. I felt a chill run down my spine.',
-  scene2:
-    'She walked into the library, sunlight streaming through the windows.',
-  scene3: 'A car screeched to a halt, and the chase began.',
-};
 
-// Helper to get style analysis for a scene (mocked async for now)
-async function getStyleAnalysis(sceneId: string, genre: string) {
-  const text = mockSceneTexts[sceneId] || '';
-  const profile = await analyzeNarrativeStyle(text);
-  const target = stylePresets[genre] || stylePresets['YA'];
-  return compareToTargetStyle(profile, target);
-}
+
+
 
 // Synchronous mock for export (replace with real async for real data)
 function getMockStyleAnalysisSync(sceneId: string, _genre: string) {
@@ -236,10 +254,12 @@ function getTimestamp() {
   return new Date().toISOString();
 }
 
-function sanitize(data: any) {
+function sanitize<T>(data: T): T {
   // Remove sensitive fields (mock)
-  const clone = JSON.parse(JSON.stringify(data));
-  delete clone.secret;
+  const clone = JSON.parse(JSON.stringify(data)) as T;
+  if (typeof clone === 'object' && clone !== null) {
+    delete (clone as Record<string, unknown>).secret;
+  }
   return clone;
 }
 
@@ -250,15 +270,40 @@ function revisionHistoryMarkdownTable(history: typeof mockRevisionHistory) {
     '|-------|-----------|---------|------------|------------|',
     ...history.map(
       h =>
-        `| ${h.sceneId} | ${new Date(h.timestamp).toLocaleString()} | ${h.summary} | ${h.suggestion} | ${(h.confidence * 100).toFixed(0)}% |`
+        `| ${h.sceneId} | ${new Date(h.timestamp).toLocaleString()} | ${h.summary} | ${h.suggestion} | ${h.confidence}% |`
     ),
   ].join('\n');
 }
 
-function styleAnalysisMarkdownTable(styleAnalysis: Record<string, any>) {
+interface StyleAnalysisReport {
+  alignmentScore: number;
+  driftFlags: string[];
+  recommendations: string[];
+  profile: {
+    tone: string;
+    voice: string;
+    pacingScore: number;
+    emotionDensity: number;
+    lexicalComplexity: number;
+    sentenceVariance: number;
+    keyDescriptors: string[];
+    toneConfidence: number;
+    voiceConfidence: number;
+    pacingScoreConfidence: number;
+    emotionDensityConfidence: number;
+    lexicalComplexityConfidence: number;
+    sentenceVarianceConfidence: number;
+    keyDescriptorsConfidence: number;
+  };
+}
+
+function styleAnalysisMarkdownTable(
+  styleAnalysis: Record<string, StyleAnalysisReport | null>
+) {
   if (!styleAnalysis) return '';
   let md = '## Style Analysis\n';
   Object.entries(styleAnalysis).forEach(([sceneId, report]) => {
+    if (!report) return;
     md += `\n### Scene: ${sceneId}\n`;
     md += `- **Tone:** ${report.profile.tone}\n`;
     md += `- **Voice:** ${report.profile.voice}\n`;
@@ -295,7 +340,7 @@ function generateMarkdown(
   }
   if (includeStyle) {
     // For each scene, add style analysis
-    const styleAnalysis: Record<string, any> = {};
+    const styleAnalysis: Record<string, StyleAnalysisReport | null> = {};
     for (const sceneId of mockArcData.scenes) {
       const genre = 'YA'; // or use a mapping
       styleAnalysis[sceneId] = getMockStyleAnalysisSync(sceneId, genre);
@@ -319,7 +364,7 @@ function generateJSON(
   includeStyle: boolean,
   includeTheme: boolean
 ) {
-  const styleAnalysis: Record<string, any> = {};
+  const styleAnalysis: Record<string, StyleAnalysisReport | null> = {};
   for (const sceneId of mockArcData.scenes) {
     const genre = 'YA'; // or use a mapping
     styleAnalysis[sceneId] = getMockStyleAnalysisSync(sceneId, genre);

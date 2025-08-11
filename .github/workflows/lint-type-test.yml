@@ -1,0 +1,34 @@
+name: Lint & Type Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [develop]
+
+jobs:
+  lint-type:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: ESLint (emotionArc only)
+        run: pnpm eslint modules/emotionArc
+
+      - name: TypeScript check
+        run: pnpm tsc --noEmit
+
+      - name: Jest tests
+        run: pnpm test --passWithNoTests
+        continue-on-error: true

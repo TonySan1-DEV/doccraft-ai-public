@@ -48,7 +48,7 @@ export async function agentChatRouter(
     if (input.startsWith('/onboarding')) {
       const [, flowId] = input.split(' ');
       if (flowId) {
-        onboardingEngine.startFlow(flowId);
+        onboardingEngine.startFlow(flowId, 'user'); // TODO: Get actual user ID
         matchFound = true;
         response = {
           type: 'agent',
@@ -195,7 +195,7 @@ Please ensure you have valid document content and try again.`,
       .flatMap(f => f.steps)
       .find(step => input.toLowerCase().includes(step.title.toLowerCase()));
     if (onboardingMatch) {
-      onboardingEngine.startFlow(onboardingMatch.id);
+      onboardingEngine.startFlow(onboardingMatch.id, 'user'); // TODO: Get actual user ID
       matchFound = true;
       response = {
         type: 'agent',

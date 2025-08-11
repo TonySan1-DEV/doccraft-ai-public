@@ -1,11 +1,12 @@
-// MCP Context Block
-/*
-role: developer,
-tier: Pro,
-file: "modules/themeAnalysis/services/themeConflictAnalyzer.ts",
-allowedActions: ["generate", "analyze", "enrich"],
-theme: "theme_diagnostics"
-*/
+export const mcpContext = {
+  file: 'modules/themeAnalysis/services/themeConflictAnalyzer.ts',
+  role: 'developer',
+  allowedActions: ['refactor', 'type-harden', 'test'],
+  contentSensitivity: 'low',
+  theme: 'doccraft-ai',
+};
+
+import { clamp100 } from '../../emotionArc/utils/scaling';
 
 export interface SceneConflictContext {
   sceneId: string;
@@ -42,43 +43,49 @@ export function generateConflictReason(
   const reasons: ThemeConflictReason[] = [];
 
   // MCP-EDITORIAL-BLEND: Genre-aware phrasing logic
-  const genreToneMap: Record<string, (theme: string, conflict: string, ctx: SceneConflictContext) => string> = {
-    noir: (theme, conflict, ctx) =>
-      `${theme} fractures under cynical pressure, hinting the protagonist was never clean.`,
-    young_adult: (theme, conflict, ctx) =>
-      `${conflict} at the midpoint clouds emerging ${theme.toLowerCase()}, confusing peer dynamics.`,
-    literary: (theme, conflict, ctx) =>
-      `Allegiances dissolve in emotional abstraction, ${theme.toLowerCase()} becomes performative.`,
-    thriller: (theme, conflict, ctx) =>
-      `Unreliable ${theme.toLowerCase()} destabilizes trust just as stakes begin to escalate.`,
-    romance: (theme, conflict, ctx) =>
-      `Emotional ${conflict.toLowerCase()} disrupts romantic alignment and softens chemistry trajectory.`,
-    historical: (theme, conflict, ctx) =>
+  const genreToneMap: Record<
+    string,
+    (theme: string, conflict: string) => string
+  > = {
+    noir: (_theme, _conflict) =>
+      `${_theme} fractures under cynical pressure, hinting the protagonist was never clean.`,
+    young_adult: (_theme, _conflict) =>
+      `${_conflict} at the midpoint clouds emerging ${_theme.toLowerCase()}, confusing peer dynamics.`,
+    literary: (_theme, _conflict) =>
+      `Allegiances dissolve in emotional abstraction, ${_theme.toLowerCase()} becomes performative.`,
+    thriller: (_theme, _conflict) =>
+      `Unreliable ${_theme.toLowerCase()} destabilizes trust just as stakes begin to escalate.`,
+    romance: (_theme, _conflict) =>
+      `Emotional ${_conflict.toLowerCase()} disrupts romantic alignment and softens chemistry trajectory.`,
+    historical: (_theme, _conflict) =>
       `Tradition is upended by a spark of defiance, echoing through generations.`,
-    speculative: (theme, conflict, ctx) =>
-      `The boundaries of reality blur as ${conflict.toLowerCase()} undermines the fragile order of this world.`,
-    satire: (theme, conflict, ctx) =>
+    speculative: (_theme, _conflict) =>
+      `The boundaries of reality blur as ${_conflict.toLowerCase()} undermines the world.`,
+    satire: (_theme, _conflict) =>
       `Authority is lampooned, its seriousness undercut by biting subversion.`,
-    adventure: (theme, conflict, ctx) =>
+    adventure: (_theme, _conflict) =>
       `The call to adventure drowns out caution, propelling the hero into the unknown.`,
-    horror: (theme, conflict, ctx) =>
-      `A glimmer of hope is quickly suffocated by encroaching dread.`
+    horror: (_theme, _conflict) =>
+      `A glimmer of hope is quickly suffocated by encroaching dread.`,
   };
 
   for (const theme of expectedThemes) {
     for (const conflict of conflictingThemes) {
       // Only reason if the conflict is not expected and is present
-      if (!detectedThemes.includes(theme) && detectedThemes.includes(conflict)) {
+      if (
+        !detectedThemes.includes(theme) &&
+        detectedThemes.includes(conflict)
+      ) {
         let reason = '';
         if (genre && genreToneMap[genre]) {
-          reason = genreToneMap[genre](theme, conflict, ctx);
+          reason = genreToneMap[genre](theme, conflict);
         } else {
           // Fallback: original editorial logic
           reason = `Scene is expected to reinforce "${theme}"`;
           if (ctx.beatLabel) {
             reason += ` during the "${ctx.beatLabel}" beat`;
           } else if (ctx.position !== undefined) {
-            reason += ` at position ${ctx.position}`;
+            reason += ` at position ${clamp100(ctx.position)}`;
           }
           if (ctx.characterArc) {
             reason += ` in the character arc: ${ctx.characterArc}`;
@@ -95,24 +102,10 @@ export function generateConflictReason(
         reasons.push({
           theme,
           conflictWith: conflict,
-          conflictReason: reason
+          conflictReason: reason,
         });
       }
     }
   }
-  // Fallback: if no detailed context, provide a generic reason
-  if (!reasons.length && conflictingThemes.length) {
-    for (const theme of expectedThemes) {
-      for (const conflict of conflictingThemes) {
-        if (!detectedThemes.includes(theme) && detectedThemes.includes(conflict)) {
-          reasons.push({
-            theme,
-            conflictWith: conflict,
-            conflictReason: `Scene is expected to reinforce "${theme}", but "${conflict}" is present, causing thematic conflict.`
-          });
-        }
-      }
-    }
-  }
   return reasons;
-} 
+}

@@ -7,15 +7,21 @@ allowedActions: ["test", "mock", "validate"],
 theme: "revision_testing"
 */
 
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import SmartRevisionEngine from '../components/SmartRevisionEngine';
 import type { OptimizationSuggestion } from '../../emotionArc/types/emotionTypes';
+import {
+  clamp100,
+  clamp01,
+  toPercentDisplay,
+} from '../../emotionArc/utils/scaling';
 
 // Mock modules
 jest.mock('../components/RevisionHistoryPanel', () => ({
   __esModule: true,
-  default: ({ revisions }: any) => (
+  default: ({ revisions }: { revisions: Array<{ id: string }> }) => (
     <div data-testid="revision-history">{revisions.length} revisions</div>
   ),
 }));
@@ -38,9 +44,6 @@ jest.mock('../../shared/state/useNarrativeSyncContext', () => ({
   }),
 }));
 
-// Mock getSceneText (override in component scope)
-const mockGetSceneText = jest.fn();
-
 // Sample suggestion
 const sampleSuggestion: OptimizationSuggestion = {
   id: 's1',
@@ -61,29 +64,7 @@ const sampleSuggestion: OptimizationSuggestion = {
   estimatedTime: 5,
 };
 
-const originalText = 'The hero walked slowly through the empty hall.';
 const revisedText = 'The hero rushed through the hall, heart pounding.';
-const diffSegments = [
-  { text: 'The hero ', type: 'unchanged' },
-  { text: 'rushed', type: 'modified', semanticTag: 'pacing' },
-  { text: ' ', type: 'unchanged' },
-  {
-    text: 'through the hall, heart pounding.',
-    type: 'added',
-    semanticTag: 'pacing',
-  },
-  { text: 'slowly ', type: 'removed', semanticTag: 'pacing' },
-  { text: 'empty ', type: 'removed', semanticTag: 'pacing' },
-];
-
-const mockRevision = {
-  revisedText,
-  changeSummary: ['Added urgency', 'Shortened description'],
-  confidenceScore: 0.92,
-  appliedSuggestionId: 's1',
-  originalText,
-  timestamp: Date.now(),
-};
 
 // Patch getSceneText in the component
 jest.spyOn(React, 'useEffect').mockImplementationOnce(fn => {
@@ -98,13 +79,82 @@ beforeEach(() => {
   // require('../utils/diffHighlighter').diffHighlighter.mockReturnValue(diffSegments);
 });
 
+describe('Scaling Utilities', () => {
+  describe('clamp100', () => {
+    it('clamps negative values to 0', () => {
+      expect(clamp100(-5)).toBe(0);
+      expect(clamp100(-100)).toBe(0);
+      expect(clamp100(-Infinity)).toBe(0);
+    });
+
+    it('clamps values above 100 to 100', () => {
+      expect(clamp100(123)).toBe(100);
+      expect(clamp100(200)).toBe(100);
+      expect(clamp100(Infinity)).toBe(100);
+    });
+
+    it('returns values within range unchanged', () => {
+      expect(clamp100(0)).toBe(0);
+      expect(clamp100(50)).toBe(50);
+      expect(clamp100(100)).toBe(100);
+    });
+
+    it('handles NaN values', () => {
+      expect(clamp100(NaN)).toBeNaN();
+    });
+  });
+
+  describe('clamp01', () => {
+    it('clamps negative values to 0', () => {
+      expect(clamp01(-0.2)).toBe(0);
+      expect(clamp01(-1)).toBe(0);
+      expect(clamp01(-Infinity)).toBe(0);
+    });
+
+    it('clamps values above 1 to 1', () => {
+      expect(clamp01(1.2)).toBe(1);
+      expect(clamp01(2)).toBe(1);
+      expect(clamp01(Infinity)).toBe(1);
+    });
+
+    it('returns values within range unchanged', () => {
+      expect(clamp01(0)).toBe(0);
+      expect(clamp01(0.5)).toBe(0.5);
+      expect(clamp01(1)).toBe(1);
+    });
+
+    it('handles NaN values', () => {
+      expect(clamp01(NaN)).toBeNaN();
+    });
+  });
+
+  describe('toPercentDisplay', () => {
+    it('converts 0 to 0%', () => {
+      expect(toPercentDisplay(0)).toBe('0%');
+    });
+
+    it('converts 0.499 to 50%', () => {
+      expect(toPercentDisplay(0.499)).toBe('50%');
+    });
+
+    it('converts 1 to 100%', () => {
+      expect(toPercentDisplay(1)).toBe('100%');
+    });
+
+    it('handles decimal values correctly', () => {
+      expect(toPercentDisplay(0.25)).toBe('25%');
+      expect(toPercentDisplay(0.75)).toBe('75%');
+    });
+  });
+});
+
 describe('<SmartRevisionEngine />', () => {
   it('renders side-by-side preview', async () => {
     render(
       <SmartRevisionEngine sceneId="scene1" suggestion={sampleSuggestion} />
     );
-    expect(await screen.findByText(/AI Revision Preview/i)).toBeInTheDocument();
-    expect(screen.getByText(/Original/)).toBeInTheDocument();
+    expect(await screen.findByText(/AI Revision Engine/i)).toBeInTheDocument();
+    expect(screen.getByText(/Original Scene/)).toBeInTheDocument();
     expect(screen.getByText(/AI Revision/)).toBeInTheDocument();
   });
 
@@ -171,5 +221,26 @@ describe('<SmartRevisionEngine />', () => {
       <SmartRevisionEngine sceneId="scene1" suggestion={sampleSuggestion} />
     );
     expect(await screen.findByRole('alert')).toHaveTextContent('LLM error');
+  });
+
+  it('handles null/undefined props safely', () => {
+    // Test with minimal props
+    render(<SmartRevisionEngine sceneId="" />);
+    expect(
+      screen.getByText(/No scene selected for revision/i)
+    ).toBeInTheDocument();
+  });
+
+  it('handles empty arrays safely', () => {
+    render(
+      <SmartRevisionEngine
+        sceneId="scene1"
+        suggestion={{
+          ...sampleSuggestion,
+          specificChanges: [],
+        }}
+      />
+    );
+    expect(screen.getByText(/AI Revision Engine/i)).toBeInTheDocument();
   });
 });

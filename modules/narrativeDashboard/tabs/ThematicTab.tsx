@@ -1,16 +1,30 @@
-// MCP Context Block
-/*
-role: frontend-developer,
-tier: Pro,
-file: "modules/narrativeDashboard/tabs/ThematicTab.tsx",
-allowedActions: ["scaffold", "compose", "visualize"],
-theme: "theme_dashboard"
-*/
+export const mcpContext = {
+  file: 'modules/narrativeDashboard/tabs/ThematicTab.tsx',
+  role: 'developer',
+  allowedActions: ['refactor', 'type-harden', 'test'],
+  contentSensitivity: 'low',
+  theme: 'doccraft-ai',
+};
 
 import React, { useState } from 'react';
+import type { NarrativeSyncState } from '../../shared/state/useNarrativeSyncContext';
 import ThemeMatrixPanel from '../../themeAnalysis/components/ThemeMatrixPanel';
+import type {
+  ThemeAlignmentReport,
+  SceneThemeFingerprint,
+  ThemeKeyword,
+} from '../../themeAnalysis/themeTypes';
+
 // Placeholder for ThemeSummarySidebar
-const ThemeSummarySidebar: React.FC<any> = ({ report, onSelectTheme }) => (
+interface ThemeSummarySidebarProps {
+  report: ThemeAlignmentReport;
+  onSelectTheme?: (theme: string) => void;
+}
+
+const ThemeSummarySidebar: React.FC<ThemeSummarySidebarProps> = ({
+  report,
+  onSelectTheme,
+}) => (
   <aside className="p-4" aria-label="Theme Summary Sidebar">
     <h2 className="text-lg font-bold mb-2">Theme Summary</h2>
     <div className="mb-2">
@@ -35,11 +49,6 @@ const ThemeSummarySidebar: React.FC<any> = ({ report, onSelectTheme }) => (
     </ul>
   </aside>
 );
-import type {
-  ThemeAlignmentReport,
-  SceneThemeFingerprint,
-  ThemeKeyword,
-} from '../../themeAnalysis/themeTypes';
 
 // Mock data for demo
 const mockReport: ThemeAlignmentReport = {
@@ -69,6 +78,7 @@ const mockReport: ThemeAlignmentReport = {
     'Scene scene3: No trust signals present.',
   ],
 };
+
 const allScenes: SceneThemeFingerprint[] = [
   {
     sceneId: 'scene1',
@@ -80,20 +90,26 @@ const allScenes: SceneThemeFingerprint[] = [
   },
   ...mockReport.misalignedScenes,
 ];
+
 const allThemes: ThemeKeyword[] = ['loyalty', 'sacrifice', 'trust', 'betrayal'];
 
-const ThematicTab: React.FC = () => {
+export interface ThematicTabProps {
+  narrativeSync?: NarrativeSyncState;
+}
+
+const ThematicTab: React.FC<ThematicTabProps> = ({ }) => {
   const [view, setView] = useState<'matrix' | 'summary'>('matrix');
   const [selectedTheme, setSelectedTheme] = useState<ThemeKeyword | null>(null);
   const [loading] = useState(false);
   const [error] = useState<string | null>(null);
+
   // TODO: Replace with useNarrativeSync() and real ThemeAlignmentReport
   const report = mockReport;
   const scenes = allScenes;
   const themes = allThemes;
 
   // Anchor navigation to misaligned scenes
-  const handleAnchor = (sceneId: string) => {
+  const handleAnchor = (sceneId: string): void => {
     const el = document.getElementById(`scene-${sceneId}`);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };

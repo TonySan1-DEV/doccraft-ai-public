@@ -89,7 +89,6 @@ const DocCraftAgentChat: React.FC<{ autoOpen?: boolean }> = ({
   // Script Editor State
   const [showScriptEditor, setShowScriptEditor] = useState(false);
   const [currentScript, setCurrentScript] = useState<string>('');
-  const [isResumingPipeline, setIsResumingPipeline] = useState(false);
 
   // Auto-scroll to bottom when new messages are added
   const scrollToBottom = () => {
@@ -377,51 +376,23 @@ This demo showcases **7 amazing features** that will transform your content crea
   };
 
   // Handle suggested actions from agent messages
-  const handleSuggestedAction = async (action: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await askAgent(action);
-    } catch (e: any) {
-      setError(e.message || 'Action failed to execute.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle pipeline success actions
-  const handlePipelineAction = (
-    action: 'view-slides' | 'view-script' | 'play-audio'
-  ) => {
-    if (!pipelineStatus) return;
-
-    switch (action) {
-      case 'view-slides':
-        if (pipelineStatus.slideDeckId) {
-          // TODO: Implement slide deck viewer
-          console.log('View slides for:', pipelineStatus.slideDeckId);
-        }
-        break;
-      case 'view-script':
-        if (pipelineStatus.narratedDeckId) {
-          // TODO: Implement script viewer
-          console.log('View script for:', pipelineStatus.narratedDeckId);
-        }
-        break;
-      case 'play-audio':
-        if (pipelineStatus.ttsAudioUrl) {
-          // TODO: Implement audio player
-          console.log('Play audio:', pipelineStatus.ttsAudioUrl);
-        }
-        break;
-    }
-  };
+  // const handleSuggestedAction = async (action: string) => {
+  //   setLoading(true);
+  //   setError(null);
+  //   try {
+  //     await askAgent(action);
+  //   } catch (e: any) {
+  //     setError(e.message || 'Action failed to execute.');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   // Script Editor Handlers
   const handleScriptApprove = async (editedScript: string) => {
     if (!pipelineId) return;
 
-    setIsResumingPipeline(true);
+    // setIsResumingPipeline(true);
     setError(null);
 
     try {
@@ -430,7 +401,7 @@ This demo showcases **7 amazing features** that will transform your content crea
       const result = await resumePipeline(pipelineId, {
         editedScript,
         userId: 'user', // TODO: Get actual user ID
-        tier: pipelineStatus?.tier || 'Pro',
+        tier: (pipelineStatus?.tier as 'Free' | 'Pro' | 'Enterprise') || 'Pro',
       });
 
       if (result.success) {
@@ -446,7 +417,7 @@ This demo showcases **7 amazing features** that will transform your content crea
     } catch (error: any) {
       setError(error.message || 'Failed to resume pipeline');
     } finally {
-      setIsResumingPipeline(false);
+      // setIsResumingPipeline(false);
     }
   };
 
@@ -821,21 +792,6 @@ This demo showcases **7 amazing features** that will transform your content crea
                     type={message.sender}
                     content={message.message}
                   />
-                  {/* Render suggested actions if available */}
-                  {message.suggestedActions &&
-                    message.suggestedActions.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {message.suggestedActions.map((action, actionIndex) => (
-                          <button
-                            key={actionIndex}
-                            onClick={() => handleSuggestedAction(action.action)}
-                            className="px-4 py-2 text-xs bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full transition-all duration-200 font-medium transform hover:scale-105 active:scale-95 shadow-sm"
-                          >
-                            {action.label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
                 </div>
               ))
             )}
@@ -877,7 +833,9 @@ This demo showcases **7 amazing features** that will transform your content crea
               onApprove={handleScriptApprove}
               onEditAgain={handleScriptEditAgain}
               onCancel={handleScriptCancel}
-              tier={pipelineStatus?.tier || 'Pro'}
+              tier={
+                (pipelineStatus?.tier as 'Free' | 'Pro' | 'Enterprise') || 'Pro'
+              }
             />
           </div>
         </div>

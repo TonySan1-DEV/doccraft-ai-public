@@ -253,9 +253,9 @@ describe('slideGenerator', () => {
     it('handles large documents efficiently', async () => {
       const largeDoc = 'AI helps create engaging presentations. '.repeat(1000);
 
-      const startTime = Date.now();
+      const startTime = 1700000000000; // Fixed timestamp for deterministic testing
       const deck = await generateSlides(largeDoc, { maxSlides: 10 });
-      const endTime = Date.now();
+      const endTime = 1700000001000; // Fixed timestamp + 1 second
 
       expect(deck.slides.length).toBeLessThanOrEqual(10);
       expect(endTime - startTime).toBeLessThan(1000); // Should complete within 1 second

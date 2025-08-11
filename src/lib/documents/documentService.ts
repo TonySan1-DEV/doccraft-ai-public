@@ -1,6 +1,6 @@
 import { supabase } from '../supabase';
 import { AuditLogger } from '../audit/auditLogger';
-import { MCPContext, AuditDetails } from '@/types/domain';
+import { MCPContext, AuditDetails } from '../../types/domain';
 import * as Y from 'yjs';
 
 export interface Document {

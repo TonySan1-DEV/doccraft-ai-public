@@ -1,14 +1,13 @@
-// MCP Context Block
-/*
-role: frontend-developer,
-tier: Pro,
-file: "modules/narrativeDashboard/tabs/ThemeViewTab.tsx",
-allowedActions: ["scaffold", "visualize", "align"],
-theme: "theme_analysis"
-*/
+export const mcpContext = {
+  file: 'modules/narrativeDashboard/tabs/ThemeViewTab.tsx',
+  role: 'developer',
+  allowedActions: ['refactor', 'type-harden', 'test'],
+  contentSensitivity: 'low',
+  theme: 'doccraft-ai',
+};
 
 import React, { useState, Suspense } from 'react';
-import { useNarrativeSync } from '../../shared/state/useNarrativeSyncContext';
+import type { NarrativeSyncState } from '../../shared/state/useNarrativeSyncContext';
 import ThemeMatrixPanel from '../../../modules/themeAnalysis/components/ThemeMatrixPanel';
 
 const NarrativeOverlaySelector = React.lazy(
@@ -19,7 +18,16 @@ const SceneInspectorPanel = React.lazy(
 );
 
 // Mock data for now
-const mockScenes = [
+interface MockScene {
+  sceneId: string;
+  themes: Array<{
+    theme: string;
+    strength: number;
+    context: string;
+  }>;
+}
+
+const mockScenes: MockScene[] = [
   {
     sceneId: 'scene1',
     themes: [
@@ -37,15 +45,19 @@ const mockScenes = [
       {
         theme: 'love',
         strength: 0.9,
-        context: 'I can’t stop thinking about her.',
+        context: "I can't stop thinking about her.",
       },
     ],
   },
 ];
-const mockThemes = ['identity', 'belonging', 'betrayal', 'love'];
 
-const ThemeViewTab: React.FC = () => {
-  const narrativeSync = useNarrativeSync();
+const mockThemes: string[] = ['identity', 'belonging', 'betrayal', 'love'];
+
+export interface ThemeViewTabProps {
+  narrativeSync?: NarrativeSyncState;
+}
+
+const ThemeViewTab: React.FC<ThemeViewTabProps> = ({ narrativeSync }) => {
   const [activeTab, setActiveTab] = useState<
     'overview' | 'matrix' | 'coverage'
   >('matrix');
@@ -82,9 +94,7 @@ const ThemeViewTab: React.FC = () => {
             Theme Coverage
           </button>
         </nav>
-        <div
-          className="mt-2"
-        >
+        <div className="mt-2">
           {activeTab === 'matrix' && (
             <ThemeMatrixPanel scenes={mockScenes} themes={mockThemes} />
           )}
@@ -98,10 +108,9 @@ const ThemeViewTab: React.FC = () => {
           <NarrativeOverlaySelector />
         </Suspense>
       </div>
-      <aside
-        className="w-full md:w-80 flex flex-col gap-4"
-        aria-label="Scene Metadata Panel"
-      >
+
+      {/* Sidebar */}
+      <aside className="w-full md:w-80 flex flex-col gap-4">
         <Suspense
           fallback={
             <div className="text-center text-blue-600">
@@ -109,11 +118,7 @@ const ThemeViewTab: React.FC = () => {
             </div>
           }
         >
-          <SceneInspectorPanel
-            narrativeSync={{
-              currentSceneId: narrativeSync.state.currentSceneId || undefined,
-            }}
-          />
+          <SceneInspectorPanel narrativeSync={narrativeSync} />
         </Suspense>
       </aside>
     </section>

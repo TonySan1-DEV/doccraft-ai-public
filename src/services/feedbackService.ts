@@ -26,6 +26,13 @@ export interface FeedbackContextData {
   tokenCount?: number;
   userTier?: string;
   featureFlags?: string[];
+  userPreferences?: {
+    tone: string;
+    genre: string;
+    copilotEnabled: boolean;
+    memoryEnabled: boolean;
+    defaultCommandView: string;
+  };
   browserInfo?: {
     userAgent: string;
     language: string;
@@ -530,7 +537,7 @@ export class FeedbackService {
    * Calculate average response time for a pattern
    * TODO: Unit test - test response time calculation with different patterns
    */
-  private calculateAvgResponseTime(pattern: string): number {
+  private calculateAvgResponseTime(_pattern: string): number {
     // This would integrate with actual response time tracking
     return Math.random() * 2000 + 500; // Placeholder
   }

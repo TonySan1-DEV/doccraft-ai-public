@@ -52,7 +52,7 @@ function getGoalsPrimary(character: CharacterPersona): string {
     return character.goalsDetails.primary;
   }
   // Fallback to legacy goals string
-  return character.goals || '';
+  return character.goals?.join(', ') ?? '';
 }
 
 function getGoalsInternal(character: CharacterPersona): string {

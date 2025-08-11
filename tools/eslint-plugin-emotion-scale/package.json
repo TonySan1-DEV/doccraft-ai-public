@@ -1,0 +1,16 @@
+{
+  "name": "eslint-plugin-emotion-scale",
+  "version": "1.0.0",
+  "description": "ESLint plugin to prevent inappropriate scaling operations on emotion-related fields",
+  "main": "index.js",
+  "type": "module",
+  "keywords": [
+    "eslint",
+    "eslint-plugin",
+    "emotion",
+    "scaling",
+    "typescript"
+  ],
+  "author": "DocCraft AI",
+  "license": "MIT"
+}

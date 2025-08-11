@@ -10,9 +10,9 @@
  * - theme: "Content Transformation"
  */
 
-import { slideGenerator } from './slideGenerator';
-import { scriptGenerator } from './scriptGenerator';
-import { ttsSyncEngine } from './ttsSyncEngine';
+import { generateSlides } from './slideGenerator';
+import { generateNarration, NarratedSlideDeck } from './scriptGenerator';
+import { generateTTSNarration } from './ttsSyncEngine';
 
 // Types for pipeline execution
 export interface DocToVideoCommand {
@@ -20,6 +20,26 @@ export interface DocToVideoCommand {
   documentContent?: string;
   documentPath?: string;
   options?: {
+    // Slide generation options
+    maxSlides?: number;
+    style?: string;
+    audience?: string;
+    genre?: string;
+    genreContext?: {
+      category: 'fiction' | 'nonfiction' | 'special';
+      subgenre?: string;
+      targetAudience?: string[];
+    };
+    // Narration options
+    tone?: 'formal' | 'conversational' | 'persuasive';
+    length?: 'short' | 'medium' | 'long';
+    language?: string;
+    // TTS options
+    voice?: string;
+    speed?: number;
+    quality?: 'low' | 'medium' | 'high';
+    format?: 'mp3' | 'wav' | 'ogg';
+    // Legacy options for backward compatibility
     slideCount?: number;
     narrationStyle?: 'professional' | 'casual' | 'educational';
     includeImages?: boolean;
@@ -45,7 +65,7 @@ export interface SlideData {
   title: string;
   content: string[];
   imagePrompt?: string;
-  narration?: string;
+  narration?: string; // Optional - only present for narrated slides
   duration: number;
 }
 
@@ -256,23 +276,88 @@ export class DocToVideoRouter {
   ): Promise<PipelineResult> {
     console.log('🚀 Executing full doc-to-video pipeline...');
 
+    // Map options to slide generation parameters
+    const slideOptions = {
+      maxSlides: options?.maxSlides || options?.slideCount,
+      style: options?.style,
+      audience: options?.audience,
+      genre: options?.genre,
+      genreContext: options?.genreContext,
+    };
+
     // Generate slides
-    const slides = await slideGenerator.generateSlides(
-      documentContent,
-      options
-    );
+    const slideDeck = await generateSlides(documentContent!, slideOptions);
+
+    // Map options to narration parameters
+    const narrationOptions = {
+      tone:
+        options?.tone ||
+        (options?.narrationStyle === 'professional'
+          ? 'formal'
+          : 'conversational'),
+      length: options?.length || 'medium',
+      language: options?.language,
+      genre: options?.genre,
+      genreContext: options?.genreContext,
+    };
 
     // Generate script for slides
-    const script = await scriptGenerator.generateScript(slides, options);
+    const narratedDeck: NarratedSlideDeck = await generateNarration(
+      slideDeck,
+      narrationOptions
+    );
+
+    // Map options to TTS parameters
+    const ttsOptions = {
+      voice: options?.voice || options?.ttsVoice,
+      speed: options?.speed,
+      quality: options?.quality,
+      format: options?.format,
+      userId: 'default', // TODO: Get actual userId from context
+    };
 
     // Generate narration
-    const narration = await ttsSyncEngine.generateNarration(script, options);
+    const ttsNarration = await generateTTSNarration(narratedDeck, ttsOptions);
+
+    // Convert types to match PipelineResult interface
+    const slides: SlideData[] = narratedDeck.slides.map(slide => ({
+      id: slide.id,
+      title: slide.title,
+      content: slide.bullets,
+      imagePrompt: slide.suggestedImagePrompt,
+      narration: (slide as any).narration || '',
+      duration: 10, // Default duration
+    }));
+
+    const script: ScriptData = {
+      slides,
+      totalDuration: slides.length * 10, // Default duration per slide
+      wordCount: narratedDeck.slides.reduce(
+        (total, slide) => total + ((slide as any).narration?.split(' ').length || 0),
+        0
+      ),
+    };
+
+    const narration: NarrationData = {
+      audioUrl: ttsNarration.audioFileUrl,
+      timeline: ttsNarration.timeline.map(item => ({
+        slideId: item.slideId,
+        startTime: item.startTime,
+        endTime: item.endTime,
+        text: item.narration,
+      })),
+    };
 
     return {
       success: true,
       slides,
       script,
       narration,
+      metadata: {
+        processingTime: Date.now() - Date.now(), // TODO: Add actual processing time tracking
+        slideCount: slides.length,
+        wordCount: script.wordCount,
+      },
     };
   }
 
@@ -285,19 +370,65 @@ export class DocToVideoRouter {
   ): Promise<PipelineResult> {
     console.log('📝 Generating script only...');
 
+    // Map options to slide generation parameters
+    const slideOptions = {
+      maxSlides: options?.maxSlides || options?.slideCount,
+      style: options?.style,
+      audience: options?.audience,
+      genre: options?.genre,
+      genreContext: options?.genreContext,
+    };
+
     // Generate basic slides for script generation
-    const slides = await slideGenerator.generateSlides(
-      documentContent,
-      options
-    );
+    const slideDeck = await generateSlides(documentContent!, slideOptions);
+
+    // Map options to narration parameters
+    const narrationOptions = {
+      tone:
+        options?.tone ||
+        (options?.narrationStyle === 'professional'
+          ? 'formal'
+          : 'conversational'),
+      length: options?.length || 'medium',
+      language: options?.language,
+      genre: options?.genre,
+      genreContext: options?.genreContext,
+    };
 
     // Generate script
-    const script = await scriptGenerator.generateScript(slides, options);
+    const narratedDeck: NarratedSlideDeck = await generateNarration(
+      slideDeck,
+      narrationOptions
+    );
+
+    // Convert types to match PipelineResult interface
+    const slides: SlideData[] = narratedDeck.slides.map(slide => ({
+      id: slide.id,
+      title: slide.title,
+      content: slide.bullets,
+      imagePrompt: slide.suggestedImagePrompt,
+      narration: (slide as any).narration || '',
+      duration: 10, // Default duration
+    }));
+
+    const script: ScriptData = {
+      slides,
+      totalDuration: slides.length * 10, // Default duration per slide
+      wordCount: narratedDeck.slides.reduce(
+        (total, slide) => total + ((slide as any).narration?.split(' ').length || 0),
+        0
+      ),
+    };
 
     return {
       success: true,
       slides,
       script,
+      metadata: {
+        processingTime: Date.now() - Date.now(), // TODO: Add actual processing time tracking
+        slideCount: slides.length,
+        wordCount: script.wordCount,
+      },
     };
   }
 
@@ -310,14 +441,36 @@ export class DocToVideoRouter {
   ): Promise<PipelineResult> {
     console.log('📊 Generating slides only...');
 
-    const slides = await slideGenerator.generateSlides(
-      documentContent,
-      options
-    );
+    // Map options to slide generation parameters
+    const slideOptions = {
+      maxSlides: options?.maxSlides || options?.slideCount,
+      style: options?.style,
+      audience: options?.audience,
+      genre: options?.genre,
+      genreContext: options?.genreContext,
+    };
+
+    // Generate slides
+    const slideDeck = await generateSlides(documentContent!, slideOptions);
+
+    // Convert types to match PipelineResult interface
+    const slides: SlideData[] = slideDeck.slides.map(slide => ({
+      id: slide.id,
+      title: slide.title,
+      content: slide.bullets,
+      imagePrompt: slide.suggestedImagePrompt,
+      narration: '', // Empty narration for slides-only mode
+      duration: 10, // Default duration
+    }));
 
     return {
       success: true,
       slides,
+      metadata: {
+        processingTime: Date.now() - Date.now(), // TODO: Add actual processing time tracking
+        slideCount: slides.length,
+        wordCount: 0, // No script generated
+      },
     };
   }
 
@@ -330,20 +483,81 @@ export class DocToVideoRouter {
   ): Promise<PipelineResult> {
     console.log('🎤 Generating voiceover only...');
 
-    // Generate slides and script for narration
-    const slides = await slideGenerator.generateSlides(
-      documentContent,
-      options
-    );
-    const script = await scriptGenerator.generateScript(slides, options);
+    // Map options to slide generation parameters
+    const slideOptions = {
+      maxSlides: options?.maxSlides || options?.slideCount,
+      style: options?.style,
+      audience: options?.audience,
+      genre: options?.genre,
+      genreContext: options?.genreContext,
+    };
 
-    // Generate narration
-    const narration = await ttsSyncEngine.generateNarration(script, options);
+    // Generate slides
+    const slideDeck = await generateSlides(documentContent!, slideOptions);
+
+    // Map options to narration parameters
+    const narrationOptions = {
+      tone:
+        options?.tone ||
+        (options?.narrationStyle === 'professional'
+          ? 'formal'
+          : 'conversational'),
+      length: options?.length || 'medium',
+      language: options?.language,
+      genre: options?.genre,
+      genreContext: options?.genreContext,
+    };
+
+    // Generate script
+    const narratedDeck: NarratedSlideDeck = await generateNarration(
+      slideDeck,
+      narrationOptions
+    );
+
+    // Map options to TTS parameters
+    const ttsOptions = {
+      voice: options?.voice || options?.ttsVoice,
+      speed: options?.speed,
+      quality: options?.quality,
+      format: options?.format,
+      userId: 'default', // TODO: Get actual userId from context
+    };
+
+    // Generate TTS narration
+    const ttsNarration = await generateTTSNarration(narratedDeck, ttsOptions);
+
+    // Convert types to match PipelineResult interface
+    const slides: SlideData[] = narratedDeck.slides.map(slide => ({
+      id: slide.id,
+      title: slide.title,
+      content: slide.bullets,
+      imagePrompt: slide.suggestedImagePrompt,
+      narration: (slide as any).narration || '',
+      duration: 10, // Default duration
+    }));
+
+    const narration: NarrationData = {
+      audioUrl: ttsNarration.audioFileUrl,
+      timeline: ttsNarration.timeline.map(item => ({
+        slideId: item.slideId,
+        startTime: item.startTime,
+        endTime: item.endTime,
+        text: item.narration,
+      })),
+    };
 
     return {
       success: true,
-      script,
+      slides,
       narration,
+      metadata: {
+        processingTime: Date.now() - Date.now(), // TODO: Add actual processing time tracking
+        slideCount: slides.length,
+        wordCount: narratedDeck.slides.reduce(
+          (total, slide) => total + ((slide as any).narration?.split(' ').length || 0),
+          0
+        ),
+      },
     };
   }
 }

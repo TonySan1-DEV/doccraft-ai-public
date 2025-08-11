@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
-import { SceneConfig } from "../types/SceneConfig";
+import React, { useState, useEffect, useRef } from 'react';
+import { SceneConfig } from '../types/SceneConfig';
 
-import { useSceneConfig } from "../hooks/useSceneConfig";
-import { SceneMessage } from "../services/simulateSceneDialog";
-import { useAuth } from "../contexts/AuthContext";
+import { useSceneConfig } from '../hooks/useSceneConfig';
+import { SceneMessage } from '../services/simulateSceneDialog';
+import { useAuth } from '../contexts/AuthContext';
 import {
   Loader2,
   Sparkles,
@@ -15,10 +15,10 @@ import {
   SkipForward,
   RotateCw,
   Edit3,
-} from "lucide-react";
-import toast from "react-hot-toast";
-import SceneScriptEditor from "./SceneScriptEditor";
-import { CSSTransition, SwitchTransition } from "react-transition-group";
+} from 'lucide-react';
+import toast from 'react-hot-toast';
+import SceneScriptEditor from './SceneScriptEditor';
+import { CSSTransition, SwitchTransition } from 'react-transition-group';
 
 interface SceneChatSimulatorProps {
   sceneId?: string;
@@ -28,17 +28,17 @@ interface SceneChatSimulatorProps {
 function formatExport(
   config: SceneConfig,
   messages: SceneMessage[],
-  format: "text" | "json" | "markdown"
+  format: 'text' | 'json' | 'markdown'
 ): string {
-  if (format === "json") {
+  if (format === 'json') {
     return JSON.stringify({ scene: config, messages }, null, 2);
   }
-  if (format === "markdown") {
+  if (format === 'markdown') {
     let md = `# ${config.title}\n\n**Setting:** ${config.setting}\n`;
     if (config.tone) md += `**Tone:** ${config.tone}\n`;
     if (config.objective) md += `**Objective:** ${config.objective}\n`;
-    md += "\n---\n\n";
-    messages.forEach((m) => {
+    md += '\n---\n\n';
+    messages.forEach(m => {
       md += `**${m.speakerName}:** ${m.text}\n\n`;
     });
     return md;
@@ -47,8 +47,8 @@ function formatExport(
   let txt = `${config.title}\nSetting: ${config.setting}\n`;
   if (config.tone) txt += `Tone: ${config.tone}\n`;
   if (config.objective) txt += `Objective: ${config.objective}\n`;
-  txt += "\n";
-  messages.forEach((m) => {
+  txt += '\n';
+  messages.forEach(m => {
     txt += `${m.speakerName}: ${m.text}\n`;
   });
   return txt;
@@ -56,22 +56,21 @@ function formatExport(
 
 const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
   const { user } = useAuth();
-  const isPro = user?.tier === "Pro" || user?.tier === "Admin";
+  const isPro = user?.tier === 'Pro' || user?.tier === 'Admin';
   const {
     config,
     loading: sceneLoading,
     error: sceneError,
   } = useSceneConfig(sceneId);
   const [messages, setMessages] = useState<SceneMessage[]>([]);
-  const [input, setInput] = useState("");
-  const [loading] = useState(false);
+  const [input, setInput] = useState('');
   const [autoMode, setAutoMode] = useState(true);
   const [selectedSpeaker, setSelectedSpeaker] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const [showExport, setShowExport] = useState(false);
   const [exportFormat, setExportFormat] = useState<
-    "text" | "json" | "markdown"
-  >("text");
+    'text' | 'json' | 'markdown'
+  >('text');
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -88,14 +87,14 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
   // Scroll to bottom on new message
   useEffect(() => {
     if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, loading]);
+  }, [messages, sceneLoading]);
 
   // Reset conversation
   const handleReset = () => {
     setMessages([]);
-    setInput("");
+    setInput('');
     setSelectedSpeaker(null);
   };
 
@@ -103,9 +102,9 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
 
   // Upgrade CTA for Free users
   const handleUpgradeClick = () => {
-    toast("Upgrade to Pro to unlock scene simulation!", {
-      icon: "✨",
-      style: { background: "#1e293b", color: "#fff" },
+    toast('Upgrade to Pro to unlock scene simulation!', {
+      icon: '✨',
+      style: { background: '#1e293b', color: '#fff' },
     });
   };
 
@@ -114,21 +113,21 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
     const data = formatExport(config, messages, exportFormat);
     const blob = new Blob([data], {
       type:
-        exportFormat === "json"
-          ? "application/json"
-          : exportFormat === "markdown"
-          ? "text/markdown"
-          : "text/plain",
+        exportFormat === 'json'
+          ? 'application/json'
+          : exportFormat === 'markdown'
+            ? 'text/markdown'
+            : 'text/plain',
     });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = `${config.title.replace(/\s+/g, "_")}_scene.${
-      exportFormat === "json"
-        ? "json"
-        : exportFormat === "markdown"
-        ? "md"
-        : "txt"
+    a.download = `${config.title.replace(/\s+/g, '_')}_scene.${
+      exportFormat === 'json'
+        ? 'json'
+        : exportFormat === 'markdown'
+          ? 'md'
+          : 'txt'
     }`;
     document.body.appendChild(a);
     a.click();
@@ -144,13 +143,13 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
     if (isPlaying && messages.length > 0) {
       if (currentStep < messages.length) {
         const interval = setInterval(() => {
-          setMessagesToShow((prev) => {
+          setMessagesToShow(prev => {
             if (currentStep < messages.length) {
               return messages.slice(0, currentStep + 1);
             }
             return prev;
           });
-          setCurrentStep((prev) => prev + 1);
+          setCurrentStep(prev => prev + 1);
         }, delayMsPerMessage);
         setPlaybackIntervalId(interval);
         return () => clearInterval(interval);
@@ -195,29 +194,29 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
         document.activeElement &&
-        (document.activeElement as HTMLElement).tagName === "INPUT"
+        (document.activeElement as HTMLElement).tagName === 'INPUT'
       )
         return;
-      if (e.code === "Space") {
+      if (e.code === 'Space') {
         e.preventDefault();
         handlePlay();
       }
-      if (e.key === "p" || e.key === "P") {
+      if (e.key === 'p' || e.key === 'P') {
         handlePause();
       }
-      if (e.key === "r" || e.key === "R") {
+      if (e.key === 'r' || e.key === 'R') {
         if (e.shiftKey) handleRestart();
         else handleResume();
       }
-      if (e.key === "End") {
+      if (e.key === 'End') {
         handleSkip();
       }
-      if (e.key === "e" || e.key === "E") {
-        setScriptMode((m) => !m);
+      if (e.key === 'e' || e.key === 'E') {
+        setScriptMode(m => !m);
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
     handlePlay,
     handlePause,
@@ -293,8 +292,8 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
                 type="radio"
                 name="exportFormat"
                 value="text"
-                checked={exportFormat === "text"}
-                onChange={() => setExportFormat("text")}
+                checked={exportFormat === 'text'}
+                onChange={() => setExportFormat('text')}
               />
               Plain Text
             </label>
@@ -303,8 +302,8 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
                 type="radio"
                 name="exportFormat"
                 value="markdown"
-                checked={exportFormat === "markdown"}
-                onChange={() => setExportFormat("markdown")}
+                checked={exportFormat === 'markdown'}
+                onChange={() => setExportFormat('markdown')}
               />
               Markdown
             </label>
@@ -313,8 +312,8 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
                 type="radio"
                 name="exportFormat"
                 value="json"
-                checked={exportFormat === "json"}
-                onChange={() => setExportFormat("json")}
+                checked={exportFormat === 'json'}
+                onChange={() => setExportFormat('json')}
               />
               JSON
             </label>
@@ -336,7 +335,7 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
         )}
         {/* Participants */}
         <div className="flex gap-4 mt-3">
-          {config.participants.map((p) => (
+          {config.participants.map(p => (
             <div key={p.id} className="flex flex-col items-center">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center text-lg font-bold text-white shadow">
                 {p.name[0]}
@@ -353,7 +352,7 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
       {/* Chat History */}
       <SwitchTransition mode="out-in">
         <CSSTransition
-          key={scriptMode ? "script" : "sim"}
+          key={scriptMode ? 'script' : 'sim'}
           timeout={300}
           classNames="fade-slide"
           nodeRef={scriptMode ? scriptEditorRef : playbackControlsRef}
@@ -376,8 +375,8 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
                 initialLines={messages.map((m, i) => ({
                   id: String(i),
                   speakerId:
-                    config.participants.find((p) => p.name === m.speakerName)
-                      ?.id || "",
+                    config.participants.find(p => p.name === m.speakerName)
+                      ?.id || '',
                   text: m.text,
                 }))}
                 participants={config.participants}
@@ -419,47 +418,47 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
                 {messagesToShow.map((msg, idx) => {
                   const isCurrent = isPlaying && idx === currentStep - 1;
                   const speaker = config.participants.find(
-                    (p) => p.name === msg.speakerName
+                    p => p.name === msg.speakerName
                   );
                   return (
                     <div
                       key={idx}
                       className={`flex items-center gap-2 ${
                         isCurrent
-                          ? "bg-blue-50 dark:bg-blue-900 ring-2 ring-blue-400"
-                          : ""
+                          ? 'bg-blue-50 dark:bg-blue-900 ring-2 ring-blue-400'
+                          : ''
                       } rounded transition-all duration-300`}
-                      aria-current={isCurrent ? "step" : undefined}
+                      aria-current={isCurrent ? 'step' : undefined}
                     >
                       {/* Avatar */}
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white shadow ${
                           speaker
-                            ? "bg-gradient-to-br from-blue-400 to-purple-600"
-                            : "bg-zinc-400"
+                            ? 'bg-gradient-to-br from-blue-400 to-purple-600'
+                            : 'bg-zinc-400'
                         }`}
                         aria-label={
-                          speaker ? `${speaker.name} avatar` : "Unknown speaker"
+                          speaker ? `${speaker.name} avatar` : 'Unknown speaker'
                         }
                       >
-                        {speaker ? speaker.name[0] : "?"}
+                        {speaker ? speaker.name[0] : '?'}
                       </div>
                       <div
                         className={`max-w-[75%] px-4 py-2 rounded-lg shadow text-sm whitespace-pre-line border-2 ${
                           speaker
-                            ? "border-blue-400 bg-blue-50 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
-                            : "border-zinc-300 bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100"
-                        } ${isCurrent ? "font-bold" : ""}`}
+                            ? 'border-blue-400 bg-blue-50 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
+                            : 'border-zinc-300 bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100'
+                        } ${isCurrent ? 'font-bold' : ''}`}
                         aria-label={`${msg.speakerName}: ${msg.text}`}
                       >
-                        <span className="font-bold">{msg.speakerName}:</span>{" "}
+                        <span className="font-bold">{msg.speakerName}:</span>{' '}
                         {msg.text}
                         <div className="mt-1 text-[10px] text-right text-zinc-400">
                           {new Date(
                             msg.timestamp || Date.now()
                           ).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
+                            hour: '2-digit',
+                            minute: '2-digit',
                           })}
                         </div>
                       </div>
@@ -481,8 +480,8 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
                   aria-label="Play Scene"
                 >
                   <Play
-                    className={`w-4 h-4 ${isPlaying ? "animate-pulse" : ""}`}
-                  />{" "}
+                    className={`w-4 h-4 ${isPlaying ? 'animate-pulse' : ''}`}
+                  />{' '}
                   Play
                 </button>
                 <button
@@ -523,30 +522,30 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
                 <button
                   className={`flex items-center gap-1 px-3 py-1 text-xs rounded ${
                     scriptMode
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300"
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300'
                   } transition focus:ring-2 focus:ring-blue-400`}
-                  onClick={() => setScriptMode((m) => !m)}
+                  onClick={() => setScriptMode(m => !m)}
                   title={
                     scriptMode
-                      ? "Switch to Simulation Mode (E)"
-                      : "Switch to Script Editor Mode (E)"
+                      ? 'Switch to Simulation Mode (E)'
+                      : 'Switch to Script Editor Mode (E)'
                   }
                   aria-label={
                     scriptMode
-                      ? "Switch to Simulation Mode"
-                      : "Switch to Script Editor Mode"
+                      ? 'Switch to Simulation Mode'
+                      : 'Switch to Script Editor Mode'
                   }
                 >
-                  <Edit3 className="w-4 h-4" />{" "}
-                  {scriptMode ? "Simulation" : "Script Editor"}
+                  <Edit3 className="w-4 h-4" />{' '}
+                  {scriptMode ? 'Simulation' : 'Script Editor'}
                 </button>
               </div>
               {/* Inline help */}
               <div className="text-xs text-zinc-400 mt-2" aria-live="polite">
                 <span>
-                  Tip: Use <kbd>Space</kbd> to play, <kbd>P</kbd> to pause,{" "}
-                  <kbd>R</kbd> to resume, <kbd>End</kbd> to skip,{" "}
+                  Tip: Use <kbd>Space</kbd> to play, <kbd>P</kbd> to pause,{' '}
+                  <kbd>R</kbd> to resume, <kbd>End</kbd> to skip,{' '}
                   <kbd>Shift+R</kbd> to restart, <kbd>E</kbd> to toggle editor.
                 </span>
               </div>
@@ -566,8 +565,8 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
               type="button"
               className={`px-2 py-1 rounded text-xs font-semibold border ${
                 autoMode
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-zinc-700"
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-zinc-700'
               }`}
               onClick={() => setAutoMode(true)}
               disabled={autoMode}
@@ -578,8 +577,8 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
               type="button"
               className={`px-2 py-1 rounded text-xs font-semibold border ${
                 !autoMode
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-zinc-700"
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-zinc-700'
               }`}
               onClick={() => setAutoMode(false)}
               disabled={!autoMode}
@@ -590,14 +589,14 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
           {!autoMode && (
             <select
               className="ml-2 px-2 py-1 rounded border bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-xs"
-              value={selectedSpeaker || ""}
-              onChange={(e) => setSelectedSpeaker(e.target.value)}
+              value={selectedSpeaker || ''}
+              onChange={e => setSelectedSpeaker(e.target.value)}
               required
             >
               <option value="" disabled>
                 Select Speaker
               </option>
-              {config.participants.map((p) => (
+              {config.participants.map(p => (
                 <option key={p.id} value={p.name}>
                   {p.name}
                 </option>
@@ -609,13 +608,15 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
             className="flex-1 px-3 py-2 rounded border bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-60"
             placeholder={
               autoMode
-                ? "Let AI continue the scene..."
-                : "Suggest dialog for selected character"
+                ? 'Let AI continue the scene...'
+                : 'Suggest dialog for selected character'
             }
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={e => setInput(e.target.value)}
             disabled={
-              loading || (autoMode && true) || (!autoMode && !selectedSpeaker)
+              sceneLoading ||
+              (autoMode && true) ||
+              (!autoMode && !selectedSpeaker)
             }
             autoComplete="off"
           />
@@ -664,14 +665,14 @@ const SceneChatSimulator: React.FC<SceneChatSimulatorProps> = ({ sceneId }) => {
                 <button
                   className={`flex items-center gap-1 px-3 py-1 text-xs rounded ${
                     scriptMode
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300"
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300'
                   } transition`}
-                  onClick={() => setScriptMode((m) => !m)}
+                  onClick={() => setScriptMode(m => !m)}
                   title="Script Editor Mode"
                 >
-                  <Edit3 className="w-4 h-4" />{" "}
-                  {scriptMode ? "Simulation" : "Script Editor"}
+                  <Edit3 className="w-4 h-4" />{' '}
+                  {scriptMode ? 'Simulation' : 'Script Editor'}
                 </button>
               </>
             )}

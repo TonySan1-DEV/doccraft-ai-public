@@ -14,7 +14,6 @@ import {
   storeNarratedDeck,
   storeTTSNarration,
   storeCompletePipeline,
-  validateTierAccess,
   type SlideDeckRecord,
   type NarratedSlideDeckRecord,
   type TTSNarrationRecord,
@@ -149,10 +148,6 @@ import {
   PipelineResult,
   PipelineStatus,
   PipelineMetrics,
-  GenreContext,
-  MCPMetadata,
-  validatePipelineInput,
-  validatePipelineOptions,
 } from '../../../src/types/pipelineTypes';
 
 // Pipeline execution result - using shared PipelineResult type
@@ -924,11 +919,6 @@ async function continuePipelineAfterScriptReview(
     }
 
     const narratedDeck = narratedDeckRecord.data;
-
-    // Use edited script if available, otherwise use original
-    const scriptToUse =
-      narratedDeck.edited_script ||
-      narratedDeck.slides.map((slide: any) => slide.narration).join(' ');
 
     // Create a NarratedSlideDeck object for TTS generation
     const narratedDeckForTTS = {

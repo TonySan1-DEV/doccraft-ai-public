@@ -233,11 +233,20 @@ export default function CharacterDevelopment() {
   ): CharacterPersona => {
     return {
       id: character.id,
-      user_id: '', // TODO: Add proper user_id handling
       name: character.name,
+      description:
+        character.backstory ||
+        `A ${character.role} character with ${character.archetype} archetype`,
       archetype: character.archetype,
       personality: character.personality.traits, // Use array directly
       goals: character.goals.primary ? [character.goals.primary] : [], // Convert to array
+      conflicts: [
+        ...character.conflicts.internal,
+        ...character.conflicts.external,
+        ...character.conflicts.relationships,
+        ...character.conflicts.moralDilemmas,
+      ],
+      arc: character.arc.description,
       voiceStyle: character.voiceStyle,
       worldview: character.worldview,
       backstory: character.backstory,

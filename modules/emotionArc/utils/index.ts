@@ -10,4 +10,5 @@
 }
 */
 
-export { validateEmotionalBeat, validateEmotionalArc } from './validation'; 
+export { validateEmotionalBeat, validateEmotionalArc } from './validation';
+export * from './scaling';

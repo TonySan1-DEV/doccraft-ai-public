@@ -264,8 +264,10 @@ export async function exportScript(
       format,
       userTier,
       fileSize: blob.size,
-      wordCount: script.split(' ').length,
-      fileName,
+      customData: {
+        fileName,
+        wordCount: script.split(' ').length,
+      },
     });
 
     return {

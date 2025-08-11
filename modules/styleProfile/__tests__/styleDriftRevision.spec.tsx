@@ -7,23 +7,26 @@ allowedActions: ["test", "mock", "validate"],
 theme: "style_testing"
 */
 
-import { analyzeNarrativeStyle, compareToTargetStyle } from '../services/styleProfiler';
+import {
+  analyzeNarrativeStyle,
+  compareToTargetStyle,
+} from '../services/styleProfiler';
 import { stylePresets } from '../configs/stylePresets';
 import { proposeEdit } from '../../narrativeDashboard/services/revisionEngine';
-import type { NarrativeStyleProfile, StyleTargetProfile } from '../types/styleTypes';
 import { render, screen } from '@testing-library/react';
 import StyleProfilePanel from '../components/StyleProfilePanel';
 import SmartRevisionEngine from '../../narrativeDashboard/components/SmartRevisionEngine';
 
 jest.mock('../../narrativeDashboard/services/revisionEngine', () => ({
-  proposeEdit: jest.fn()
+  proposeEdit: jest.fn(),
 }));
 
 // 1. Style drift detection
 
 describe('Style Drift Detection', () => {
   it('detects over-formal style drift', async () => {
-    const text = 'One must always consider the ramifications of one’s actions, lest society frown upon impropriety.';
+    const text =
+      'One must always consider the ramifications of one’s actions, lest society frown upon impropriety.';
     const profile = await analyzeNarrativeStyle(text);
     expect(profile.voice).toBe('formal');
     expect(profile.tone).toBe('neutral');
@@ -44,7 +47,8 @@ describe('Style Drift Detection', () => {
   });
 
   it('no drift for matching style', async () => {
-    const text = 'She laughed with her friends, sunlight in her hair, the world full of possibility.';
+    const text =
+      'She laughed with her friends, sunlight in her hair, the world full of possibility.';
     const profile = await analyzeNarrativeStyle(text);
     const target = stylePresets['YA'];
     const report = compareToTargetStyle(profile, target);
@@ -57,27 +61,33 @@ describe('Style Drift Detection', () => {
 
 describe('Style-driven revision', () => {
   it('passes drift recommendations to revisionEngine and revises text', async () => {
-    const original = 'One must always consider the ramifications of one’s actions.';
-    const driftRecs = ['Rewrite to use casual voice.'];
+    // const _original = 'One must always consider the ramifications of one\'s actions.';
+    // const _driftRecs = ['Rewrite to use casual voice.'];
     const suggestion = {
       id: 's1',
       type: 'style',
       priority: 'high',
       title: 'Style drift',
       description: 'Voice is too formal.',
-      specificChanges: driftRecs,
-      expectedImpact: { tensionChange: 0, empathyChange: 0, engagementChange: 0, complexityChange: 0 },
+      specificChanges: ['Rewrite to use casual voice.'],
+      expectedImpact: {
+        tensionChange: 0,
+        empathyChange: 0,
+        engagementChange: 0,
+        complexityChange: 0,
+      },
       targetPositions: [],
       riskLevel: 'medium',
       implementationDifficulty: 'medium',
-      estimatedTime: 5
+      estimatedTime: 5,
     };
-    const revisedText = 'You should think about what you do, or people might not like it.';
+    const revisedText =
+      'You should think about what you do, or people might not like it.';
     (proposeEdit as jest.Mock).mockResolvedValue({
       revisedText,
       changeSummary: ['Voice made more casual'],
       confidenceScore: 0.9,
-      appliedSuggestionId: 's1'
+      appliedSuggestionId: 's1',
     });
     const result = await proposeEdit('scene1', suggestion);
     expect(result.revisedText).toContain('You should think');
@@ -91,7 +101,9 @@ describe('Style-driven revision', () => {
 describe('StyleProfilePanel UI', () => {
   it('renders correct metrics and drift flags', async () => {
     render(<StyleProfilePanel sceneId="scene1" target={stylePresets['YA']} />);
-    expect(await screen.findByText(/Narrative Style Profile/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Narrative Style Profile/i)
+    ).toBeInTheDocument();
     // Drift flags or no drift
     expect(screen.getByText(/Style Metrics Chart/i)).toBeInTheDocument();
   });
@@ -107,21 +119,27 @@ describe('SmartRevisionEngine UI', () => {
       title: 'Style drift',
       description: 'Voice is too formal.',
       specificChanges: ['Rewrite to use casual voice.'],
-      expectedImpact: { tensionChange: 0, empathyChange: 0, engagementChange: 0, complexityChange: 0 },
+      expectedImpact: {
+        tensionChange: 0,
+        empathyChange: 0,
+        engagementChange: 0,
+        complexityChange: 0,
+      },
       targetPositions: [],
       riskLevel: 'medium',
       implementationDifficulty: 'medium',
-      estimatedTime: 5
+      estimatedTime: 5,
     };
     (proposeEdit as jest.Mock).mockResolvedValue({
-      revisedText: 'You should think about what you do, or people might not like it.',
+      revisedText:
+        'You should think about what you do, or people might not like it.',
       changeSummary: ['Voice made more casual'],
       confidenceScore: 0.9,
-      appliedSuggestionId: 's1'
+      appliedSuggestionId: 's1',
     });
     render(<SmartRevisionEngine sceneId="scene1" suggestion={suggestion} />);
     expect(await screen.findByText(/AI Revision Preview/i)).toBeInTheDocument();
     // Style impact summary
     expect(await screen.findByText(/Style Impact:/i)).toBeInTheDocument();
   });
-}); 
+});

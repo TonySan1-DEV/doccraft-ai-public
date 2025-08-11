@@ -1,7 +1,8 @@
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
+import { Awareness } from 'y-protocols/awareness';
 import { AuditLogger } from '../audit/auditLogger';
-import { MCPContext, AuditDetails } from '@/types/domain';
+import { MCPContext, AuditDetails } from '../../types/domain';
 
 interface YjsProviderOptions {
   roomId: string;
@@ -53,23 +54,16 @@ export class YjsProvider {
       const userName = this.options.userName;
       const userColor = this.options.userColor;
 
+      const awareness = new Awareness(this.doc);
+
+      awareness.setLocalState({
+        name: userName,
+        color: userColor,
+      });
+
       this.provider = new WebsocketProvider(wsUrl, roomId, this.doc, {
         connect: true,
-        awareness: {
-          clientID:
-            parseInt(this.options.userId) ||
-            Math.floor(Math.random() * 1000000),
-          states: new Map([
-            [
-              parseInt(this.options.userId) ||
-                Math.floor(Math.random() * 1000000),
-              {
-                name: userName,
-                color: userColor,
-              },
-            ],
-          ]),
-        },
+        awareness,
       });
 
       // Store provider in registry

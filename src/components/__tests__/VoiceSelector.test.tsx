@@ -4,11 +4,15 @@ import { VoiceSelector } from '../VoiceSelector';
 
 // Mock useUserTier to simulate Pro user (so upsell doesn't render)
 jest.mock('@/hooks/useUserTier', () => ({
-  useUserTier: () => ({ tier: 'Pro', isProUser: true, isAdmin: false }),
+  useUserTier: jest.fn(() => ({
+    tier: 'Pro',
+    isProUser: true,
+    isAdmin: false,
+  })),
 }));
 
 // Mock AudioPreviewPlayer so we don't rely on actual audio
-jest.mock('@/modules/agent/components/AudioPreviewPlayer', () => ({
+jest.mock('../../modules/agent/components/AudioPreviewPlayer', () => ({
   __esModule: true,
   default: ({
     audioUrl,
@@ -19,82 +23,218 @@ jest.mock('@/modules/agent/components/AudioPreviewPlayer', () => ({
   }) => <div data-testid="audio-preview">{voiceName || audioUrl}</div>,
 }));
 
+// Mock ProUpsell component
+jest.mock('@/components/ProUpsell', () => ({
+  ProUpsell: ({ message }: { message: string }) => (
+    <div role="alert" data-testid="pro-upsell">
+      {message}
+    </div>
+  ),
+}));
+
 describe('VoiceSelector', () => {
+  const mockVoices = [
+    {
+      id: 'emma',
+      name: 'Emma',
+      accent: 'British',
+      language: 'en-GB',
+      dialect: 'british',
+      gender: 'female',
+      age: 'adult',
+      quality: 9,
+    },
+    {
+      id: 'liam',
+      name: 'Liam',
+      accent: 'American',
+      language: 'en-US',
+      dialect: 'american',
+      gender: 'male',
+      age: 'adult',
+      quality: 8,
+    },
+    {
+      id: 'sofia',
+      name: 'Sofia',
+      accent: 'Spanish',
+      language: 'es',
+      dialect: 'castilian',
+      gender: 'female',
+      age: 'young',
+      quality: 7,
+    },
+  ];
+
+  beforeEach(() => {
+    // Reset the mock to default Pro user for each test
+    const { useUserTier } = require('@/hooks/useUserTier');
+    (useUserTier as jest.Mock).mockReturnValue({
+      tier: 'Pro',
+      isProUser: true,
+      isAdmin: false,
+    });
+  });
+
   it('renders and allows selecting a voice', () => {
-    const onChange = jest.fn();
-    render(<VoiceSelector selectedVoice="emma" onChange={onChange} />);
+    const handleChange = jest.fn();
+    render(
+      <VoiceSelector
+        voices={mockVoices}
+        selectedVoice="emma"
+        onChange={handleChange}
+        showPreviews={true}
+      />
+    );
 
     // Should show the voices by label from the component defaults
-    const emma = screen.getByText(/Emma \(British\)/i);
-    const liam = screen.getByText(/Liam \(American\)/i);
+    const emma = screen.getByText('Emma (British)', {
+      selector: 'span.font-semibold',
+    });
+    const liam = screen.getByText('Liam (American)', {
+      selector: 'span.font-semibold',
+    });
+    const sofia = screen.getByText('Sofia (Spanish)', {
+      selector: 'span.font-semibold',
+    });
 
     expect(emma).toBeInTheDocument();
     expect(liam).toBeInTheDocument();
+    expect(sofia).toBeInTheDocument();
 
-    // Click Liam to change
-    fireEvent.click(liam);
-    expect(onChange).toHaveBeenCalledWith('liam');
+    // Should show audio previews
+    expect(screen.getAllByTestId('audio-preview')).toHaveLength(3);
+
+    // Should show selected state for Emma
+    expect(screen.getByText('Selected')).toBeInTheDocument();
+
+    // Click on Liam to select it
+    const liamCard = liam.closest('[role="gridcell"]');
+    expect(liamCard).toBeInTheDocument();
+    fireEvent.click(liamCard!);
+
+    expect(handleChange).toHaveBeenCalledWith('liam');
   });
 
   it('shows ProUpsell for non-pro users', () => {
-    // Mock useUserTier to return Free user
-    const mockUseUserTier = jest.fn(() => ({
+    // Override the mock for this test to simulate non-pro user
+    const { useUserTier } = require('@/hooks/useUserTier');
+    (useUserTier as jest.Mock).mockReturnValue({
       tier: 'Free',
       isProUser: false,
       isAdmin: false,
-    }));
-
-    jest.doMock('@/hooks/useUserTier', () => ({
-      useUserTier: mockUseUserTier,
-    }));
-
-    // Re-import the component with the new mock
-    const {
-      VoiceSelector: VoiceSelectorWithFreeUser,
-    } = require('../VoiceSelector');
+    });
 
     render(
-      <VoiceSelectorWithFreeUser selectedVoice="emma" onChange={() => {}} />
+      <VoiceSelector
+        voices={mockVoices}
+        selectedVoice="emma"
+        onChange={() => {}}
+        showPreviews={true}
+      />
     );
-    expect(screen.getByRole('alert')).toBeInTheDocument();
+
+    expect(screen.getByTestId('pro-upsell')).toBeInTheDocument();
+    expect(
+      screen.getByText('Voice selection is a Pro feature.')
+    ).toBeInTheDocument();
   });
 
   it('supports keyboard navigation', () => {
-    const onChange = jest.fn();
-    render(<VoiceSelector selectedVoice="emma" onChange={onChange} />);
+    const handleChange = jest.fn();
+    render(
+      <VoiceSelector
+        voices={mockVoices}
+        selectedVoice="emma"
+        onChange={handleChange}
+        showPreviews={true}
+      />
+    );
 
     const liamCard = screen
-      .getByText(/Liam \(American\)/i)
-      .closest('[role="button"]');
+      .getByText('Liam (American)', { selector: 'span.font-semibold' })
+      .closest('[role="gridcell"]');
     expect(liamCard).toBeInTheDocument();
 
-    // Simulate Enter key press
+    // Focus and select Liam with Enter
+    fireEvent.focus(liamCard!);
     fireEvent.keyDown(liamCard!, { key: 'Enter' });
-    expect(onChange).toHaveBeenCalledWith('liam');
+
+    expect(handleChange).toHaveBeenCalledWith('liam');
   });
 
   it('applies custom className', () => {
-    const onChange = jest.fn();
-    const { container } = render(
+    render(
       <VoiceSelector
+        voices={mockVoices}
         selectedVoice="emma"
-        onChange={onChange}
+        onChange={() => {}}
         className="custom-class"
       />
     );
 
-    const gridElement = container.querySelector('.custom-class');
-    expect(gridElement).toBeInTheDocument();
+    // The className should be applied to the root container
+    const container = screen.getByRole('grid').closest('div');
+    expect(container).toHaveClass('custom-class');
   });
 
   it('respects size prop', () => {
-    const onChange = jest.fn();
-    const { container } = render(
-      <VoiceSelector selectedVoice="emma" onChange={onChange} size="lg" />
+    render(
+      <VoiceSelector
+        voices={mockVoices}
+        selectedVoice="emma"
+        onChange={() => {}}
+        size="lg"
+      />
     );
 
-    // Should have lg grid classes
-    const gridElement = container.querySelector('.grid');
-    expect(gridElement?.className).toContain('md:grid-cols-4');
+    const grid = screen.getByRole('grid');
+    // Check for the actual classes that should be applied based on size="lg"
+    expect(grid).toHaveClass('grid-cols-1', 'md:grid-cols-4');
+  });
+
+  it('shows audio previews when showPreviews is true', () => {
+    render(
+      <VoiceSelector
+        voices={mockVoices}
+        selectedVoice="emma"
+        onChange={() => {}}
+        showPreviews={true}
+      />
+    );
+
+    expect(screen.getAllByTestId('audio-preview')).toHaveLength(3);
+  });
+
+  it('hides audio previews when showPreviews is false', () => {
+    render(
+      <VoiceSelector
+        voices={mockVoices}
+        selectedVoice="emma"
+        onChange={() => {}}
+        showPreviews={false}
+      />
+    );
+
+    expect(screen.queryByTestId('audio-preview')).not.toBeInTheDocument();
+  });
+
+  it('shows selected voice indicator', () => {
+    render(
+      <VoiceSelector
+        voices={mockVoices}
+        selectedVoice="emma"
+        onChange={() => {}}
+        showPreviews={true}
+      />
+    );
+
+    // Should show selected indicator
+    const selectedIndicator = screen.getByText('Selected');
+    expect(selectedIndicator).toBeInTheDocument();
+
+    // Should be associated with Emma's card
+    const emmaCard = selectedIndicator.closest('[role="gridcell"]');
+    expect(emmaCard).toHaveTextContent('Emma (British)');
   });
 });

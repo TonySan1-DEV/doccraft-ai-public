@@ -7,6 +7,7 @@ allowedActions: ["test", "validate", "simulate"],
 theme: "doc2video_e2e"
 */
 
+// Jest globals are available in test environment
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';

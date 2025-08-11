@@ -12,7 +12,6 @@
 
 import { SceneConfig } from '../types/SceneConfig';
 
-
 export interface SceneMessage {
   speakerName: string;
   text: string;
@@ -26,8 +25,15 @@ export async function simulateSceneDialog(
   lastMessages: SceneMessage[]
 ): Promise<SceneMessage> {
   // Compose system prompt for GPT-4
-  const participantSummaries = scene.participants.map(p => `- ${p.name}: ${p.archetype}, ${p.personality}, ${p.voiceStyle}, ${p.worldview}`).join('\n');
-  const history = lastMessages.map(m => `${m.speakerName}: ${m.text}`).join('\n');
+  const participantSummaries = scene.participants
+    .map(
+      p =>
+        `- ${p.name}: ${p.archetype}, ${p.personality}, ${p.voiceStyle}, ${p.worldview}`
+    )
+    .join('\n');
+  const history = lastMessages
+    .map(m => `${m.speakerName}: ${m.text}`)
+    .join('\n');
   const systemPrompt = `
 You are simulating a scene with multiple fictional characters. Each character has a distinct voice, personality, and memory. Never break character. Only output the next line of dialog for the most contextually appropriate character.
 
@@ -47,11 +53,11 @@ Conversation so far:\n${history}
         model: 'gpt-4',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'user', content: userPrompt },
         ],
         temperature: 0.9,
-        max_tokens: 200
-      })
+        max_tokens: 200,
+      }),
     });
     if (!res.ok) throw new Error('LLM API error');
     const data = await res.json();
@@ -72,7 +78,7 @@ Conversation so far:\n${history}
         timestamp: Date.now(),
       };
     }
-  } catch (err) {
+  } catch (_err) {
     // Fallback: generic message
     return {
       speakerName: scene.participants[0]?.name || 'Unknown',
@@ -80,4 +86,4 @@ Conversation so far:\n${history}
       timestamp: Date.now(),
     };
   }
-} 
+}

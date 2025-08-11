@@ -466,7 +466,7 @@ export class LLMIntegrationService {
           // Update usage statistics
           apiKeyManager.updateKeyUsage(provider);
         }
-      } catch (error) {
+      } catch (_error) {
         console.warn('API key manager not available, using provided key');
       }
     }

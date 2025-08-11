@@ -1,41 +1,45 @@
-// MCP Context Block
-/*
-role: developer,
-tier: Pro,
-file: "modules/styleProfile/configs/stylePresets.ts",
-allowedActions: ["generate", "model", "define"],
-theme: "style_presets"
-*/
+export const mcpContext = {
+  file: 'modules/styleProfile/configs/stylePresets.ts',
+  role: 'developer',
+  allowedActions: ['refactor', 'type-harden', 'test'],
+  contentSensitivity: 'low',
+  theme: 'doccraft-ai',
+};
 
 import type { StyleTargetProfile } from '../types/styleTypes';
+import {
+  createStrictString,
+  createPacingScore,
+  createEmotionDensity,
+} from '../types/styleTypes';
 
 export const stylePresets: Record<string, StyleTargetProfile> = {
   Noir: {
-    genre: 'Noir',
+    genre: createStrictString('Noir'),
     expectedTone: 'dark',
     targetVoice: 'intimate',
-    pacingRange: [0.3, 0.6],
-    emotionDensityRange: [0.2, 0.4],
+    pacingRange: [createPacingScore(0.3), createPacingScore(0.6)], // 0-1 range
+    emotionDensityRange: [createEmotionDensity(0.2), createEmotionDensity(0.4)], // 0-1 range
   },
   YA: {
-    genre: 'YA',
+    genre: createStrictString('YA'),
     expectedTone: 'warm',
     targetVoice: 'casual',
-    pacingRange: [0.5, 0.8],
-    emotionDensityRange: [0.4, 0.7],
+    pacingRange: [createPacingScore(0.5), createPacingScore(0.8)], // 0-1 range
+    emotionDensityRange: [createEmotionDensity(0.4), createEmotionDensity(0.7)], // 0-1 range
   },
   LiteraryFiction: {
-    genre: 'Literary Fiction',
+    genre: createStrictString('Literary Fiction'),
     expectedTone: 'neutral',
     targetVoice: 'omniscient',
-    pacingRange: [0.2, 0.5],
-    emotionDensityRange: [0.3, 0.6],
+    pacingRange: [createPacingScore(0.2), createPacingScore(0.5)], // 0-1 range
+    emotionDensityRange: [createEmotionDensity(0.3), createEmotionDensity(0.6)], // 0-1 range
   },
   Thriller: {
-    genre: 'Thriller',
+    genre: createStrictString('Thriller'),
     expectedTone: 'tense',
     targetVoice: 'intimate',
-    pacingRange: [0.7, 1.0],
-    emotionDensityRange: [0.2, 0.5],
+    pacingRange: [createPacingScore(0.7), createPacingScore(1.0)], // 0-1 range
+    emotionDensityRange: [createEmotionDensity(0.2), createEmotionDensity(0.5)], // 0-1 range
   },
-}; 
+};

@@ -12,7 +12,7 @@
 
 import React, { useMemo, useCallback, useRef, useEffect } from 'react';
 import type { PlotFramework, PlotBeat } from './initPlotEngine';
-import { useNarrativeSync } from '../../shared/state/useNarrativeSyncContext';
+import { useNarrativeSync } from '../shared/state/useNarrativeSyncContext';
 
 // Debounce utility for performance
 function useDebounce<T>(value: T, delay: number): T {
@@ -193,7 +193,10 @@ function PlotFrameworkTimeline({
       aria-label={ariaLabel}
     >
       <h3 className="text-lg font-semibold mb-2">
-        {activeFramework} Structure
+        {typeof activeFramework === 'string'
+          ? activeFramework
+          : activeFramework.name}{' '}
+        Structure
       </h3>
 
       <div
@@ -203,7 +206,7 @@ function PlotFrameworkTimeline({
         role="list"
         aria-label="Plot beats timeline"
       >
-        {sortedBeats.map((beat, idx) => {
+        {sortedBeats.map(beat => {
           const isSelected = debouncedCurrentSceneId === beat.id;
 
           return (

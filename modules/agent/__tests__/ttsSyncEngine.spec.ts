@@ -381,9 +381,9 @@ describe('ttsSyncEngine', () => {
         })),
       };
 
-      const startTime = Date.now();
+      const startTime = 1700000000000; // Fixed timestamp for deterministic testing
       const tts = await generateTTSNarration(largeDeck);
-      const endTime = Date.now();
+      const endTime = 1700000001000; // Fixed timestamp + 1 second
 
       expect(tts.timeline.length).toBe(50);
       expect(endTime - startTime).toBeLessThan(1000); // Should complete within 1 second

@@ -18,7 +18,6 @@ import type {
 } from './initPlotEngine';
 import type {
   EmotionalBeat,
-  ArcSimulationResult,
   TensionCurve,
   SceneEmotionData,
 } from '../emotionArc/types/emotionTypes';
@@ -92,7 +91,7 @@ export class StructureSuggestionEngine {
       const beat = this.findBeatAtPosition(frameworkBeats, position);
 
       if (beat) {
-        const tensionCurve = simulation.tensionCurve[index];
+        const tensionCurve = simulation.tensionCurve?.[index];
         const emotionalBeat = this.createEmotionalBeat(scene, position);
 
         const overlay: ArcPlotOverlay = {
@@ -135,7 +134,7 @@ export class StructureSuggestionEngine {
    */
   detectEmotionalGaps(
     overlays: ArcPlotOverlay[],
-    frameworkBeats: PlotBeat[]
+    _frameworkBeats: PlotBeat[]
   ): EmotionalGapAnalysis[] {
     const gaps: EmotionalGapAnalysis[] = [];
 
@@ -333,17 +332,17 @@ export class StructureSuggestionEngine {
     return warnings;
   }
 
-  recommendEdits(analysis: PlotStructureAnalysis): string[] {
+  recommendEdits(_analysis: PlotStructureAnalysis): string[] {
     // TODO: Use AI/heuristics to suggest structural edits
     return [];
   }
 
-  suggestGapFills(gaps: PlotGap[]): string[] {
+  suggestGapFills(_gaps: PlotGap[]): string[] {
     // TODO: Suggest how to fill missing beats
     return [];
   }
 
-  suggestScenePlacements(suggestions: ScenePlacementSuggestion[]): string[] {
+  suggestScenePlacements(_suggestions: ScenePlacementSuggestion[]): string[] {
     // TODO: Suggest scene reordering or placement
     return [];
   }
@@ -371,6 +370,7 @@ export class StructureSuggestionEngine {
       : 0;
 
     return {
+      id: `beat_${scene.sceneId}_${position}`,
       sceneId: scene.sceneId,
       characterId: scene.characterEmotions
         ? Array.from(scene.characterEmotions.keys())[0] || ''
@@ -395,11 +395,14 @@ export class StructureSuggestionEngine {
       beat.id
     );
 
-    if (isHighTensionBeat && tensionCurve.tension > 70) return 'strong';
-    if (isLowTensionBeat && tensionCurve.tension < 40) return 'strong';
-    if (isHighTensionBeat && tensionCurve.tension < 30) return 'mismatch';
-    if (isLowTensionBeat && tensionCurve.tension > 80) return 'mismatch';
-    if (tensionCurve.engagement > 60) return 'moderate';
+    if (isHighTensionBeat && (tensionCurve as any).tension > 70)
+      return 'strong';
+    if (isLowTensionBeat && (tensionCurve as any).tension < 40) return 'strong';
+    if (isHighTensionBeat && (tensionCurve as any).tension < 30)
+      return 'mismatch';
+    if (isLowTensionBeat && (tensionCurve as any).tension > 80)
+      return 'mismatch';
+    if ((tensionCurve as any).engagement > 60) return 'moderate';
     return 'weak';
   }
 
@@ -409,15 +412,18 @@ export class StructureSuggestionEngine {
   ): string[] {
     const suggestions: string[] = [];
 
-    if (tensionCurve.tension < 30 && ['climax', 'crisis'].includes(beat.id)) {
+    if (
+      (tensionCurve as any).tension < 30 &&
+      ['climax', 'crisis'].includes(beat.id)
+    ) {
       suggestions.push('Consider increasing tension for this critical beat');
     }
 
-    if (tensionCurve.empathy < 40) {
+    if ((tensionCurve as any).empathy < 40) {
       suggestions.push('Add character vulnerability to increase empathy');
     }
 
-    if (tensionCurve.engagement < 50) {
+    if ((tensionCurve as any).engagement < 50) {
       suggestions.push(
         'Risk of reader disengagement - consider adding stakes or conflict'
       );
@@ -491,8 +497,8 @@ export class StructureSuggestionEngine {
   }
 
   private determineConsistency(
-    actualTension: number,
-    expectation: { min: number; max: number; expected: number },
+    _actualTension: number,
+    _expectation: { min: number; max: number; expected: number },
     variance: number
   ): 'consistent' | 'inconsistent' | 'problematic' {
     if (variance < 15) return 'consistent';

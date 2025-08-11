@@ -113,7 +113,7 @@ function generateSlideNarration(
 ): string {
   const tone = options?.tone || 'conversational';
   const length = options?.length || 'medium';
-  const _language = options?.language || 'en';
+  // const _language = options?.language || 'en'; // TODO: Implement multi-language support
 
   // TODO: Advanced narration with LLM (OpenAI/Claude integration)
   // TODO: Multi-language support
@@ -174,7 +174,7 @@ function createBaseNarration(
 
   // Genre-specific adjustments
   if (genre && genreContext) {
-    const { category, subgenre, targetAudience } = genreContext;
+    const { category, subgenre } = genreContext;
 
     if (category === 'fiction') {
       // Fiction-specific narration style

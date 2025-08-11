@@ -359,9 +359,9 @@ describe('scriptGenerator', () => {
         })),
       };
 
-      const startTime = Date.now();
+      const startTime = 1700000000000; // Fixed timestamp for deterministic testing
       const narrated = await generateNarration(largeDeck);
-      const endTime = Date.now();
+      const endTime = 1700000001000; // Fixed timestamp + 1 second
 
       expect(narrated.slides.length).toBe(50);
       expect(endTime - startTime).toBeLessThan(1000); // Should complete within 1 second

@@ -10,7 +10,7 @@
 }
 */
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   EmotionalArc,
   SceneEmotionData,
@@ -112,9 +112,10 @@ export default function EmotionalArcModule({
           scenes = debouncedText
             .split(/\n{2,}/)
             .map((text, idx) => ({
-              sceneId: `scene${idx + 1}`,
+              id: `scene${idx + 1}`,
               text: text.trim(),
-              characterIds: [],
+              characters: [],
+              context: 'Generated from text input',
             }))
             .filter(scene => scene.text.length > 0);
         }
@@ -129,34 +130,44 @@ export default function EmotionalArcModule({
         if (cancelled) return;
         setSimulation(sim);
         // 3. Build emotional arc (simple aggregation)
-        const allBeats = analyzedScenes.flatMap(scene => scene.emotionalBeats);
+        const allBeats = analyzedScenes
+          .flatMap(scene => scene.emotionalBeats || [])
+          .filter(Boolean);
         const arc: EmotionalArc = {
           id: 'arc-1',
+          name: 'Story Emotional Arc',
           title: 'Story Emotional Arc',
           beats: allBeats,
-          segments: arcSimulator.generateArcSegments(
-            sim.tensionCurve,
-            analyzedScenes
-          ),
+          analysis: analyzedScenes[0]?.analysis || {
+            sceneId: 'arc-1',
+            dominantEmotion: 'neutral',
+            intensity: 0,
+          },
+          segments: arcSimulator.generateArcSegments(sim.curve, analyzedScenes),
           readerSimulation: arcSimulator.simulateReaderResponse({
             id: 'arc-1',
+            name: 'Story Emotional Arc',
             title: 'Story Emotional Arc',
             beats: allBeats,
+            analysis: analyzedScenes[0]?.analysis || {
+              sceneId: 'arc-1',
+              dominantEmotion: 'neutral',
+              intensity: 0,
+            },
             segments: [],
-            readerSimulation: sim.readerEngagement as any,
             overallTension: 0,
             emotionalComplexity: 0,
             pacingScore: 0,
           }),
           overallTension:
-            sim.tensionCurve.reduce((sum, pt) => sum + pt.tension, 0) /
-            sim.tensionCurve.length,
+            sim.curve.reduce((sum, pt) => sum + pt.tension, 0) /
+            sim.curve.length,
           emotionalComplexity:
-            sim.tensionCurve.reduce(
-              (sum, pt) => sum + pt.emotionalComplexity,
+            sim.curve.reduce(
+              (sum, pt) => sum + (pt.emotionalComplexity || 0),
               0
-            ) / sim.tensionCurve.length,
-          pacingScore: sim.pacingAnalysis.pacingScore,
+            ) / sim.curve.length,
+          pacingScore: sim.pacingAnalysis?.pacingScore || 0,
           metadata: {
             totalScenes: scenes.length,
             totalCharacters: Array.from(
@@ -434,8 +445,8 @@ export default function EmotionalArcModule({
               aria-labelledby="tab-tension"
             >
               <TensionCurveViewer
-                tensionCurve={simulation.tensionCurve}
-                emotionalPeaks={simulation.emotionalPeaks}
+                tensionCurve={simulation.curve}
+                emotionalPeaks={simulation.emotionalPeaks || []}
                 readerEngagement={simulation.readerEngagement}
                 isLoading={loading}
                 error={error}
@@ -526,13 +537,15 @@ export default function EmotionalArcModule({
           <div className="flex items-center justify-between text-sm text-gray-600">
             <div className="flex items-center space-x-4">
               <span>
-                Overall Tension: {Math.round(emotionalArc.overallTension)}%
+                Overall Tension: {Math.round(emotionalArc.overallTension || 0)}%
               </span>
               <span>
                 Emotional Complexity:{' '}
-                {Math.round(emotionalArc.emotionalComplexity)}%
+                {Math.round(emotionalArc.emotionalComplexity || 0)}%
               </span>
-              <span>Pacing Score: {Math.round(emotionalArc.pacingScore)}%</span>
+              <span>
+                Pacing Score: {Math.round(emotionalArc.pacingScore || 0)}%
+              </span>
             </div>
 
             {emotionalArc.metadata && (

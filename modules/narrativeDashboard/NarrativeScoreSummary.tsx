@@ -1,10 +1,19 @@
+export const mcpContext = {
+  file: 'modules/narrativeDashboard/NarrativeScoreSummary.tsx',
+  role: 'developer',
+  allowedActions: ['refactor', 'type-harden', 'test'],
+  contentSensitivity: 'low',
+  theme: 'doccraft-ai',
+};
+
 import React, { useMemo } from 'react';
-import { NarrativeSyncState } from '../shared/state/useNarrativeSyncContext';
+import type { NarrativeSyncState } from '../shared/state/useNarrativeSyncContext';
+import { clamp100, clamp01 } from '../emotionArc/utils/scaling';
 
 export interface NarrativeScore {
   id: string;
   category: 'structure' | 'character' | 'theme' | 'pacing' | 'engagement';
-  score: number; // 0-100
+  score: number; // 0-100, clamped and validated
   weight: number; // 0-1, importance of this score
   details: string;
   recommendations: string[];
@@ -23,36 +32,43 @@ const NarrativeScoreSummary: React.FC<NarrativeScoreSummaryProps> = ({
   narrativeSync,
   scores = [],
   showRecommendations = true,
-  showTrends = true,
   onScoreClick,
 }) => {
-  const overallScore = useMemo(() => {
-    if (scores.length === 0) return 0;
+  const overallScore = useMemo((): number => {
+    if (!Array.isArray(scores) || scores.length === 0) return 0;
 
-    const totalWeight = scores.reduce((sum, score) => sum + score.weight, 0);
+    const totalWeight = scores.reduce(
+      (sum, score) => sum + clamp01(score.weight ?? 0),
+      0
+    );
     const weightedSum = scores.reduce(
-      (sum, score) => sum + score.score * score.weight,
+      (sum, score) =>
+        sum + clamp100(score.score ?? 0) * clamp01(score.weight ?? 0),
       0
     );
 
-    return totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
+    return totalWeight > 0
+      ? clamp100(Math.round(weightedSum / totalWeight))
+      : 0;
   }, [scores]);
 
   const getScoreColor = (score: number): string => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    if (score >= 40) return 'text-orange-600';
+    const clampedScore = clamp100(score);
+    if (clampedScore >= 80) return 'text-green-600';
+    if (clampedScore >= 60) return 'text-yellow-600';
+    if (clampedScore >= 40) return 'text-orange-600';
     return 'text-red-600';
   };
 
   const getScoreBackground = (score: number): string => {
-    if (score >= 80) return 'bg-green-100';
-    if (score >= 60) return 'bg-yellow-100';
-    if (score >= 40) return 'bg-orange-100';
+    const clampedScore = clamp100(score);
+    if (clampedScore >= 80) return 'bg-green-100';
+    if (clampedScore >= 60) return 'bg-yellow-100';
+    if (clampedScore >= 40) return 'bg-orange-100';
     return 'bg-red-100';
   };
 
-  const getCategoryIcon = (category: string): string => {
+  const getCategoryIcon = (category: NarrativeScore['category']): string => {
     switch (category) {
       case 'structure':
         return '📐';
@@ -69,7 +85,7 @@ const NarrativeScoreSummary: React.FC<NarrativeScoreSummaryProps> = ({
     }
   };
 
-  const getCategoryName = (category: string): string => {
+  const getCategoryName = (category: NarrativeScore['category']): string => {
     switch (category) {
       case 'structure':
         return 'Plot Structure';
@@ -87,25 +103,43 @@ const NarrativeScoreSummary: React.FC<NarrativeScoreSummaryProps> = ({
   };
 
   const getOverallScoreLabel = (score: number): string => {
-    if (score >= 90) return 'Excellent';
-    if (score >= 80) return 'Very Good';
-    if (score >= 70) return 'Good';
-    if (score >= 60) return 'Fair';
-    if (score >= 50) return 'Needs Work';
+    const clampedScore = clamp100(score);
+    if (clampedScore >= 90) return 'Excellent';
+    if (clampedScore >= 80) return 'Very Good';
+    if (clampedScore >= 70) return 'Good';
+    if (clampedScore >= 60) return 'Fair';
+    if (clampedScore >= 50) return 'Needs Work';
     return 'Poor';
   };
 
-  const sortedScores = useMemo(() => {
-    return [...scores].sort((a, b) => b.score - a.score);
+  const sortedScores = useMemo((): NarrativeScore[] => {
+    if (!Array.isArray(scores)) return [];
+    return [...scores].sort(
+      (a, b) => clamp100(b.score ?? 0) - clamp100(a.score ?? 0)
+    );
   }, [scores]);
 
-  const topRecommendations = useMemo(() => {
+  const topRecommendations = useMemo((): string[] => {
+    if (!Array.isArray(scores)) return [];
     const allRecommendations = scores
-      .filter(score => score.score < 70)
-      .flatMap(score => score.recommendations)
+      .filter(score => clamp100(score.score ?? 0) < 70)
+      .flatMap(score =>
+        Array.isArray(score.recommendations) ? score.recommendations : []
+      )
       .slice(0, 5);
 
     return [...new Set(allRecommendations)]; // Remove duplicates
+  }, [scores]);
+
+  const lastUpdated = useMemo((): string => {
+    if (!Array.isArray(scores) || scores.length === 0) return 'Never';
+    const firstScore = scores[0];
+    if (!firstScore?.lastUpdated) return 'Never';
+    try {
+      return new Date(firstScore.lastUpdated).toLocaleDateString();
+    } catch {
+      return 'Never';
+    }
   }, [scores]);
 
   return (
@@ -113,12 +147,7 @@ const NarrativeScoreSummary: React.FC<NarrativeScoreSummaryProps> = ({
       {/* Header */}
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-semibold">Narrative Score Summary</h3>
-        <div className="text-sm text-gray-500">
-          Last updated:{' '}
-          {scores.length > 0
-            ? new Date(scores[0].lastUpdated).toLocaleDateString()
-            : 'Never'}
-        </div>
+        <div className="text-sm text-gray-500">Last updated: {lastUpdated}</div>
       </div>
 
       {/* Overall Score */}
@@ -143,9 +172,18 @@ const NarrativeScoreSummary: React.FC<NarrativeScoreSummaryProps> = ({
           <div
             key={score.id}
             className={`p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md ${getScoreBackground(
-              score.score
+              score.score ?? 0
             )}`}
             onClick={() => onScoreClick?.(score.id)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onScoreClick?.(score.id);
+              }
+            }}
+            tabIndex={0}
+            role="button"
+            aria-label={`Score for ${getCategoryName(score.category)}: ${clamp100(score.score ?? 0)}%`}
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -157,30 +195,32 @@ const NarrativeScoreSummary: React.FC<NarrativeScoreSummaryProps> = ({
                 </span>
               </div>
               <div
-                className={`text-lg font-bold ${getScoreColor(score.score)}`}
+                className={`text-lg font-bold ${getScoreColor(score.score ?? 0)}`}
               >
-                {score.score}
+                {clamp100(score.score ?? 0)}
               </div>
             </div>
 
             <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-              {score.details}
+              {score.details ?? ''}
             </p>
 
-            {showRecommendations && score.recommendations.length > 0 && (
-              <div className="space-y-1">
-                <div className="text-xs font-medium text-gray-500">
-                  Recommendations:
+            {showRecommendations &&
+              Array.isArray(score.recommendations) &&
+              score.recommendations.length > 0 && (
+                <div className="space-y-1">
+                  <div className="text-xs font-medium text-gray-500">
+                    Recommendations:
+                  </div>
+                  <ul className="text-xs space-y-1">
+                    {score.recommendations.slice(0, 2).map((rec, index) => (
+                      <li key={index} className="text-gray-600">
+                        • {rec}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <ul className="text-xs space-y-1">
-                  {score.recommendations.slice(0, 2).map((rec, index) => (
-                    <li key={index} className="text-gray-600">
-                      • {rec}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+              )}
           </div>
         ))}
       </div>
@@ -215,13 +255,13 @@ const NarrativeScoreSummary: React.FC<NarrativeScoreSummaryProps> = ({
             <div>
               <span className="text-gray-500">Current Scene:</span>
               <span className="ml-2 font-medium">
-                {narrativeSync.currentSceneId || 'None selected'}
+                {narrativeSync.currentSceneId ?? 'None selected'}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Active Framework:</span>
               <span className="ml-2 font-medium">
-                {narrativeSync.activePlotFramework || 'None selected'}
+                {narrativeSync.activePlotFramework ?? 'None selected'}
               </span>
             </div>
             <div>
@@ -249,7 +289,7 @@ const NarrativeScoreSummary: React.FC<NarrativeScoreSummaryProps> = ({
       )}
 
       {/* Empty State */}
-      {scores.length === 0 && (
+      {(!Array.isArray(scores) || scores.length === 0) && (
         <div className="text-center py-8 text-gray-500">
           <div className="text-4xl mb-4">📊</div>
           <p className="text-lg font-medium mb-2">No Scores Available</p>

@@ -141,12 +141,12 @@ function EmotionTimelineChart({
 
   // Memoize chart data
   const chartData = useMemo(() => {
-    const sortedBeats = [...filteredBeats].sort(
-      (a, b) => a.narrativePosition - b.narrativePosition
-    );
+    const sortedBeats = [...filteredBeats]
+      .filter(beat => beat.narrativePosition !== undefined)
+      .sort((a, b) => (a.narrativePosition || 0) - (b.narrativePosition || 0));
 
     return sortedBeats.map(beat => ({
-      x: beat.narrativePosition * 100,
+      x: (beat.narrativePosition || 0) * 100,
       y: beat.intensity,
       emotion: beat.emotion,
       characterId: beat.characterId,
@@ -173,13 +173,31 @@ function EmotionTimelineChart({
 
   // State for interactions
   const [hoveredPoint, setHoveredPoint] = useState<ChartPoint | null>(null);
-  const [focusedPointIndex, _setFocusedPointIndex] = useState<number>(-1);
   const chartRef = useRef<HTMLDivElement>(null);
 
   // Accessibility helpers
   const getAccessibleDescription = useCallback((point: ChartPoint) => {
     return `${point.characterId} experiences ${point.emotion} at ${Math.round(point.x)}% of the story with ${point.intensity}% intensity`;
   }, []);
+
+  const handlePointClick = useCallback(
+    (point: ChartPoint) => {
+      const beat = filteredBeats.find(
+        b =>
+          (b.narrativePosition || 0) === point.x / 100 &&
+          b.characterId === point.characterId &&
+          b.intensity === point.intensity
+      );
+      if (beat && onBeatClick) {
+        onBeatClick(beat);
+        // Announce selection for screen readers
+        if (narrativeSync?.setScene) {
+          narrativeSync.setScene(point.sceneId);
+        }
+      }
+    },
+    [filteredBeats, onBeatClick, narrativeSync]
+  );
 
   // Keyboard navigation
   const handleKeyDown = useCallback(
@@ -219,25 +237,6 @@ function EmotionTimelineChart({
   //   },
   //   [chartData.length]
   // );
-
-  const handlePointClick = useCallback(
-    (point: ChartPoint) => {
-      const beat = filteredBeats.find(
-        b =>
-          b.narrativePosition === point.x / 100 &&
-          b.characterId === point.characterId &&
-          b.intensity === point.intensity
-      );
-      if (beat && onBeatClick) {
-        onBeatClick(beat);
-        // Announce selection for screen readers
-        if (narrativeSync?.setScene) {
-          narrativeSync.setScene(point.sceneId);
-        }
-      }
-    },
-    [filteredBeats, onBeatClick, narrativeSync]
-  );
 
   // Touch handling for mobile
   // const handleTouchStart = useCallback(
@@ -410,9 +409,11 @@ function EmotionTimelineChart({
 
         {/* Emotion Lines */}
         {Array.from(characterBeats.entries()).map(([characterId, beats]) => {
-          const sortedBeats = beats.sort(
-            (a, b) => a.narrativePosition - b.narrativePosition
-          );
+          const sortedBeats = beats
+            .filter(beat => beat.narrativePosition !== undefined)
+            .sort(
+              (a, b) => (a.narrativePosition || 0) - (b.narrativePosition || 0)
+            );
 
           return (
             <svg key={characterId} className="absolute inset-0 w-full h-full">
@@ -421,7 +422,7 @@ function EmotionTimelineChart({
                 points={sortedBeats
                   .map(
                     beat =>
-                      `${beat.narrativePosition * 100},${100 - beat.intensity}`
+                      `${(beat.narrativePosition || 0) * 100},${100 - beat.intensity}`
                   )
                   .join(' ')}
                 fill="none"
@@ -439,7 +440,7 @@ function EmotionTimelineChart({
               {/* Data points */}
               {sortedBeats.map((beat, index) => {
                 const point: ChartPoint = {
-                  x: beat.narrativePosition * 100,
+                  x: (beat.narrativePosition || 0) * 100,
                   y: beat.intensity,
                   emotion: beat.emotion,
                   characterId: beat.characterId,
@@ -451,7 +452,6 @@ function EmotionTimelineChart({
 
                 const isSelected = beat.sceneId === contextScene;
                 const isHovered = hoveredPoint === point;
-                const _isFocused = focusedPointIndex === index;
 
                 return (
                   <ChartPointComponent

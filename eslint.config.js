@@ -4,6 +4,7 @@ import typescriptParser from '@typescript-eslint/parser';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
+import emotionScalePlugin from './tools/eslint-plugin-emotion-scale/index.js';
 
 export default [
   js.configs.recommended,
@@ -135,6 +136,7 @@ export default [
       react: react,
       'react-hooks': reactHooks,
       'jsx-a11y': jsxA11y,
+      'emotion-scale': emotionScalePlugin,
     },
     rules: {
       ...typescript.configs.recommended.rules,
@@ -149,6 +151,40 @@ export default [
       'no-console': 'off',
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
+
+      // Custom emotion scaling rule using custom plugin
+      // This prevents inappropriate scaling operations on emotion-related fields
+      // while allowing legitimate UI formatting and utility functions
+      'emotion-scale/no-emotion-mis-scaling': [
+        'error',
+        {
+          fields: [
+            'intensity',
+            'confidence',
+            'tension',
+            'empathy',
+            'engagement',
+            'emotionalComplexity',
+          ],
+          allowFunctions: [
+            'formatPercentage',
+            'formatPosition',
+            'toPercentDisplay',
+            'renderPercent',
+            'clamp100',
+            'clamp01',
+            'toPercentage',
+            'toDecimal',
+            'assert0to100',
+          ],
+          allowFileGlobs: [
+            '**/__tests__/**',
+            '**/*.stories.*',
+            '**/utils/scaling.ts',
+          ],
+          allowPosition: true, // 0–1 → UI percent is OK
+        },
+      ],
     },
     settings: {
       react: {
@@ -320,6 +356,35 @@ export default [
     rules: {
       'no-undef': 'off',
       'no-unused-vars': 'warn',
+    },
+  },
+  {
+    // Specific configuration for emotion arc module
+    files: ['modules/emotionArc/**/*.{ts,tsx}'],
+    plugins: {
+      'emotion-scale': emotionScalePlugin,
+    },
+    rules: {
+      'emotion-scale/no-emotion-mis-scaling': [
+        'error',
+        {
+          fields: [
+            'intensity',
+            'confidence',
+            'tension',
+            'empathy',
+            'engagement',
+            'emotionalComplexity',
+          ],
+          allowFunctions: [
+            'formatPercentage',
+            'renderPercent',
+            'toPercentDisplay',
+          ],
+          allowFileGlobs: ['**/__tests__/**', '**/*.stories.*'],
+          allowPosition: true,
+        },
+      ],
     },
   },
 ];

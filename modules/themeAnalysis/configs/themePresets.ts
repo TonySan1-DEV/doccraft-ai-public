@@ -1,11 +1,10 @@
-// MCP Context Block
-/*
-role: developer,
-tier: Pro,
-file: "modules/themeAnalysis/configs/themePresets.ts",
-allowedActions: ["define", "generate", "categorize"],
-theme: "theme_analysis"
-*/
+export const mcpContext = {
+  file: 'modules/themeAnalysis/configs/themePresets.ts',
+  role: 'developer',
+  allowedActions: ['refactor', 'type-harden', 'test'],
+  contentSensitivity: 'low',
+  theme: 'doccraft-ai',
+};
 
 export interface GenreThemePreset {
   genre: string;
@@ -21,22 +20,22 @@ export const themePresets: GenreThemePreset[] = [
   {
     genre: 'Coming of Age',
     themes: ['identity', 'belonging', 'rebellion', 'growth'],
-    values: ['self-worth', 'freedom']
+    values: ['self-worth', 'freedom'],
   },
   {
     genre: 'Noir',
-    themes: ['betrayal', 'justice', 'power', 'moral ambiguity'],
-    values: ['corruption', 'redemption']
+    themes: ['betrayal', 'justice', 'power', 'moral_ambiguity'],
+    values: ['corruption', 'redemption'],
   },
   {
     genre: 'Romance',
     themes: ['love', 'sacrifice', 'jealousy', 'forgiveness'],
-    values: ['connection', 'vulnerability']
+    values: ['connection', 'vulnerability'],
   },
   {
     genre: 'Thriller',
     themes: ['paranoia', 'control', 'loyalty', 'truth'],
-    values: ['survival', 'power']
-  }
+    values: ['survival', 'power'],
+  },
   // Add more presets as needed
-]; 
+];

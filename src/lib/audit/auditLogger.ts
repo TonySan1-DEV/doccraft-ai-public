@@ -1,5 +1,5 @@
 import { supabase } from '../supabase';
-import { AuditEvent, AuditLog, MCPContext } from '@/types/domain';
+import { AuditEvent, AuditLog, MCPContext } from '../../types/domain';
 
 export class AuditLogger {
   /**

@@ -15,8 +15,8 @@ import type {
   PlotBeat,
   PlotStructureAnalysis,
 } from './initPlotEngine';
-import type { EmotionalBeat } from '../../emotionArc/types/emotionTypes';
-import type { CharacterPersona } from '../../../src/types/CharacterPersona';
+import type { EmotionalBeat } from '../emotionArc/types/emotionTypes';
+import type { CharacterPersona } from '@/types/CharacterPersona';
 
 export interface PersonaAlignmentOverlay {
   characterId: string;
@@ -50,7 +50,7 @@ export class PlotFrameworkEngine {
    * TODO: refine mapping - implement proper scene-to-beat classification
    */
   mapScenesToBeats(
-    scenes: { id: string; text: string; emotionalBeats?: EmotionalBeat[] }[]
+    _scenes: { id: string; text: string; emotionalBeats?: EmotionalBeat[] }[]
   ): PlotBeat[] {
     // TODO: Implement mapping logic using framework configs and emotion data
     // For now, return minimal pass-through with framework structure
@@ -65,7 +65,7 @@ export class PlotFrameworkEngine {
    * TODO: Unit test - test classification with different scene content and emotional beats
    * TODO: refine mapping - implement proper scene classification logic
    */
-  classifyScene(scene: {
+  classifyScene(_scene: {
     id: string;
     text: string;
     emotionalBeats?: EmotionalBeat[];
@@ -80,7 +80,7 @@ export class PlotFrameworkEngine {
    * TODO: Unit test - test comparison with missing and extra scenes
    * TODO: refine mapping - implement proper structure analysis
    */
-  compareStructureToFramework(analysis: PlotStructureAnalysis): {
+  compareStructureToFramework(_analysis: PlotStructureAnalysis): {
     missingBeats: string[];
     extraScenes: string[];
   } {
@@ -91,17 +91,12 @@ export class PlotFrameworkEngine {
 
   alignPersonaToFramework(
     persona: CharacterPersona,
-    beats: PlotBeat[],
-    options?: { endingBeatId?: string }
+    beats: PlotBeat[]
   ): PersonaAlignmentOverlay {
     // Extract arcType, desire, flaw from persona.traits or fallback
-    const arcType =
-      persona.traits?.arcType ||
-      persona.traits?.arc_type ||
-      persona.traits?.arc ||
-      undefined;
-    const desire = persona.traits?.desire || persona.goals || undefined;
-    const flaw = persona.traits?.flaw || undefined;
+    const arcType = persona.arc || undefined;
+    const desire = persona.goals?.[0] || undefined;
+    const flaw = persona.conflicts?.[0] || undefined;
     // Example mapping: align arcType to expected framework stages
     const alignment = beats.map(beat => {
       // For demo: assume certain beats expect certain arcTypes

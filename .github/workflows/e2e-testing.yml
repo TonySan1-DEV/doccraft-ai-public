@@ -1,0 +1,300 @@
+name: E2E Testing
+
+on:
+  workflow_call:
+    inputs:
+      run_advanced_patterns:
+        description: 'Run advanced test patterns'
+        required: false
+        default: true
+        type: boolean
+      run_performance_tests:
+        description: 'Run performance tests'
+        required: false
+        default: true
+        type: boolean
+      run_visual_regression:
+        description: 'Run visual regression tests'
+        required: false
+        default: true
+        type: boolean
+      browsers:
+        description: 'Browsers to test against'
+        required: false
+        default: 'chromium,firefox,webkit'
+        type: string
+      parallel:
+        description: 'Run tests in parallel'
+        required: false
+        default: true
+        type: boolean
+      firefox_optimizations:
+        description: 'Enable Firefox-specific optimizations'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  e2e-test:
+    name: E2E Tests - ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: ${{ fromJson(format('[{0}]', inputs.browsers)) }}
+        parallel: ${{ inputs.parallel == 'true' }}
+
+    env:
+      NODE_OPTIONS: --experimental-vm-modules
+      PLAYWRIGHT_BASE_URL: ${{ secrets.PLAYWRIGHT_BASE_URL || 'http://localhost:5173' }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'test-secret' }}
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL || 'http://localhost:3000' }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'http://localhost:54321' }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || 'test-anon-key' }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'test-openai-key' }}
+      CI: true
+      FIREFOX_OPTIMIZATIONS: ${{ inputs.firefox_optimizations }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Load test environment
+        run: |
+          if [ -f "config/.env.test" ]; then
+            cp config/.env.test .env.local
+          fi
+
+      - name: Start development server
+        run: npm run dev &
+        env:
+          CI: false
+
+      - name: Wait for server
+        run: |
+          timeout 60 bash -c 'until curl -s http://localhost:5173 > /dev/null; do sleep 1; done'
+
+      - name: Run E2E tests
+        id: e2e-tests
+        run: |
+          set -e
+
+          # Set browser-specific environment variables
+          export BROWSER_NAME="${{ matrix.browser }}"
+          export FIREFOX_OPTIMIZATIONS="${{ inputs.firefox_optimizations }}"
+
+          echo "Running E2E tests for browser: $BROWSER_NAME"
+          echo "Firefox optimizations enabled: $FIREFOX_OPTIMIZATIONS"
+
+          # Run core E2E tests
+          echo "Running core E2E tests..."
+          npx playwright test --project=${{ matrix.browser }} --reporter=list,html,json
+
+          # Run advanced test patterns if enabled
+          if [ "${{ inputs.run_advanced_patterns }}" = "true" ]; then
+            echo "Running advanced test patterns..."
+            npx playwright test advanced-test-patterns.spec.ts --project=${{ matrix.browser }} --reporter=list,html,json
+          fi
+
+          # Run performance tests if enabled
+          if [ "${{ inputs.run_performance_tests }}" = "true" ]; then
+            echo "Running performance tests..."
+            echo "Performance tests include Firefox-specific optimizations for ${{ matrix.browser }}"
+            npx playwright test --grep="performance" --project=${{ matrix.browser }} --reporter=list,html,json
+          fi
+
+          # Run visual regression tests if enabled
+          if [ "${{ inputs.run_visual_regression }}" = "true" ]; then
+            echo "Running visual regression tests..."
+            npx playwright test --grep="visual" --project=${{ matrix.browser }} --reporter=list,html,json
+          fi
+
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+
+      - name: Generate browser-specific report
+        if: always()
+        run: |
+          echo "## 🧪 E2E Test Results - ${{ matrix.browser }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### 🌐 Browser Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- **Browser:** ${{ matrix.browser }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Firefox Optimizations:** ${{ inputs.firefox_optimizations }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ${{ steps.e2e-tests.outputs.exit_code == '0' && '✅ PASSED' || '❌ FAILED' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### 📊 Test Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "- **Core E2E Tests:** ✅ Enabled" >> $GITHUB_STEP_SUMMARY
+          echo "- **Advanced Patterns:** ${{ inputs.run_advanced_patterns == 'true' && '✅' || '⏭️' }} Enabled" >> $GITHUB_STEP_SUMMARY
+          echo "- **Performance Tests:** ${{ inputs.run_performance_tests == 'true' && '✅' || '⏭️' }} Enabled" >> $GITHUB_STEP_SUMMARY
+          echo "- **Visual Regression:** ${{ inputs.run_visual_regression == 'true' && '✅' || '⏭️' }} Enabled" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Parse test results if available
+          if [ -f "test-results/results.json" ]; then
+            echo "### 📈 Test Statistics" >> $GITHUB_STEP_SUMMARY
+            if command -v jq &> /dev/null; then
+              TOTAL_TESTS=$(jq '.stats.total' test-results/results.json 2>/dev/null || echo "N/A")
+              PASSED_TESTS=$(jq '.stats.passed' test-results/results.json 2>/dev/null || echo "N/A")
+              FAILED_TESTS=$(jq '.stats.failed' test-results/results.json 2>/dev/null || echo "N/A")
+              SKIPPED_TESTS=$(jq '.stats.skipped' test-results/results.json 2>/dev/null || echo "N/A")
+              
+              echo "- **Total Tests:** $TOTAL_TESTS" >> $GITHUB_STEP_SUMMARY
+              echo "- **Passed:** $PASSED_TESTS" >> $GITHUB_STEP_SUMMARY
+              echo "- **Failed:** $FAILED_TESTS" >> $GITHUB_STEP_SUMMARY
+              echo "- **Skipped:** $SKIPPED_TESTS" >> $GITHUB_STEP_SUMMARY
+              
+              if [ "$FAILED_TESTS" != "N/A" ] && [ "$FAILED_TESTS" -gt 0 ]; then
+                echo "" >> $GITHUB_STEP_SUMMARY
+                echo "### ❌ Failed Tests" >> $GITHUB_STEP_SUMMARY
+                jq -r '.results[] | select(.status == "failed") | "- " + .spec.title + " (" + .spec.file + ")"' test-results/results.json 2>/dev/null || echo "Unable to parse failed tests"
+              fi
+            else
+              echo "Test results available but jq not installed for parsing" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+          # Firefox-specific information
+          if [ "${{ matrix.browser }}" = "firefox" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🦊 Firefox Optimizations" >> $GITHUB_STEP_SUMMARY
+            echo "- **Extended Timeouts:** 120s test, 60s expect, 30s action, 60s navigation" >> $GITHUB_STEP_SUMMARY
+            echo "- **Page Lifecycle Management:** Enhanced with keep-alive mechanisms" >> $GITHUB_STEP_SUMMARY
+            echo "- **Animation Optimization:** Disabled for test stability" >> $GITHUB_STEP_SUMMARY
+            echo "- **Error Recovery:** Automatic page accessibility checks and recovery" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.browser }}
+          path: |
+            test-results/
+            playwright-report/
+            test-results/results.json
+            test-results/results.xml
+          retention-days: 30
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Comment on PR with E2E results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const browser = '${{ matrix.browser }}';
+            const exitCode = '${{ steps.e2e-tests.outputs.exit_code }}';
+            const testStatus = exitCode === '0' ? '✅ PASSED' : '❌ FAILED';
+            const firefoxOptimizations = '${{ inputs.firefox_optimizations }}';
+
+            const comment = `## 🧪 E2E Test Results - ${browser}
+
+            **Status:** ${testStatus}
+
+            **Browser:** ${browser}
+            **Firefox Optimizations:** ${firefoxOptimizations === 'true' ? '✅ Enabled' : '⏭️ Disabled'}
+            **Advanced Patterns:** ${{ inputs.run_advanced_patterns }}
+            **Performance Tests:** ${{ inputs.run_performance_tests }}
+            **Visual Regression:** ${{ inputs.run_visual_regression }}
+
+            ${browser === 'firefox' ? `
+            **🦊 Firefox Optimizations:**
+            - Extended timeouts (120s test, 60s expect)
+            - Page lifecycle management
+            - Animation optimization
+            - Error recovery mechanisms
+            ` : ''}
+
+            ---
+            *Generated by GitHub Actions*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  e2e-summary:
+    name: E2E Test Summary
+    runs-on: ubuntu-latest
+    needs: e2e-test
+    if: always()
+    steps:
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-results-*
+
+      - name: Generate comprehensive report
+        run: |
+          echo "## 🧪 E2E Testing Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Count total tests and failures across all browsers
+          TOTAL_TESTS=0
+          TOTAL_PASSED=0
+          TOTAL_FAILED=0
+          TOTAL_SKIPPED=0
+
+          for result_file in */test-results/results.json; do
+            if [ -f "$result_file" ]; then
+              if command -v jq &> /dev/null; then
+                TESTS=$(jq '.stats.total' "$result_file" 2>/dev/null || echo 0)
+                PASSED=$(jq '.stats.passed' "$result_file" 2>/dev/null || echo 0)
+                FAILED=$(jq '.stats.failed' "$result_file" 2>/dev/null || echo 0)
+                SKIPPED=$(jq '.stats.skipped' "$result_file" 2>/dev/null || echo 0)
+                
+                TOTAL_TESTS=$((TOTAL_TESTS + TESTS))
+                TOTAL_PASSED=$((TOTAL_PASSED + PASSED))
+                TOTAL_FAILED=$((TOTAL_FAILED + FAILED))
+                TOTAL_SKIPPED=$((TOTAL_SKIPPED + SKIPPED))
+              fi
+            fi
+          done
+
+          echo "### 📊 Overall Statistics" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total Tests:** $TOTAL_TESTS" >> $GITHUB_STEP_SUMMARY
+          echo "- **Passed:** $TOTAL_PASSED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Failed:** $TOTAL_FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Skipped:** $TOTAL_SKIPPED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Success Rate:** $((TOTAL_TESTS > 0 ? TOTAL_PASSED * 100 / TOTAL_TESTS : 0))%" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### 🌐 Browser Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "- Chromium: ${{ needs.e2e-test.result == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Firefox: ${{ needs.e2e-test.result == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- WebKit: ${{ needs.e2e-test.result == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### 🔧 Test Features" >> $GITHUB_STEP_SUMMARY
+          echo "- **Advanced Patterns:** ${{ inputs.run_advanced_patterns == 'true' && '✅' || '⏭️' }} Enabled" >> $GITHUB_STEP_SUMMARY
+          echo "- **Performance Tests:** ${{ inputs.run_performance_tests == 'true' && '✅' || '⏭️' }} Enabled" >> $GITHUB_STEP_SUMMARY
+          echo "- **Visual Regression:** ${{ inputs.run_visual_regression == 'true' && '✅' || '⏭️' }} Enabled" >> $GITHUB_STEP_SUMMARY
+          echo "- **Firefox Optimizations:** ${{ inputs.firefox_optimizations == 'true' && '✅' || '⏭️' }} Enabled" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### 📁 Artifacts Available" >> $GITHUB_STEP_SUMMARY
+          echo "- Test Results: Download from Actions tab" >> $GITHUB_STEP_SUMMARY
+          echo "- Playwright Reports: Interactive HTML reports" >> $GITHUB_STEP_SUMMARY
+          echo "- Screenshots: Failure screenshots for debugging" >> $GITHUB_STEP_SUMMARY
+          echo "- Performance Data: Detailed performance metrics" >> $GITHUB_STEP_SUMMARY

@@ -7,6 +7,7 @@ allowedActions: ["test", "mock", "validate"],
 theme: "agent_chat"
 */
 
+// Jest globals are available in test environment
 import { agentChatRouter } from '../services/agentChatRouter';
 import { OnboardingEngine } from '../onboarding/onboardingEngine';
 

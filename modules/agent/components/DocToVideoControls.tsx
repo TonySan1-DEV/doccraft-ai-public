@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { VoiceSelector } from '@/components/VoiceSelector';
 import { ConfirmNarrationDialog } from '@/components/ConfirmNarrationDialog';
+import { createVoiceId } from '@/types/voiceTypes';
 
 export interface DocToVideoOptions {
   mode: 'auto' | 'hybrid' | 'manual';
@@ -288,8 +289,8 @@ export const DocToVideoControls: React.FC<DocToVideoControlsProps> = ({
           <section aria-label="Narration Voice" className="mt-4">
             <h3 className="text-sm font-semibold mb-2">Narration Voice</h3>
             <VoiceSelector
-              selectedVoice={selectedVoice}
-              onChange={setSelectedVoice}
+              selectedVoice={createVoiceId(selectedVoice)}
+              onChange={voiceId => setSelectedVoice(voiceId)}
             />
           </section>
 

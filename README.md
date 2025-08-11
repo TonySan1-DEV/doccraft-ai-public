@@ -11,6 +11,22 @@
 
 DocCraft-AI v3 is an advanced AI-powered document processing and content generation platform that leverages contextual prompt engineering and emotional arc analysis to create engaging, personalized content. Built with modern web technologies and a modular architecture, it provides a comprehensive solution for AI-assisted content creation.
 
+## Table of Contents
+
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [MCP Setup](#-mcp-setup)
+- [Environment Variables](#-environment-variables)
+- [CI/CD Pipeline](#-cicd-pipeline)
+- [Deployment](#️-deployment)
+- [Architecture](#architecture)
+- [Development](#development)
+- [Linting Policy](#-linting-policy)
+  - [Scales & Lint - How to Fix](#scales-and-lint-how-to-fix)
+- [Contributing](#contributing)
+- [Support](#support)
+- [Roadmap](#roadmap)
+
 ## Features
 
 ### 🤖 **AI-Powered Content Generation**
@@ -367,6 +383,87 @@ Automatically formats and lints staged files:
 - **Improvement**: 848 issues resolved (76.6% reduction)
 - **Status**: ✅ **ALL ERRORS ELIMINATED!**
 - **Documentation**: See [docs/LINTING_CLEANUP_PROGRESS.md](docs/LINTING_CLEANUP_PROGRESS.md)
+
+### **Scales & Lint - How to Fix** {#scales-and-lint-how-to-fix}
+
+When working with emotion data in the `modules/emotionArc` module, follow these scaling rules:
+
+#### **Quick Cheat Sheet**
+
+| Field Type         | Scale | Data Format      | Display Format       | Example |
+| ------------------ | ----- | ---------------- | -------------------- | ------- |
+| **Emotion Fields** | 0–100 | `intensity: 75`  | Use as-is            | `75%`   |
+| **Position**       | 0–1   | `position: 0.5`  | `toPercentDisplay()` | `50%`   |
+| **Tension**        | 0–100 | `tension: 60`    | Use as-is            | `60%`   |
+| **Confidence**     | 0–100 | `confidence: 90` | Use as-is            | `90%`   |
+
+#### **Emotion Magnitudes (0–100)**
+
+```typescript
+// ✅ Correct - emotion fields are 0–100
+const intensity = 75; // 0–100 scale
+const confidence = 90; // 0–100 scale
+const tension = 60; // 0–100 scale
+const empathy = 85; // 0–100 scale
+
+// ❌ Wrong - don't multiply by 100
+const bad = intensity * 100; // ESLint will flag this
+```
+
+#### **Position Values (0–1)**
+
+```typescript
+// ✅ Correct - position is 0–1, display with toPercentDisplay
+const position = 0.5; // 0–1 scale
+const display = toPercentDisplay(position); // Shows "50%"
+
+// ❌ Wrong - don't multiply position by 100 directly
+const bad = position * 100; // ESLint will suggest toPercentDisplay()
+```
+
+#### **Auto-Fix Suggestions**
+
+The ESLint plugin provides one-click fixes:
+
+- **For position**: `position * 100` → `toPercentDisplay(position)`
+- **For emotion fields**: `intensity * 100` → `intensity` (remove the multiplication)
+
+#### **UI Display Only**
+
+```typescript
+// ✅ Allowed - UI formatting functions
+const display = formatPercentage(position * 100); // OK in UI formatters
+const percent = renderPercent(intensity); // OK in UI formatters
+```
+
+#### **When ESLint Complains**
+
+The emotion scaling ESLint plugin will flag these common issues with auto-fix suggestions:
+
+- **`"Remove *100 or /100 for intensity since it's already 0–100"`**
+  - **Fix**: Remove the multiplication/division
+  - **Example**: `intensity * 100` → `intensity`
+
+- **`"Wrap in toPercentDisplay(...) if this is UI display for a 0–1 value"`**
+  - **Fix**: Use `toPercentDisplay()` for position values
+  - **Example**: `position * 100` → `toPercentDisplay(position)`
+
+- **`"Avoid multiplying by 100 on emotion data (0–100 domain)"`**
+  - **Fix**: Use data as-is or proper UI formatters
+  - **Example**: `tension * 100` → `tension` or `formatPercentage(tension)`
+
+#### **Utilities Reference**
+
+Scaling utilities are available in [`modules/emotionArc/utils/scaling.ts`](modules/emotionArc/utils/scaling.ts):
+
+```typescript
+import {
+  toPercentDisplay, // Convert 0–1 to "50%"
+  clamp100, // Clamp value to 0–100
+  assert0to100, // Validate 0–100 range
+  formatPercentage, // Format for UI display
+} from '../utils/scaling';
+```
 
 ### **CI/CD Integration**
 

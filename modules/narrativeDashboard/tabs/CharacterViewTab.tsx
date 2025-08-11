@@ -1,10 +1,19 @@
+export const mcpContext = {
+  file: 'modules/narrativeDashboard/tabs/CharacterViewTab.tsx',
+  role: 'developer',
+  allowedActions: ['refactor', 'type-harden', 'test'],
+  contentSensitivity: 'low',
+  theme: 'doccraft-ai',
+};
+
 import React, { useState, useMemo } from 'react';
 import { CharacterPersona } from '../../../src/types/CharacterPersona';
+import { clamp100, toPercentDisplay } from '../../emotionArc/utils/scaling';
 
 export interface CharacterViewData {
   id: string;
   persona: CharacterPersona;
-  screenTime: number; // percentage of total story
+  screenTime: number; // percentage of total story (0-100)
   emotionalArc: string;
   relationshipCount: number;
   developmentScore: number; // 0-100
@@ -20,27 +29,35 @@ export interface CharacterViewTabProps {
   showEmotionalTimeline?: boolean;
 }
 
+type SortOption =
+  | 'name'
+  | 'screenTime'
+  | 'developmentScore'
+  | 'relationshipCount';
+
 const CharacterViewTab: React.FC<CharacterViewTabProps> = ({
   characters = [],
   onCharacterSelect,
   selectedCharacterId,
 }) => {
-  const [sortBy, setSortBy] = useState<
-    'name' | 'screenTime' | 'developmentScore' | 'relationshipCount'
-  >('name');
+  const [sortBy, setSortBy] = useState<SortOption>('name');
   const [filterBy, setFilterBy] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
-  const filteredAndSortedCharacters = useMemo(() => {
+  const filteredAndSortedCharacters = useMemo((): CharacterViewData[] => {
+    if (!Array.isArray(characters)) return [];
+
     let filtered = characters;
 
     // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter(
         char =>
-          char.persona.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          char.persona.description
-            .toLowerCase()
+          char.persona?.name
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          char.persona?.description
+            ?.toLowerCase()
             .includes(searchTerm.toLowerCase())
       );
     }
@@ -50,15 +67,15 @@ const CharacterViewTab: React.FC<CharacterViewTabProps> = ({
       filtered = filtered.filter(char => {
         switch (filterBy) {
           case 'protagonist':
-            return char.persona.archetype === 'protagonist';
+            return char.persona?.archetype === 'protagonist';
           case 'antagonist':
-            return char.persona.archetype === 'antagonist';
+            return char.persona?.archetype === 'antagonist';
           case 'supporting':
-            return char.persona.archetype === 'supporting';
+            return char.persona?.archetype === 'supporting';
           case 'developed':
-            return char.developmentScore > 70;
+            return (char.developmentScore ?? 0) > 70;
           case 'underdeveloped':
-            return char.developmentScore < 30;
+            return (char.developmentScore ?? 0) < 30;
           default:
             return true;
         }
@@ -69,54 +86,80 @@ const CharacterViewTab: React.FC<CharacterViewTabProps> = ({
     return filtered.sort((a, b) => {
       switch (sortBy) {
         case 'name':
-          return a.persona.name.localeCompare(b.persona.name);
+          return (a.persona?.name ?? '').localeCompare(b.persona?.name ?? '');
         case 'screenTime':
-          return b.screenTime - a.screenTime;
+          return (b.screenTime ?? 0) - (a.screenTime ?? 0);
         case 'developmentScore':
-          return b.developmentScore - a.developmentScore;
+          return (b.developmentScore ?? 0) - (a.developmentScore ?? 0);
         case 'relationshipCount':
-          return b.relationshipCount - a.relationshipCount;
+          return (b.relationshipCount ?? 0) - (a.relationshipCount ?? 0);
         default:
           return 0;
       }
     });
   }, [characters, searchTerm, filterBy, sortBy]);
 
-  const selectedCharacter = characters.find(
-    char => char.id === selectedCharacterId
-  );
+  const selectedCharacter = useMemo((): CharacterViewData | undefined => {
+    if (!selectedCharacterId || !Array.isArray(characters)) return undefined;
+    return characters.find(char => char.id === selectedCharacterId);
+  }, [characters, selectedCharacterId]);
 
   const getDevelopmentColor = (score: number): string => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    if (score >= 40) return 'text-orange-600';
+    const clampedScore = clamp100(score);
+    if (clampedScore >= 80) return 'text-green-600';
+    if (clampedScore >= 60) return 'text-yellow-600';
+    if (clampedScore >= 40) return 'text-orange-600';
     return 'text-red-600';
   };
 
   const getScreenTimeColor = (percentage: number): string => {
-    if (percentage >= 30) return 'text-blue-600';
-    if (percentage >= 15) return 'text-green-600';
-    if (percentage >= 5) return 'text-yellow-600';
+    const clampedPercentage = clamp100(percentage);
+    if (clampedPercentage >= 80) return 'text-blue-600';
+    if (clampedPercentage >= 60) return 'text-green-600';
+    if (clampedPercentage >= 40) return 'text-yellow-600';
     return 'text-gray-600';
   };
 
+  const handleSortChange = (value: string): void => {
+    if (
+      value === 'name' ||
+      value === 'screenTime' ||
+      value === 'developmentScore' ||
+      value === 'relationshipCount'
+    ) {
+      setSortBy(value as SortOption);
+    }
+  };
+
+  if (!Array.isArray(characters) || characters.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <div className="text-4xl mb-4">👤</div>
+        <p className="text-lg font-medium mb-2">No Characters Available</p>
+        <p className="text-sm">
+          Add characters to your narrative to see them here.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h3 className="text-xl font-semibold">Character Analysis</h3>
+        <h2 className="text-xl font-semibold">Character View</h2>
         <div className="flex gap-2">
           <input
             type="text"
             placeholder="Search characters..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="px-3 py-1 border rounded-md text-sm"
+            className="px-3 py-1 border rounded text-sm"
           />
           <select
             value={filterBy}
             onChange={e => setFilterBy(e.target.value)}
-            className="px-3 py-1 border rounded-md text-sm"
+            className="px-3 py-1 border rounded text-sm"
           >
             <option value="all">All Characters</option>
             <option value="protagonist">Protagonists</option>
@@ -127,8 +170,8 @@ const CharacterViewTab: React.FC<CharacterViewTabProps> = ({
           </select>
           <select
             value={sortBy}
-            onChange={e => setSortBy(e.target.value as any)}
-            className="px-3 py-1 border rounded-md text-sm"
+            onChange={e => handleSortChange(e.target.value)}
+            className="px-3 py-1 border rounded text-sm"
           >
             <option value="name">Sort by Name</option>
             <option value="screenTime">Sort by Screen Time</option>
@@ -143,55 +186,56 @@ const CharacterViewTab: React.FC<CharacterViewTabProps> = ({
         {filteredAndSortedCharacters.map(character => (
           <div
             key={character.id}
-            className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+            className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
               selectedCharacterId === character.id
                 ? 'border-blue-500 bg-blue-50'
                 : 'border-gray-200 hover:border-gray-300'
             }`}
             onClick={() => onCharacterSelect?.(character.id)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onCharacterSelect?.(character.id);
+              }
+            }}
+            tabIndex={0}
+            role="button"
+            aria-label={`Character: ${character.persona?.name ?? 'Unnamed Character'}`}
           >
-            <div className="flex justify-between items-start mb-2">
-              <h4 className="font-medium text-gray-900">
-                {character.persona.name}
-              </h4>
-              <span
-                className={`text-xs px-2 py-1 rounded-full ${
-                  character.persona.archetype === 'protagonist'
-                    ? 'bg-blue-100 text-blue-800'
-                    : character.persona.archetype === 'antagonist'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-gray-100 text-gray-800'
-                }`}
-              >
-                {character.persona.archetype || 'character'}
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-medium">
+                {character.persona?.name ?? 'Unnamed Character'}
+              </h3>
+              <span className="text-xs text-gray-500">
+                {character.persona?.archetype ?? 'Unknown'}
               </span>
             </div>
 
             <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-              {character.persona.description}
+              {character.persona?.description ?? 'No description available'}
             </p>
 
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Screen Time:</span>
-                <span className={getScreenTimeColor(character.screenTime)}>
-                  {character.screenTime.toFixed(1)}%
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-500">Development:</span>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-500">Screen Time:</span>
                 <span
-                  className={getDevelopmentColor(character.developmentScore)}
+                  className={`text-xs font-medium ${getScreenTimeColor(character.screenTime ?? 0)}`}
                 >
-                  {character.developmentScore}%
+                  {toPercentDisplay(character.screenTime ?? 0)}
                 </span>
               </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-500">Relationships:</span>
-                <span className="text-gray-700">
-                  {character.relationshipCount}
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-500">Development:</span>
+                <span
+                  className={`text-xs font-medium ${getDevelopmentColor(character.developmentScore ?? 0)}`}
+                >
+                  {clamp100(character.developmentScore ?? 0)}%
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-500">Relationships:</span>
+                <span className="text-xs font-medium">
+                  {character.relationshipCount ?? 0}
                 </span>
               </div>
             </div>
@@ -201,121 +245,44 @@ const CharacterViewTab: React.FC<CharacterViewTabProps> = ({
 
       {/* Selected Character Details */}
       {selectedCharacter && (
-        <div className="mt-6 p-4 border rounded-lg bg-gray-50">
-          <h4 className="text-lg font-semibold mb-4">
-            {selectedCharacter.persona.name} - Details
-          </h4>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Basic Info */}
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
+          <h3 className="font-semibold mb-2">
+            {selectedCharacter.persona?.name ?? 'Unnamed Character'} - Details
+          </h3>
+          <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <h5 className="font-medium mb-2">Basic Information</h5>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <strong>Archetype:</strong>{' '}
-                  {selectedCharacter.persona.archetype || 'Not specified'}
-                </div>
-                <div>
-                  <strong>Voice Style:</strong>{' '}
-                  {selectedCharacter.persona.voiceStyle || 'Not specified'}
-                </div>
-                <div>
-                  <strong>Worldview:</strong>{' '}
-                  {selectedCharacter.persona.worldview || 'Not specified'}
-                </div>
-                <div>
-                  <strong>Last Updated:</strong>{' '}
-                  {new Date(selectedCharacter.lastUpdated).toLocaleDateString()}
-                </div>
-              </div>
+              <span className="text-gray-500">Archetype:</span>
+              <span className="ml-2 font-medium">
+                {selectedCharacter.persona?.archetype ?? 'Unknown'}
+              </span>
             </div>
-
-            {/* Development Metrics */}
             <div>
-              <h5 className="font-medium mb-2">Development Metrics</h5>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Screen Time:</span>
-                  <span
-                    className={getScreenTimeColor(selectedCharacter.screenTime)}
-                  >
-                    {selectedCharacter.screenTime.toFixed(1)}%
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Development Score:</span>
-                  <span
-                    className={getDevelopmentColor(
-                      selectedCharacter.developmentScore
-                    )}
-                  >
-                    {selectedCharacter.developmentScore}%
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Relationships:</span>
-                  <span>{selectedCharacter.relationshipCount}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Emotional Arc:</span>
-                  <span>{selectedCharacter.emotionalArc}</span>
-                </div>
-              </div>
+              <span className="text-gray-500">Screen Time:</span>
+              <span className="ml-2 font-medium">
+                {toPercentDisplay(selectedCharacter.screenTime ?? 0)}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-500">Development Score:</span>
+              <span className="ml-2 font-medium">
+                {clamp100(selectedCharacter.developmentScore ?? 0)}%
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-500">Relationships:</span>
+              <span className="ml-2 font-medium">
+                {selectedCharacter.relationshipCount ?? 0}
+              </span>
             </div>
           </div>
-
-          {/* Character Traits */}
-          {selectedCharacter.persona.traits &&
-            selectedCharacter.persona.traits.length > 0 && (
-              <div className="mt-4">
-                <h5 className="font-medium mb-2">Personality Traits</h5>
-                <div className="flex flex-wrap gap-2">
-                  {selectedCharacter.persona.traits.map((trait, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                    >
-                      {trait.name}: {trait.value} ({trait.strength}/10)
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-          {/* Character Memory */}
-          {selectedCharacter.persona.memory &&
-            selectedCharacter.persona.memory.length > 0 && (
-              <div className="mt-4">
-                <h5 className="font-medium mb-2">Recent Memory</h5>
-                <div className="space-y-2">
-                  {selectedCharacter.persona.memory
-                    .sort((a, b) => b.timestamp - a.timestamp)
-                    .slice(0, 3)
-                    .map((memory, index) => (
-                      <div
-                        key={index}
-                        className="text-sm p-2 bg-white rounded border"
-                      >
-                        <div className="flex justify-between items-start">
-                          <span className="font-medium">{memory.type}</span>
-                          <span className="text-xs text-gray-500">
-                            {new Date(memory.timestamp).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <p className="text-gray-600 mt-1">{memory.content}</p>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
-        </div>
-      )}
-
-      {/* Empty State */}
-      {filteredAndSortedCharacters.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          <p>No characters found matching your criteria.</p>
-          <p className="text-sm mt-2">Try adjusting your search or filters.</p>
+          {selectedCharacter.persona?.description && (
+            <div className="mt-2">
+              <span className="text-gray-500">Description:</span>
+              <p className="mt-1 text-sm">
+                {selectedCharacter.persona.description}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

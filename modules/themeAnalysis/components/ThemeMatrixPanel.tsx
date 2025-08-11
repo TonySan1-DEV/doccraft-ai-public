@@ -1,14 +1,19 @@
 // MCP Context Block
-/*
-role: frontend-developer,
-tier: Pro,
-file: "modules/themeAnalysis/components/ThemeMatrixPanel.tsx",
-allowedActions: ["scaffold", "visualize", "align"],
-theme: "theme_analysis"
-*/
+export const mcpContext = {
+  file: 'modules/themeAnalysis/components/ThemeMatrixPanel.tsx',
+  role: 'developer',
+  allowedActions: ['refactor', 'type-harden', 'test'],
+  contentSensitivity: 'low',
+  theme: 'doccraft-ai',
+};
 
 import React, { useState } from 'react';
-import type { SceneThemeFingerprint, ThemeKeyword, ThemeConflictReason } from '../themeTypes';
+import type {
+  SceneThemeFingerprint,
+  ThemeKeyword,
+  ThemeConflictReason,
+} from '../themeTypes';
+import { clamp01, toPercentDisplay } from '../../emotionArc/utils/scaling';
 
 interface ThemeMatrixPanelProps {
   scenes: SceneThemeFingerprint[];
@@ -16,9 +21,17 @@ interface ThemeMatrixPanelProps {
   conflictedThemes?: ThemeConflictReason[];
 }
 
+interface ConflictTooltipProps {
+  conflict: ThemeConflictReason;
+  children: React.ReactNode;
+}
+
 // Accessible tooltip component
-const ConflictTooltip: React.FC<{ conflict: ThemeConflictReason; children: React.ReactNode }> = ({ conflict, children }) => {
-  const [showTooltip, setShowTooltip] = useState(false);
+const ConflictTooltip: React.FC<ConflictTooltipProps> = ({
+  conflict,
+  children,
+}) => {
+  const [showTooltip, setShowTooltip] = useState<boolean>(false);
   return (
     <div className="relative inline-block">
       <div
@@ -26,7 +39,7 @@ const ConflictTooltip: React.FC<{ conflict: ThemeConflictReason; children: React
         onMouseLeave={() => setShowTooltip(false)}
         onFocus={() => setShowTooltip(true)}
         onBlur={() => setShowTooltip(false)}
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
             setShowTooltip(!showTooltip);
           }
@@ -48,80 +61,93 @@ const ConflictTooltip: React.FC<{ conflict: ThemeConflictReason; children: React
           <div className="font-semibold mb-1">
             {conflict.theme} vs {conflict.conflictWith}
           </div>
-          <div className="text-xs">
-            {conflict.conflictReason}
-          </div>
+          <div className="text-xs">{conflict.conflictReason}</div>
         </div>
       )}
     </div>
   );
 };
 
-const ThemeMatrixPanel: React.FC<ThemeMatrixPanelProps> = ({ scenes, themes, conflictedThemes = [] }) => {
+const ThemeMatrixPanel: React.FC<ThemeMatrixPanelProps> = ({
+  scenes,
+  themes,
+  conflictedThemes = [],
+}) => {
   // Mock filter state (future: add real filters)
   // const [activeThemes, setActiveThemes] = useState<ThemeKeyword[]>(themes);
 
   return (
     <div className="overflow-x-auto w-full" aria-label="Theme Matrix Panel">
-      <table className="min-w-full border-collapse" role="table" aria-label="Scene x Theme Matrix">
+      <table
+        className="min-w-full border-collapse"
+        role="table"
+        aria-label="Scene x Theme Matrix"
+      >
         <thead>
           <tr>
-            <th className="p-2 text-xs font-semibold text-left bg-gray-100" role="columnheader">Scene</th>
+            <th
+              className="p-2 text-xs font-semibold text-left bg-gray-100"
+              role="columnheader"
+            >
+              Scene
+            </th>
             {themes.map(theme => (
-              <th key={theme} className="p-2 text-xs font-semibold text-center bg-gray-100" role="columnheader">{theme}</th>
+              <th
+                key={theme}
+                className="p-2 text-xs font-semibold text-center bg-gray-100"
+                role="columnheader"
+              >
+                {theme}
+              </th>
             ))}
           </tr>
         </thead>
         <tbody>
           {scenes.map(scene => (
             <tr key={scene.sceneId}>
-              <td className="p-2 text-xs font-mono bg-gray-50" role="rowheader">{scene.sceneId}</td>
+              <td className="p-2 text-xs border-b border-gray-200">
+                {scene.sceneId}
+              </td>
               {themes.map(theme => {
-                const signal = scene.themes.find(t => t.theme === theme);
-                const present = !!signal;
-                const strength = signal ? signal.strength : 0;
-                const drift = present && strength < 0.3;
-                // Check if this cell has a conflict
-                const conflict = conflictedThemes.find(c => 
-                  c.theme.toLowerCase() === theme.toLowerCase() && 
-                  scene.sceneId.toLowerCase().includes(c.conflictWith.toLowerCase())
+                const themeSignal = scene.themes.find(t => t.theme === theme);
+                const strength = themeSignal
+                  ? clamp01(themeSignal.strength ?? 0)
+                  : 0;
+                const isConflicted = conflictedThemes.some(
+                  c => c.theme === theme || c.conflictWith === theme
                 );
-                const cellContent = (
-                  <span
-                    className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${
-                      conflict 
-                        ? 'bg-red-300 text-red-900 border-2 border-red-500' 
-                        : drift 
-                        ? 'bg-red-200 text-red-800' 
-                        : present 
-                        ? 'bg-green-200 text-green-800' 
-                        : 'text-gray-400'
-                    }`}
-                    title={conflict ? 'Theme conflict detected' : drift ? 'Theme drift' : present ? 'Theme present' : 'Theme absent'}
-                  >
-                    {present ? (
-                      <>
-                        {Math.round(strength * 100)}%
-                        {drift && <span className="ml-1" role="img" aria-label="Drift">⚠️</span>}
-                        {conflict && <span className="ml-1" role="img" aria-label="Conflict">🔥</span>}
-                      </>
-                    ) : (
-                      <span className="text-gray-400 text-xs">–</span>
-                    )}
-                  </span>
-                );
+
                 return (
                   <td
-                    key={theme}
-                    className={`p-2 text-center align-middle ${drift ? 'bg-red-100' : present ? 'bg-green-50' : 'bg-gray-50'}`}
-                    aria-label={`Scene ${scene.sceneId}, Theme ${theme}, ${present ? `strength ${Math.round(strength * 100)}%` : 'absent'}${drift ? ', drift alert' : ''}${conflict ? ', conflict detected' : ''}`}
+                    key={`${scene.sceneId}-${theme}`}
+                    className={`p-2 text-xs text-center border-b border-gray-200 ${
+                      strength > 0.7
+                        ? 'bg-green-100'
+                        : strength > 0.3
+                          ? 'bg-yellow-100'
+                          : 'bg-gray-50'
+                    }`}
                   >
-                    {conflict ? (
-                      <ConflictTooltip conflict={conflict}>
-                        {cellContent}
+                    {isConflicted ? (
+                      <ConflictTooltip
+                        conflict={
+                          conflictedThemes.find(
+                            c => c.theme === theme || c.conflictWith === theme
+                          ) ?? {
+                            theme: '',
+                            conflictWith: '',
+                            conflictReason: 'Conflict detected',
+                          }
+                        }
+                      >
+                        <span className="text-red-600 font-semibold">
+                          {toPercentDisplay(strength)}
+                        </span>
                       </ConflictTooltip>
                     ) : (
-                      cellContent
+                      <span className={strength > 0.5 ? 'font-semibold' : ''}>
+                        {toPercentDisplay(strength)}
+                      </span>
                     )}
                   </td>
                 );
@@ -130,9 +156,8 @@ const ThemeMatrixPanel: React.FC<ThemeMatrixPanelProps> = ({ scenes, themes, con
           ))}
         </tbody>
       </table>
-      {/* Future: Add column filters, keyboard nav, and mobile layout */}
     </div>
   );
 };
 
-export default ThemeMatrixPanel; 
+export default ThemeMatrixPanel;

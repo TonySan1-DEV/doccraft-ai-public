@@ -79,7 +79,8 @@ export default function EnhancedCharacterChat({
   const [showCharacterInsights, setShowCharacterInsights] = useState(false);
   const [showEmotionalAnalysis, setShowEmotionalAnalysis] = useState(false);
   const [showFollowUpSuggestions, setShowFollowUpSuggestions] = useState(false);
-  const [currentContext] = useState<InteractionContext>({
+
+  const currentContext: InteractionContext = {
     scene: 'Casual conversation',
     mood: 'neutral',
     timeOfDay: 'afternoon',
@@ -88,7 +89,7 @@ export default function EnhancedCharacterChat({
     recentEvents: [],
     emotionalState: 'calm',
     conversationTone: 'casual',
-  });
+  };
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);

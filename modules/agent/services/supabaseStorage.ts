@@ -178,12 +178,11 @@ export async function uploadNarrationAudio(
 
     // Sanitize fileName for storage
     const sanitizedFileName = sanitizeFileName(fileName);
-    const filePath = `${userId}/${sanitizedFileName}`;
 
     // Upload file to Supabase Storage
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from(NARRATION_BUCKET)
-      .upload(filePath, file, {
+      .upload(sanitizedFileName, file, {
         contentType: options.contentType || AUDIO_CONTENT_TYPE,
         upsert: options.upsert || true,
         cacheControl: options.cacheControl || '3600',
@@ -209,7 +208,7 @@ export async function uploadNarrationAudio(
 
     return {
       fileName: sanitizedFileName,
-      filePath,
+      filePath: `${userId}/${sanitizedFileName}`,
       fileSize: fileInfo.metadata?.size || 0,
       contentType: options.contentType || AUDIO_CONTENT_TYPE,
       uploadedAt: new Date(),
@@ -285,12 +284,11 @@ export async function deleteNarrationAudio(
     }
 
     const sanitizedFileName = sanitizeFileName(fileName);
-    const filePath = `${userId}/${sanitizedFileName}`;
 
     // Delete file from Supabase Storage
     const { error } = await supabase.storage
       .from(NARRATION_BUCKET)
-      .remove([filePath]);
+      .remove([`${userId}/${sanitizedFileName}`]);
 
     if (error) {
       throw new Error(`Supabase delete error: ${error.message}`);
@@ -366,7 +364,6 @@ export async function audioFileExists(
 ): Promise<boolean> {
   try {
     const sanitizedFileName = sanitizeFileName(fileName);
-    const filePath = `${userId}/${sanitizedFileName}`;
 
     const { data, error } = await supabase.storage
       .from(NARRATION_BUCKET)
@@ -501,7 +498,7 @@ export function validateAudioFile(
 export async function ensureNarrationBucketExists(): Promise<void> {
   try {
     // Check if bucket exists by trying to list files
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from(NARRATION_BUCKET)
       .list('', { limit: 1 });
 
@@ -549,11 +546,7 @@ export async function storeTTSNarrationWithAudio(
     const fileName = generateAudioFileName(tts.title || 'narration');
 
     // Upload audio file
-    const audioMetadata = await uploadNarrationAudio(
-      userId,
-      fileName,
-      audioFile
-    );
+    await uploadNarrationAudio(userId, fileName, audioFile);
 
     // Generate signed URL for immediate access
     const signedUrlResponse = await getNarrationAudioUrl(userId, fileName);
@@ -649,7 +642,7 @@ export async function storeSlideDeck(
 
     const record: SlideDeckRecord = {
       title: deck.title,
-      theme: deck.theme,
+      theme: deck.theme || 'default',
       slides: sanitizeUserData(deck.slides),
       metadata: {
         wordCount: deck.slides.reduce(
@@ -742,7 +735,7 @@ export async function storeNarratedDeck(
       (acc, slide: any) => acc + slide.narration.length,
       0
     );
-    const averageNarrationLength = totalNarrationLength / deck.slides.length;
+    const averageNarrationLength = deck.slides.length > 0 ? totalNarrationLength / deck.slides.length : 0;
     const totalWords = deck.slides.reduce(
       (acc, slide: any) => acc + slide.narration.split(' ').length,
       0
@@ -750,7 +743,7 @@ export async function storeNarratedDeck(
 
     const record: NarratedSlideDeckRecord = {
       title: deck.title,
-      theme: deck.theme,
+      theme: deck.theme || 'default',
       slides: sanitizeUserData(deck.slides),
       narration_metadata: {
         tone: 'conversational', // Default, can be enhanced
@@ -759,7 +752,7 @@ export async function storeNarratedDeck(
       },
       analysis: {
         totalWords,
-        averageWordsPerSlide: totalWords / deck.slides.length,
+        averageWordsPerSlide: deck.slides.length > 0 ? totalWords / deck.slides.length : 0,
         tone: 'conversational',
         hasIntroduction: deck.slides.some(slide =>
           slide.title.toLowerCase().includes('introduction')
@@ -852,20 +845,20 @@ export async function storeTTSNarration(
     validateTTSNarration(tts);
 
     const totalDuration = tts.timeline[tts.timeline.length - 1]?.endTime || 0;
-    const averageDurationPerSlide =
-      tts.timeline.reduce(
-        (acc, entry) => acc + (entry.endTime - entry.startTime),
-        0
-      ) / tts.timeline.length;
+    const totalDurationPerSlide = tts.timeline.reduce(
+      (acc, entry) => acc + (entry.endTime - entry.startTime),
+      0
+    );
+    const averageDurationPerSlide = tts.timeline.length > 0 ? totalDurationPerSlide / tts.timeline.length : 0;
     const totalWords = tts.timeline.reduce(
       (acc, entry) => acc + entry.narration.split(' ').length,
       0
     );
 
     const record: TTSNarrationRecord = {
-      audio_file_url: tts.audioFileUrl,
+      audio_file_url: tts.audioFileUrl || '',
       timeline: sanitizeUserData(tts.timeline),
-      model_used: tts.modelUsed,
+      model_used: tts.modelUsed || 'en-US-JennyNeural',
       audio_metadata: {
         totalDuration,
         slideCount: tts.timeline.length,
@@ -1172,7 +1165,7 @@ export async function storeCompletePipeline(
 // Health check function
 export async function checkSupabaseConnection(): Promise<boolean> {
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('slide_decks')
       .select('count')
       .limit(1);

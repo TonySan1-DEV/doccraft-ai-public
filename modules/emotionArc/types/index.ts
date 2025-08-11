@@ -17,7 +17,7 @@ export type {
   EmotionalArc,
   CharacterEmotionalProfile,
   StoryEmotionalMap,
-  EmotionAnalysisResult,
+  EmotionAnalysis,
   SceneEmotionData,
   TensionCurve,
   ArcSimulationResult,
@@ -29,8 +29,6 @@ export type {
   SceneInput,
   AnalysisRequest,
   AnalysisResponse,
-  EmotionAnalysisError,
-  EmotionAnalysisEvent,
   ValidationResult,
-  AnalysisCache
-} from './emotionTypes'; 
+  AnalysisCache,
+} from './emotionTypes';

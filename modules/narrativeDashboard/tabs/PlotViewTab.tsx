@@ -1,20 +1,20 @@
-// MCP Context Block
-/*
-role: frontend-developer,
-tier: Pro,
-file: "modules/narrativeDashboard/tabs/PlotViewTab.tsx",
-allowedActions: ["scaffold", "visualize", "connect"],
-theme: "dashboard"
-*/
+export const mcpContext = {
+  file: 'modules/narrativeDashboard/tabs/PlotViewTab.tsx',
+  role: 'developer',
+  allowedActions: ['refactor', 'type-harden', 'test'],
+  contentSensitivity: 'low',
+  theme: 'doccraft-ai',
+};
 
 import React, { Suspense, useMemo } from 'react';
-import { useNarrativeSync } from '../../shared/state/useNarrativeSyncContext';
+import type { NarrativeSyncState } from '../../shared/state/useNarrativeSyncContext';
 import { plotFrameworkPresets } from '../../plotStructure/configs/frameworkConfigs';
 import type {
   PlotFramework,
   PlotBeat,
   PlotStructureAnalysis,
 } from '../../plotStructure/initPlotEngine';
+import { toDecimal } from '../../emotionArc/utils/scaling';
 
 const PlotFrameworkTimeline = React.lazy(
   () => import('../../plotStructure/PlotFrameworkTimeline')
@@ -25,10 +25,13 @@ const StructureComparisonChart = React.lazy(
 import SceneInspectorPanel from '../SceneInspectorPanel';
 import NarrativeOverlaySelector from '../NarrativeOverlaySelector';
 
-export const PlotViewTab: React.FC<{
-  narrativeSync: ReturnType<typeof useNarrativeSync>;
-}> = ({ narrativeSync }) => {
-  const { currentSceneId, activePlotFramework } = narrativeSync.state;
+export interface PlotViewTabProps {
+  narrativeSync?: NarrativeSyncState;
+}
+
+export const PlotViewTab: React.FC<PlotViewTabProps> = ({ narrativeSync }) => {
+  const currentSceneId = narrativeSync?.currentSceneId;
+  const activePlotFramework = narrativeSync?.activePlotFramework;
 
   // Map PlotFrameworkPreset to PlotFramework and PlotBeat[]
   const frameworkPreset = useMemo(
@@ -37,6 +40,7 @@ export const PlotViewTab: React.FC<{
       plotFrameworkPresets[0],
     [activePlotFramework]
   );
+
   // For demo, convert preset beats to PlotBeat[] (mocked fields)
   const framework: PlotFramework = {
     id: frameworkPreset.id,
@@ -46,17 +50,19 @@ export const PlotViewTab: React.FC<{
     complexity: 'moderate',
     beats: [],
   };
+
   const frameworkBeats: PlotBeat[] = frameworkPreset.beats.map(b => ({
     id: b.id,
     name: b.name,
     label: b.name,
     description: b.description,
-    act: Math.floor((b.position / 100) * 3) + 1,
-    position: b.position / 100,
+    act: Math.floor(toDecimal(b.position) * 3) + 1,
+    position: toDecimal(b.position),
     tensionLevel: 50,
     isStructural: true,
     framework,
   }));
+
   // TODO: Replace with real story beats and analysis
   const storyBeats: PlotBeat[] = frameworkBeats;
   const analysis: PlotStructureAnalysis = {
@@ -100,19 +106,14 @@ export const PlotViewTab: React.FC<{
             frameworkBeats={frameworkBeats}
             storyBeats={storyBeats}
             analysis={analysis}
-            aria-label="Structure vs. Emotion Comparison"
           />
         </Suspense>
       </div>
-      {/* Scene Inspector Side Panel */}
-      <aside
-        className="lg:col-span-1 flex flex-col gap-4"
-        aria-label="Scene Inspector"
-      >
-        <Suspense fallback={<div>Loading scene inspector...</div>}>
-          <SceneInspectorPanel narrativeSync={narrativeSync} />
-        </Suspense>
-      </aside>
+
+      {/* Sidebar */}
+      <div className="lg:col-span-1 flex flex-col gap-4">
+        <SceneInspectorPanel narrativeSync={narrativeSync} />
+      </div>
     </section>
   );
 };

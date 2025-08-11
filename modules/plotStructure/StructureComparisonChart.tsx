@@ -32,7 +32,6 @@ interface StructureComparisonChartProps {
 export default function StructureComparisonChart({
   frameworkBeats,
   storyBeats,
-  analysis,
   emotionalOverlays = [],
   emotionalGaps = [],
   tensionAnalysis = [],

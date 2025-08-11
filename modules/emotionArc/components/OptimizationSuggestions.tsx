@@ -11,7 +11,10 @@
 */
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { OptimizationSuggestion, StoryOptimizationPlan } from '../types/emotionTypes';
+import {
+  OptimizationSuggestion,
+  StoryOptimizationPlan,
+} from '../types/emotionTypes';
 
 interface OptimizationSuggestionsProps {
   optimizationPlan: StoryOptimizationPlan;
@@ -35,50 +38,68 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
   suggestion,
   onApply,
   onDismiss,
-  onClick
+  onClick,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'high':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low':
+        return 'bg-green-100 text-green-800 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-yellow-500';
-      case 'low': return 'bg-green-500';
-      default: return 'bg-gray-500';
+      case 'high':
+        return 'bg-red-500';
+      case 'medium':
+        return 'bg-yellow-500';
+      case 'low':
+        return 'bg-green-500';
+      default:
+        return 'bg-gray-500';
     }
   };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return 'text-green-600';
-      case 'medium': return 'text-yellow-600';
-      case 'hard': return 'text-red-600';
-      default: return 'text-gray-600';
+      case 'easy':
+        return 'text-green-600';
+      case 'medium':
+        return 'text-yellow-600';
+      case 'hard':
+        return 'text-red-600';
+      default:
+        return 'text-gray-600';
     }
   };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'pacing': return '⏱️';
-      case 'tension': return '⚡';
-      case 'empathy': return '💝';
-      case 'engagement': return '🎯';
-      case 'complexity': return '🧠';
-      default: return '💡';
+      case 'pacing':
+        return '⏱️';
+      case 'tension':
+        return '⚡';
+      case 'empathy':
+        return '💝';
+      case 'engagement':
+        return '🎯';
+      case 'complexity':
+        return '🧠';
+      default:
+        return '💡';
     }
   };
 
   return (
-    <div 
+    <div
       className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow"
       role="article"
       aria-labelledby={`suggestion-title-${suggestion.id}`}
@@ -87,63 +108,86 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
       <div className="p-4 border-b border-gray-100">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-3">
-            <span className="text-lg" role="img" aria-label={`${suggestion.type} suggestion`}>
-              {getTypeIcon(suggestion.type)}
+            <span
+              className="text-lg"
+              role="img"
+              aria-label={`${suggestion.type || 'general'} suggestion`}
+            >
+              {getTypeIcon(suggestion.type || 'general')}
             </span>
             <div className="flex-1">
-              <button 
-                id={`suggestion-title-${suggestion.id}`}
+              <button
+                id={`suggestion-title-${suggestion.id || 'unknown'}`}
                 className="text-sm font-semibold text-gray-900 cursor-pointer hover:text-blue-600 text-left w-full"
                 onClick={() => onClick(suggestion)}
-                onKeyDown={(e) => {
+                onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     onClick(suggestion);
                   }
                 }}
                 aria-expanded={isExpanded}
-                aria-controls={`suggestion-details-${suggestion.id}`}
+                aria-controls={`suggestion-details-${suggestion.id || 'unknown'}`}
               >
-                {suggestion.title}
+                {suggestion.title || suggestion.message}
               </button>
-              <p className="text-sm text-gray-600 mt-1">{suggestion.description}</p>
+              <p className="text-sm text-gray-600 mt-1">
+                {suggestion.description || suggestion.message}
+              </p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
-            <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getPriorityColor(suggestion.priority)}`}>
-              {suggestion.priority}
+            <span
+              className={`px-2 py-1 text-xs font-medium rounded-full border ${getPriorityColor(suggestion.priority || 'medium')}`}
+            >
+              {suggestion.priority || 'medium'}
             </span>
-            <div className={`w-2 h-2 rounded-full ${getRiskColor(suggestion.riskLevel)}`} 
-                 aria-label={`Risk level: ${suggestion.riskLevel}`} />
+            <div
+              className={`w-2 h-2 rounded-full ${getRiskColor(suggestion.riskLevel || 'low')}`}
+              aria-label={`Risk level: ${suggestion.riskLevel || 'low'}`}
+            />
           </div>
         </div>
       </div>
 
       {/* Impact Score Bars */}
       <div className="p-4 border-b border-gray-100">
-        <h5 className="text-xs font-medium text-gray-700 mb-3">Expected Impact</h5>
+        <h5 className="text-xs font-medium text-gray-700 mb-3">
+          Expected Impact
+        </h5>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs text-gray-600">Tension</span>
             <div className="flex items-center space-x-2">
               <div className="w-20 bg-gray-200 rounded-full h-2">
-                <div 
+                <div
                   className={`h-2 rounded-full ${
-                    suggestion.expectedImpact.tensionChange > 0 ? 'bg-red-500' : 'bg-green-500'
+                    (suggestion.expectedImpact?.tensionChange || 0) > 0
+                      ? 'bg-red-500'
+                      : 'bg-green-500'
                   }`}
-                  style={{ width: `${Math.abs(suggestion.expectedImpact.tensionChange)}%` }}
+                  style={{
+                    width: `${Math.abs(suggestion.expectedImpact?.tensionChange || 0)}%`,
+                  }}
                   role="progressbar"
-                  aria-valuenow={Math.abs(suggestion.expectedImpact.tensionChange)}
+                  aria-valuenow={Math.abs(
+                    suggestion.expectedImpact?.tensionChange || 0
+                  )}
                   aria-valuemin={0}
                   aria-valuemax={100}
-                  aria-label={`Tension change: ${suggestion.expectedImpact.tensionChange > 0 ? '+' : ''}${suggestion.expectedImpact.tensionChange}%`}
+                  aria-label={`Tension change: ${(suggestion.expectedImpact?.tensionChange || 0) > 0 ? '+' : ''}${suggestion.expectedImpact?.tensionChange || 0}%`}
                 />
               </div>
-              <span className={`text-xs font-medium ${
-                suggestion.expectedImpact.tensionChange > 0 ? 'text-red-600' : 'text-green-600'
-              }`}>
-                {suggestion.expectedImpact.tensionChange > 0 ? '+' : ''}{suggestion.expectedImpact.tensionChange}%
+              <span
+                className={`text-xs font-medium ${
+                  (suggestion.expectedImpact?.tensionChange || 0) > 0
+                    ? 'text-red-600'
+                    : 'text-green-600'
+                }`}
+              >
+                {(suggestion.expectedImpact?.tensionChange || 0) > 0 ? '+' : ''}
+                {suggestion.expectedImpact?.tensionChange || 0}%
               </span>
             </div>
           </div>
@@ -152,18 +196,22 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
             <span className="text-xs text-gray-600">Empathy</span>
             <div className="flex items-center space-x-2">
               <div className="w-20 bg-gray-200 rounded-full h-2">
-                <div 
+                <div
                   className="h-2 rounded-full bg-blue-500"
-                  style={{ width: `${Math.abs(suggestion.expectedImpact.empathyChange)}%` }}
+                  style={{
+                    width: `${Math.abs(suggestion.expectedImpact?.empathyChange || 0)}%`,
+                  }}
                   role="progressbar"
-                  aria-valuenow={Math.abs(suggestion.expectedImpact.empathyChange)}
+                  aria-valuenow={Math.abs(
+                    suggestion.expectedImpact?.empathyChange || 0
+                  )}
                   aria-valuemin={0}
                   aria-valuemax={100}
-                  aria-label={`Empathy change: +${suggestion.expectedImpact.empathyChange}%`}
+                  aria-label={`Empathy change: +${suggestion.expectedImpact?.empathyChange || 0}%`}
                 />
               </div>
               <span className="text-xs font-medium text-blue-600">
-                +{suggestion.expectedImpact.empathyChange}%
+                +{suggestion.expectedImpact?.empathyChange || 0}%
               </span>
             </div>
           </div>
@@ -172,18 +220,22 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
             <span className="text-xs text-gray-600">Engagement</span>
             <div className="flex items-center space-x-2">
               <div className="w-20 bg-gray-200 rounded-full h-2">
-                <div 
+                <div
                   className="h-2 rounded-full bg-green-500"
-                  style={{ width: `${Math.abs(suggestion.expectedImpact.engagementChange)}%` }}
+                  style={{
+                    width: `${Math.abs(suggestion.expectedImpact?.engagementChange || 0)}%`,
+                  }}
                   role="progressbar"
-                  aria-valuenow={Math.abs(suggestion.expectedImpact.engagementChange)}
+                  aria-valuenow={Math.abs(
+                    suggestion.expectedImpact?.engagementChange || 0
+                  )}
                   aria-valuemin={0}
                   aria-valuemax={100}
-                  aria-label={`Engagement change: +${suggestion.expectedImpact.engagementChange}%`}
+                  aria-label={`Engagement change: +${suggestion.expectedImpact?.engagementChange || 0}%`}
                 />
               </div>
               <span className="text-xs font-medium text-green-600">
-                +{suggestion.expectedImpact.engagementChange}%
+                +{suggestion.expectedImpact?.engagementChange || 0}%
               </span>
             </div>
           </div>
@@ -199,18 +251,23 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
           aria-controls={`suggestion-details-${suggestion.id}`}
         >
           <span>View details</span>
-          <svg 
+          <svg
             className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-            fill="none" 
-            stroke="currentColor" 
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
 
         {isExpanded && (
-          <div 
+          <div
             id={`suggestion-details-${suggestion.id}`}
             className="mt-4 space-y-4"
             role="region"
@@ -218,10 +275,15 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
           >
             {/* Specific Changes */}
             <div>
-              <h6 className="text-xs font-medium text-gray-700 mb-2">Specific Changes</h6>
+              <h6 className="text-xs font-medium text-gray-700 mb-2">
+                Specific Changes
+              </h6>
               <ul className="space-y-1">
-                {suggestion.specificChanges.map((change, index) => (
-                  <li key={index} className="text-sm text-gray-600 flex items-start">
+                {suggestion.specificChanges?.map((change, index) => (
+                  <li
+                    key={index}
+                    className="text-sm text-gray-600 flex items-start"
+                  >
                     <span className="text-blue-500 mr-2">•</span>
                     {change}
                   </li>
@@ -232,23 +294,35 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
             {/* Implementation Info */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <span className="text-xs font-medium text-gray-700">Difficulty</span>
-                <p className={`text-sm font-medium ${getDifficultyColor(suggestion.implementationDifficulty)}`}>
-                  {suggestion.implementationDifficulty}
+                <span className="text-xs font-medium text-gray-700">
+                  Difficulty
+                </span>
+                <p
+                  className={`text-sm font-medium ${getDifficultyColor(suggestion.implementationDifficulty || 'medium')}`}
+                >
+                  {suggestion.implementationDifficulty || 'medium'}
                 </p>
               </div>
               <div>
-                <span className="text-xs font-medium text-gray-700">Estimated Time</span>
-                <p className="text-sm text-gray-600">{suggestion.estimatedTime} minutes</p>
+                <span className="text-xs font-medium text-gray-700">
+                  Estimated Time
+                </span>
+                <p className="text-sm text-gray-600">
+                  {suggestion.estimatedTime} minutes
+                </p>
               </div>
             </div>
 
             {/* Target Positions */}
-            {suggestion.targetPositions.length > 0 && (
+            {suggestion.targetPositions && suggestion.targetPositions.length > 0 && (
               <div>
-                <span className="text-xs font-medium text-gray-700">Target Positions</span>
+                <span className="text-xs font-medium text-gray-700">
+                  Target Positions
+                </span>
                 <p className="text-sm text-gray-600">
-                  {suggestion.targetPositions.map(pos => `${Math.round(pos * 100)}%`).join(', ')}
+                  {suggestion.targetPositions
+                    .map(pos => `${Math.round(pos * 100)}%`)
+                    .join(', ')}
                 </p>
               </div>
             )}
@@ -260,14 +334,14 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
       <div className="p-4 border-t border-gray-100 bg-gray-50">
         <div className="flex items-center justify-between">
           <button
-            onClick={() => onApply(suggestion.id)}
+            onClick={() => onApply(suggestion.id || 'unknown')}
             className="px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             aria-label={`Apply suggestion: ${suggestion.title}`}
           >
             Apply
           </button>
           <button
-            onClick={() => onDismiss(suggestion.id)}
+            onClick={() => onDismiss(suggestion.id || 'unknown')}
             className="px-3 py-1 text-xs font-medium text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             aria-label={`Dismiss suggestion: ${suggestion.title}`}
           >
@@ -287,62 +361,95 @@ export default function OptimizationSuggestions({
   onApplySuggestion,
   onDismissSuggestion,
   className = '',
-  'aria-label': ariaLabel = 'Optimization Suggestions'
+  'aria-label': ariaLabel = 'Optimization Suggestions',
 }: OptimizationSuggestionsProps) {
-  const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
-  const [sortBy, setSortBy] = useState<'priority' | 'impact' | 'difficulty'>('priority');
+  const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>(
+    'all'
+  );
+  const [sortBy, setSortBy] = useState<'priority' | 'impact' | 'difficulty'>(
+    'priority'
+  );
 
   const filteredSuggestions = useMemo(() => {
     let suggestions = optimizationPlan.suggestions;
-    
+
     if (filter !== 'all') {
       suggestions = suggestions.filter(s => s.priority === filter);
     }
-    
+
     switch (sortBy) {
       case 'priority': {
         const priorityOrder = { high: 3, medium: 2, low: 1 };
-        suggestions.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+        suggestions.sort(
+          (a, b) => priorityOrder[b.priority || 'low'] - priorityOrder[a.priority || 'low']
+        );
         break;
       }
       case 'impact':
-        suggestions.sort((a, b) => b.expectedImpact.engagementChange - a.expectedImpact.engagementChange);
+        suggestions.sort(
+          (a, b) =>
+            (b.expectedImpact?.engagementChange || 0) -
+            (a.expectedImpact?.engagementChange || 0)
+        );
         break;
       case 'difficulty': {
         const difficultyOrder = { easy: 1, medium: 2, hard: 3 };
-        suggestions.sort((a, b) => difficultyOrder[a.implementationDifficulty] - difficultyOrder[b.implementationDifficulty]);
+        suggestions.sort(
+          (a, b) =>
+            difficultyOrder[a.implementationDifficulty || 'medium'] -
+            difficultyOrder[b.implementationDifficulty || 'medium']
+        );
         break;
       }
     }
-    
+
     return suggestions;
   }, [optimizationPlan.suggestions, filter, sortBy]);
 
-  const handleApply = useCallback((suggestionId: string) => {
-    onApplySuggestion?.(suggestionId);
-  }, [onApplySuggestion]);
+  const handleApply = useCallback(
+    (suggestionId: string) => {
+      onApplySuggestion?.(suggestionId);
+    },
+    [onApplySuggestion]
+  );
 
-  const handleDismiss = useCallback((suggestionId: string) => {
-    onDismissSuggestion?.(suggestionId);
-  }, [onDismissSuggestion]);
+  const handleDismiss = useCallback(
+    (suggestionId: string) => {
+      onDismissSuggestion?.(suggestionId);
+    },
+    [onDismissSuggestion]
+  );
 
-  const handleSuggestionClick = useCallback((suggestion: OptimizationSuggestion) => {
-    onSuggestionClick?.(suggestion);
-  }, [onSuggestionClick]);
+  const handleSuggestionClick = useCallback(
+    (suggestion: OptimizationSuggestion) => {
+      onSuggestionClick?.(suggestion);
+    },
+    [onSuggestionClick]
+  );
 
   // Error state
   if (error) {
     return (
-      <div 
+      <div
         className={`p-4 bg-red-50 border border-red-200 rounded-lg ${className}`}
         role="alert"
         aria-live="polite"
       >
         <div className="flex items-center">
-          <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          <svg
+            className="w-5 h-5 text-red-400 mr-2"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clipRule="evenodd"
+            />
           </svg>
-          <span className="text-red-800 font-medium">Error loading suggestions</span>
+          <span className="text-red-800 font-medium">
+            Error loading suggestions
+          </span>
         </div>
         <p className="text-red-700 mt-1 text-sm">{error}</p>
       </div>
@@ -352,21 +459,23 @@ export default function OptimizationSuggestions({
   // Loading state
   if (isLoading) {
     return (
-      <div 
+      <div
         className={`flex items-center justify-center h-64 bg-gray-50 rounded-lg ${className}`}
         role="status"
         aria-live="polite"
       >
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Generating optimization suggestions...</p>
+          <p className="text-gray-600">
+            Generating optimization suggestions...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div 
+    <div
       className={`space-y-4 ${className}`}
       role="region"
       aria-label={ariaLabel}
@@ -374,18 +483,21 @@ export default function OptimizationSuggestions({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Optimization Suggestions</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Optimization Suggestions
+          </h3>
           <p className="text-sm text-gray-600">
-            {optimizationPlan.suggestions.length} suggestions • Overall score: {optimizationPlan.overallScore}%
+            {optimizationPlan.suggestions.length} suggestions • Overall score:{' '}
+            {optimizationPlan.overallScore}%
           </p>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-600">Filter:</span>
             <select
               value={filter}
-              onChange={(e) => setFilter(e.target.value as any)}
+              onChange={e => setFilter(e.target.value as any)}
               className="text-sm border border-gray-300 rounded px-2 py-1"
               aria-label="Filter suggestions by priority"
             >
@@ -395,12 +507,12 @@ export default function OptimizationSuggestions({
               <option value="low">Low Priority</option>
             </select>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-600">Sort:</span>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={e => setSortBy(e.target.value as any)}
               className="text-sm border border-gray-300 rounded px-2 py-1"
               aria-label="Sort suggestions"
             >
@@ -414,39 +526,44 @@ export default function OptimizationSuggestions({
 
       {/* Overall Improvement Summary */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-blue-900 mb-2">Expected Overall Improvement</h4>
+        <h4 className="text-sm font-medium text-blue-900 mb-2">
+          Expected Overall Improvement
+        </h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <span className="text-xs text-blue-700">Tension</span>
             <p className="text-lg font-bold text-blue-900">
-              {optimizationPlan.estimatedImprovement.tension > 0 ? '+' : ''}{optimizationPlan.estimatedImprovement.tension}%
+              {optimizationPlan.estimatedImprovement?.tension && optimizationPlan.estimatedImprovement.tension > 0 ? '+' : ''}
+              {optimizationPlan.estimatedImprovement?.tension || 0}%
             </p>
           </div>
           <div>
             <span className="text-xs text-blue-700">Empathy</span>
             <p className="text-lg font-bold text-blue-900">
-              +{optimizationPlan.estimatedImprovement.empathy}%
+              +{optimizationPlan.estimatedImprovement?.empathy || 0}%
             </p>
           </div>
           <div>
             <span className="text-xs text-blue-700">Engagement</span>
             <p className="text-lg font-bold text-blue-900">
-              +{optimizationPlan.estimatedImprovement.engagement}%
+              +{optimizationPlan.estimatedImprovement?.engagement || 0}%
             </p>
           </div>
           <div>
             <span className="text-xs text-blue-700">Overall</span>
             <p className="text-lg font-bold text-blue-900">
-              +{optimizationPlan.estimatedImprovement.overall}%
+              +{optimizationPlan.estimatedImprovement?.overall || 0}%
             </p>
           </div>
         </div>
       </div>
 
       {/* Risk Assessment */}
-      {optimizationPlan.riskAssessment.highRisk.length > 0 && (
+      {optimizationPlan.riskAssessment?.highRisk && optimizationPlan.riskAssessment.highRisk.length > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-red-900 mb-2">⚠️ High Risk Suggestions</h4>
+          <h4 className="text-sm font-medium text-red-900 mb-2">
+            ⚠️ High Risk Suggestions
+          </h4>
           <ul className="text-sm text-red-800 space-y-1">
             {optimizationPlan.riskAssessment.highRisk.map((risk, index) => (
               <li key={index} className="flex items-start">
@@ -460,7 +577,7 @@ export default function OptimizationSuggestions({
 
       {/* Suggestions Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {filteredSuggestions.map((suggestion) => (
+        {filteredSuggestions.map(suggestion => (
           <SuggestionCard
             key={suggestion.id}
             suggestion={suggestion}
@@ -474,17 +591,31 @@ export default function OptimizationSuggestions({
       {/* Empty state */}
       {filteredSuggestions.length === 0 && (
         <div className="text-center py-8">
-          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          <svg
+            className="mx-auto h-12 w-12 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+            />
           </svg>
-          <p className="mt-2 text-gray-500">No suggestions match the current filter</p>
+          <p className="mt-2 text-gray-500">
+            No suggestions match the current filter
+          </p>
         </div>
       )}
 
       {/* Implementation Order */}
-      {optimizationPlan.implementationOrder.length > 0 && (
+      {optimizationPlan.implementationOrder && optimizationPlan.implementationOrder.length > 0 && (
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Recommended Implementation Order</h4>
+          <h4 className="text-sm font-medium text-gray-900 mb-3">
+            Recommended Implementation Order
+          </h4>
           <ol className="space-y-2">
             {optimizationPlan.implementationOrder.map((title, index) => (
               <li key={index} className="flex items-center space-x-3">
@@ -499,4 +630,4 @@ export default function OptimizationSuggestions({
       )}
     </div>
   );
-} 
+}

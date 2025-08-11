@@ -156,7 +156,7 @@ export default function ShareableAccessPage() {
       logTelemetryEvent('shareable_link_accessed', {
         customData: {
           pipelineId: pipeline_data.id,
-          token: token,
+          token: token ?? '',
           referrer: document.referrer,
         },
         userAgent: navigator.userAgent,

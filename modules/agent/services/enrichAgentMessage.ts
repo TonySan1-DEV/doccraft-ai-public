@@ -70,10 +70,11 @@ export function enrichAgentMessage(
   }
 
   // Add accessibility attributes
-  if (message.type === 'agent') {
-    message['aria-live'] = 'polite';
-    message['role'] = 'dialog';
-  }
+  // Note: aria-live and role are handled at the component level, not in the message object
+  // if (message.type === 'agent') {
+  //   message['aria-live'] = 'polite';
+  //   message['role'] = 'dialog';
+  // }
 
   // TODO: Future contextual expansion
   // - Add actions based on user tier (Premium users get more options)

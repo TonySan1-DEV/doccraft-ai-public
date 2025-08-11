@@ -19,7 +19,7 @@ import {
   getUpgradeMessage,
 } from '../../../src/utils/exportUtils';
 import ProUpgradeNudge from '../../../src/components/ProUpgradeNudge';
-import { Download, FileText, FileDown } from 'lucide-react';
+import { FileText, FileDown } from 'lucide-react';
 
 interface ScriptEditorProps {
   pipelineId: string;
@@ -27,7 +27,7 @@ interface ScriptEditorProps {
   onApprove: (editedScript: string) => void;
   onEditAgain: () => void;
   onCancel: () => void;
-  tier: string;
+  tier: 'Free' | 'Pro' | 'Enterprise';
 }
 
 interface ScriptEditorState {
@@ -363,8 +363,8 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({
     setState(prev => ({ ...prev, showUpgradeNudge: false }));
   };
 
-  const canEdit = tier === 'Pro' || tier === 'Premium';
-  const canRegenerate = tier === 'Pro' || tier === 'Premium';
+  const canEdit = tier === 'Pro' || tier === 'Enterprise';
+  const canRegenerate = tier === 'Pro' || tier === 'Enterprise';
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-6 max-w-6xl mx-auto">

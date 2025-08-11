@@ -1,5 +1,5 @@
 import { AuditLogger } from '../lib/audit/auditLogger';
-import { MCPContext, AuditDetails } from '@/types/domain';
+import { MCPContext, AuditDetails } from '../types/domain';
 
 const OPENAI_PROXY_URL = 'http://localhost:3001/api/openai/chat';
 

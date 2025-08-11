@@ -21,10 +21,12 @@ export interface NarrativeSyncState {
   characterFocusId: string | null;
   activePlotFramework: string | null;
   arcOverlay: PlotBeatAlignment[];
+  syncEnabled: boolean;
   setScene: (sceneId: string) => void;
   setCharacter: (characterId: string) => void;
   setFramework: (framework: string) => void;
   updateOverlay: (overlay: PlotBeatAlignment[]) => void;
+  toggleSync: () => void;
 }
 
 // --- Zustand Store Factory (SSR-safe) ---
@@ -35,10 +37,12 @@ const createStore: StateCreator<NarrativeSyncState> = set => ({
   characterFocusId: null,
   activePlotFramework: null,
   arcOverlay: [],
+  syncEnabled: true,
   setScene: sceneId => set({ currentSceneId: sceneId }),
   setCharacter: characterId => set({ characterFocusId: characterId }),
   setFramework: framework => set({ activePlotFramework: framework }),
   updateOverlay: overlay => set({ arcOverlay: overlay }),
+  toggleSync: () => set(state => ({ syncEnabled: !state.syncEnabled })),
 });
 
 const useStore = isClient

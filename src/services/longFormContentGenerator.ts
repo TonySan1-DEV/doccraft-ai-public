@@ -242,7 +242,7 @@ Return JSON array:
             reliability: 0.8,
             relevance: 0.9,
           });
-        } catch (error) {
+        } catch (_error) {
           console.warn(`Failed to fetch source: ${source}`);
         }
       }
@@ -264,8 +264,8 @@ Return JSON array:
             reliability: 0.7,
             relevance: 0.8,
           });
-        } catch (error) {
-          console.warn('Research generation failed:', error);
+        } catch (_error) {
+          console.warn('Research generation failed:', _error);
         }
       }
     }

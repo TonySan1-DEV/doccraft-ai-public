@@ -172,7 +172,7 @@ export const VideoDeliveryPanel: React.FC<VideoDeliveryPanelProps> = ({
         // Fetch TTS narration (audio) - Pro tier only
         if (
           pipeline.ttsNarrationId &&
-          (userTier === 'Pro' || userTier === 'Premium')
+          (userTier === 'Pro' || userTier === 'Enterprise')
         ) {
           try {
             const { data: ttsNarration } = await supabase
@@ -422,7 +422,7 @@ export const VideoDeliveryPanel: React.FC<VideoDeliveryPanelProps> = ({
 
   // Handle public share link (Pro tier only)
   const handlePublicShareLink = async () => {
-    if (userTier !== 'Pro' && userTier !== 'Premium' && userTier !== 'Admin') {
+    if (userTier !== 'Pro' && userTier !== 'Enterprise') {
       setError('Public sharing requires Pro tier or higher');
       return;
     }
@@ -492,7 +492,7 @@ export const VideoDeliveryPanel: React.FC<VideoDeliveryPanelProps> = ({
       const result = await exportScript(scriptContent, {
         format,
         includeWatermark: userTier === 'Free',
-        userTier,
+        userTier: userTier as 'Free' | 'Pro' | 'Enterprise' | undefined,
         fileName: `script_${pipeline.id}_${Date.now()}`,
         metadata: {
           title: scriptAsset.title || 'DocCraft Video Script',
@@ -754,9 +754,7 @@ export const VideoDeliveryPanel: React.FC<VideoDeliveryPanelProps> = ({
             </div>
 
             {/* Public Share (Pro tier only) */}
-            {(userTier === 'Pro' ||
-              userTier === 'Premium' ||
-              userTier === 'Admin') && (
+            {(userTier === 'Pro' || userTier === 'Enterprise') && (
               <div>
                 <button
                   onClick={handlePublicShareLink}
@@ -828,7 +826,7 @@ export const VideoDeliveryPanel: React.FC<VideoDeliveryPanelProps> = ({
             <ProUpgradeNudge
               message={getUpgradeMessage('pdf')}
               feature="pdf_export"
-              userTier={userTier}
+              userTier={userTier as 'Free' | 'Pro' | 'Enterprise' | undefined}
               onDismiss={handleUpgradeNudgeDismiss}
               variant="inline"
             />

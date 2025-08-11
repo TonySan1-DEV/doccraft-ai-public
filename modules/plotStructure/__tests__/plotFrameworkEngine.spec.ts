@@ -10,9 +10,10 @@
 }
 */
 
+import { describe, it, expect } from '@jest/globals';
 import { PlotFrameworkEngine } from '../plotFrameworkEngine';
 import { FrameworkConfigs } from '../frameworkConfigs';
-import type { CharacterPersona } from '../../../src/types/CharacterPersona';
+import type { CharacterPersona } from '@/types/CharacterPersona';
 
 describe('PlotFrameworkEngine persona alignment', () => {
   const beats = FrameworkConfigs.HerosJourney;
@@ -29,7 +30,7 @@ describe('PlotFrameworkEngine persona alignment', () => {
       worldview: 'Hopeful',
       personality: 'Courageous',
       knownConnections: [],
-      traits: { arcType: 'Redemptive', desire: 'Redemption', flaw: 'Doubt' }
+      traits: { arcType: 'Redemptive', desire: 'Redemption', flaw: 'Doubt' },
     };
     const overlay = engine.alignPersonaToFramework(persona, beats);
     expect(overlay.characterName).toBe('Alice');
@@ -49,7 +50,7 @@ describe('PlotFrameworkEngine persona alignment', () => {
       worldview: 'Cynical',
       personality: 'Ambitious',
       knownConnections: [],
-      traits: { arcType: 'Tragic', desire: 'Dominance', flaw: 'Hubris' }
+      traits: { arcType: 'Tragic', desire: 'Dominance', flaw: 'Hubris' },
     };
     const overlay = engine.alignPersonaToFramework(persona, beats);
     expect(overlay.characterName).toBe('Bob');
@@ -57,4 +58,4 @@ describe('PlotFrameworkEngine persona alignment', () => {
     expect(overlay.mismatches.length).toBeGreaterThan(0);
     expect(overlay.mismatches.some(m => m.beatId === 'return')).toBe(true);
   });
-}); 
+});

@@ -346,7 +346,7 @@ export class OnboardingEngine {
     return this.activeFlow;
   }
 
-  getCurrentStep(userId?: string): OnboardingStep | null {
+  getCurrentStep(_userId?: string): OnboardingStep | null {
     if (!this.activeFlow) return null;
     return this.activeFlow.steps[this.activeFlow.currentStep];
   }

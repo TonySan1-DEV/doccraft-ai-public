@@ -63,6 +63,7 @@
     "test": "jest --testPathPattern=modules/emotionArc",
     "test:watch": "jest --testPathPattern=modules/emotionArc --watch",
     "test:coverage": "jest --testPathPattern=modules/emotionArc --coverage",
+    "test:emotionArc": "jest --testPathPattern=modules/emotionArc/__tests__/scaling.test.ts",
     "test:accessibility": "jest --testPathPattern=accessibility",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build -o storybook-static",
@@ -152,4 +153,4 @@
     "not dead",
     "not ie 11"
   ]
-} 
+}

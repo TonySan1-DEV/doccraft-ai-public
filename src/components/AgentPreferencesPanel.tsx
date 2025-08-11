@@ -10,7 +10,7 @@
 }
 */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAgentPreferences } from '../contexts/AgentPreferencesContext';
 import { useMCP } from '../useMCP';
 import { AgentTone } from '../types/agentPreferences';

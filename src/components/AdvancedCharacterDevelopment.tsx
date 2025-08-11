@@ -42,15 +42,6 @@ interface DevelopmentSession {
   notes: string[];
 }
 
-interface CharacterMetrics {
-  personalityDepth: number;
-  relationshipComplexity: number;
-  emotionalRange: number;
-  growthPotential: number;
-  consistencyScore: number;
-  evolutionStage: number;
-}
-
 export default function AdvancedCharacterDevelopment({
   character,
   onCharacterUpdate,
@@ -59,19 +50,29 @@ export default function AdvancedCharacterDevelopment({
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [developmentSession, setDevelopmentSession] =
     useState<DevelopmentSession | null>(null);
-  const [characterMetrics] = useState<CharacterMetrics>({
-    personalityDepth: 0.6,
-    relationshipComplexity: 0.4,
-    emotionalRange: 0.7,
-    growthPotential: 0.8,
-    consistencyScore: 0.75,
-    evolutionStage: 0.5,
-  });
   const [isLoading, setIsLoading] = useState(false);
   const [insights, setInsights] = useState<string[]>([]);
   const [relationships, setRelationships] = useState<CharacterRelationship[]>(
     []
   );
+
+  // Compute character metrics
+  const characterMetrics = {
+    personalityDepth: character.personality?.length
+      ? Math.min(character.personality.length / 10, 1)
+      : 0.5,
+    growthPotential: character.developmentNotes?.length
+      ? Math.min(character.developmentNotes.length / 5, 1)
+      : 0.6,
+    evolutionStage: character.arc ? 0.7 : 0.3,
+    emotionalRange: character.traits?.filter(t => t.category === 'emotional')
+      .length
+      ? 0.8
+      : 0.7,
+    consistencyScore: character.traits?.length
+      ? Math.min(character.traits.length / 8, 1)
+      : 0.8,
+  };
 
   // Load character data on mount
   useEffect(() => {
@@ -139,13 +140,17 @@ export default function AdvancedCharacterDevelopment({
       ...character,
       // Note: developmentNotes property doesn't exist on CharacterPersona
       // We'll store insights in memory instead
-      memory: {
-        ...character.memory,
-        developmentNotes: [
-          ...(character.memory?.developmentNotes || []),
-          ...endedSession.insights,
-        ],
-      },
+      memory: [
+        ...(character.memory || []),
+        {
+          id: `dev-${Date.now()}`,
+          timestamp: Date.now(),
+          type: 'development' as const,
+          content: endedSession.insights.join('\n'),
+          emotionalImpact: 0.5,
+          importance: 'medium' as const,
+        },
+      ],
     };
     onCharacterUpdate(updatedCharacter);
   }, [developmentSession, character, onCharacterUpdate]);

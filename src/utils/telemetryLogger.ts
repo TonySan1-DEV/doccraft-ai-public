@@ -11,7 +11,7 @@ import {
   TelemetryMetadata,
   TelemetryEvent,
   TelemetryResult,
-} from '@/types/domain';
+} from '../types/domain';
 
 /**
  * Log telemetry events to Supabase

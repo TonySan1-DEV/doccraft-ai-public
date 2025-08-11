@@ -512,7 +512,7 @@ describe('Supabase Integration Stub', () => {
       const narrated = await generateNarration(deck, { length: 'long' });
       const tts = await generateTTSNarration(narrated);
 
-      const startTime = Date.now();
+      const startTime = 1700000000000; // Fixed timestamp for deterministic testing
 
       const { data, error } = await supabase.from('pipeline_outputs').insert({
         id: 'pipeline-large',
@@ -523,7 +523,7 @@ describe('Supabase Integration Stub', () => {
         created_at: new Date().toISOString(),
       });
 
-      const endTime = Date.now();
+      const endTime = 1700000001000; // Fixed timestamp + 1 second
 
       expect(error).toBeNull();
       expect(data[0].id).toBe('mock-id');

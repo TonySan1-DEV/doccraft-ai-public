@@ -12,7 +12,12 @@ export interface QualityValidationResult {
 }
 
 export interface ValidationIssue {
-  type: 'factual_error' | 'inconsistency' | 'hallucination' | 'plagiarism' | 'logical_error';
+  type:
+    | 'factual_error'
+    | 'inconsistency'
+    | 'hallucination'
+    | 'plagiarism'
+    | 'logical_error';
   severity: 'low' | 'medium' | 'high' | 'critical';
   message: string;
   location?: string;
@@ -59,7 +64,7 @@ class ContentQualityValidator {
     }
   ): Promise<QualityValidationResult> {
     // const startTime = Date.now();
-    
+
     try {
       // Parallel validation tasks
       const [
@@ -67,13 +72,13 @@ class ContentQualityValidator {
         factCheckResults,
         coherenceAnalysis,
         plagiarismCheck,
-        metrics
+        metrics,
       ] = await Promise.all([
         this.detectHallucinations(content, genre),
         this.factCheck(content, context?.researchSources),
         this.analyzeCoherence(content),
         this.checkPlagiarism(content),
-        this.calculateMetrics(content)
+        this.calculateMetrics(content),
       ]);
 
       // Compile results
@@ -94,18 +99,21 @@ class ContentQualityValidator {
       const suggestions = this.generateSuggestions(issues, metrics);
 
       return {
-        isValid: overallScore >= 0.7 && issues.filter(i => i.severity === 'critical').length === 0,
+        isValid:
+          overallScore >= 0.7 &&
+          issues.filter(i => i.severity === 'critical').length === 0,
         confidence: overallScore,
         issues,
         suggestions,
         factCheckResults,
         hallucinationScore: hallucinationCheck.score,
-        overallScore
+        overallScore,
       };
-
     } catch (error) {
       console.error('Content validation error:', error);
-      throw new Error(`Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -120,16 +128,20 @@ class ContentQualityValidator {
       // Use multiple LLM providers for cross-validation
       const providers = ['openai', 'anthropic', 'google'];
       const hallucinationChecks = await Promise.all(
-        providers.map(provider => this.checkWithProvider(content, genre, provider))
+        providers.map(provider =>
+          this.checkWithProvider(content, genre, provider)
+        )
       );
 
       // Aggregate results
-      const averageScore = hallucinationChecks.reduce((sum, check) => sum + check.score, 0) / providers.length;
+      const averageScore =
+        hallucinationChecks.reduce((sum, check) => sum + check.score, 0) /
+        providers.length;
       const allIssues = hallucinationChecks.flatMap(check => check.issues);
 
       return {
         score: averageScore,
-        issues: allIssues
+        issues: allIssues,
       };
     } catch (error) {
       console.error('Hallucination detection error:', error);
@@ -167,7 +179,7 @@ Return a JSON object with:
       const result = JSON.parse(response);
       return {
         score: result.hallucinationScore || 0.5,
-        issues: result.issues || []
+        issues: result.issues || [],
       };
     } catch (error) {
       console.error(`Provider ${provider} check failed:`, error);
@@ -235,14 +247,14 @@ Return JSON:
         isVerified: result.isVerified || false,
         confidence: result.confidence || 0.5,
         sources: result.supportingSources,
-        explanation: result.explanation
+        explanation: result.explanation,
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         claim,
         isVerified: false,
         confidence: 0.3,
-        explanation: 'Unable to verify due to error'
+        explanation: 'Unable to verify due to error',
       };
     }
   }
@@ -265,21 +277,25 @@ Return JSON:
   /**
    * General claim verification using web search
    */
-  private async generalClaimVerification(claim: string): Promise<FactCheckResult> {
+  private async generalClaimVerification(
+    claim: string
+  ): Promise<FactCheckResult> {
     // In production, integrate with web search APIs
     // For now, return neutral result
     return {
       claim,
       isVerified: false,
       confidence: 0.5,
-      explanation: 'General fact-checking requires web search integration'
+      explanation: 'General fact-checking requires web search integration',
     };
   }
 
   /**
    * Analyze content coherence and logical flow
    */
-  private async analyzeCoherence(content: string): Promise<{ score: number; issues: ValidationIssue[] }> {
+  private async analyzeCoherence(
+    content: string
+  ): Promise<{ score: number; issues: ValidationIssue[] }> {
     const prompt = `Analyze the coherence and logical flow of this content:
 
 ${content.substring(0, 2000)}...
@@ -302,9 +318,9 @@ Return JSON:
       const result = JSON.parse(response);
       return {
         score: result.coherenceScore || 0.7,
-        issues: result.issues || []
+        issues: result.issues || [],
       };
-    } catch (error) {
+    } catch (_error) {
       return { score: 0.7, issues: [] };
     }
   }
@@ -312,19 +328,26 @@ Return JSON:
   /**
    * Check for potential plagiarism
    */
-  private async checkPlagiarism(content: string): Promise<{ score: number; issues: ValidationIssue[] }> {
+  private async checkPlagiarism(
+    content: string
+  ): Promise<{ score: number; issues: ValidationIssue[] }> {
     // In production, integrate with plagiarism detection APIs
     // For now, perform basic similarity checks
     const similarityScore = this.calculateSimilarityScore(content);
-    
+
     return {
       score: similarityScore,
-      issues: similarityScore > 0.3 ? [{
-        type: 'plagiarism',
-        severity: 'medium',
-        message: 'Potential similarity detected - review recommended',
-        confidence: similarityScore
-      }] : []
+      issues:
+        similarityScore > 0.3
+          ? [
+              {
+                type: 'plagiarism',
+                severity: 'medium',
+                message: 'Potential similarity detected - review recommended',
+                confidence: similarityScore,
+              },
+            ]
+          : [],
     };
   }
 
@@ -335,7 +358,7 @@ Return JSON:
     // Simple implementation - in production, use sophisticated algorithms
     const words = content.toLowerCase().split(/\s+/);
     const uniqueWords = new Set(words);
-    return 1 - (uniqueWords.size / words.length);
+    return 1 - uniqueWords.size / words.length;
   }
 
   /**
@@ -343,11 +366,13 @@ Return JSON:
    */
   private calculateMetrics(content: string): ContentMetrics {
     const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+    const paragraphs = content
+      .split(/\n\s*\n/)
+      .filter(p => p.trim().length > 0);
     const words = content.split(/\s+/).filter(w => w.length > 0);
 
-    const averageSentenceLength = sentences.length > 0 ? 
-      words.length / sentences.length : 0;
+    const averageSentenceLength =
+      sentences.length > 0 ? words.length / sentences.length : 0;
 
     const readabilityScore = this.calculateReadabilityScore(content);
     const complexityScore = this.calculateComplexityScore(content);
@@ -360,7 +385,7 @@ Return JSON:
       averageSentenceLength,
       readabilityScore,
       complexityScore,
-      coherenceScore
+      coherenceScore,
     };
   }
 
@@ -374,7 +399,10 @@ Return JSON:
 
     if (sentences.length === 0 || words.length === 0) return 0;
 
-    const score = 206.835 - (1.015 * (words.length / sentences.length)) - (84.6 * (syllables / words.length));
+    const score =
+      206.835 -
+      1.015 * (words.length / sentences.length) -
+      84.6 * (syllables / words.length);
     return Math.max(0, Math.min(100, score));
   }
 
@@ -406,7 +434,10 @@ Return JSON:
 
     let coherenceScore = 1.0;
     for (let i = 1; i < sentences.length; i++) {
-      const similarity = this.calculateSentenceSimilarity(sentences[i-1], sentences[i]);
+      const similarity = this.calculateSentenceSimilarity(
+        sentences[i - 1],
+        sentences[i]
+      );
       coherenceScore *= similarity;
     }
 
@@ -419,10 +450,10 @@ Return JSON:
   private calculateSentenceSimilarity(s1: string, s2: string): number {
     const words1 = new Set(s1.toLowerCase().split(/\s+/));
     const words2 = new Set(s2.toLowerCase().split(/\s+/));
-    
+
     const intersection = new Set([...words1].filter(x => words2.has(x)));
     const union = new Set([...words1, ...words2]);
-    
+
     return union.size > 0 ? intersection.size / union.size : 0;
   }
 
@@ -438,7 +469,7 @@ Return JSON:
     const allIssues = [
       ...hallucinationCheck.issues,
       ...coherenceAnalysis.issues,
-      ...plagiarismCheck.issues
+      ...plagiarismCheck.issues,
     ];
 
     // Add fact check issues
@@ -449,7 +480,7 @@ Return JSON:
           severity: 'medium',
           message: `Unverified claim: ${result.claim}`,
           confidence: result.confidence,
-          suggestedFix: 'Verify this claim with reliable sources'
+          suggestedFix: 'Verify this claim with reliable sources',
         });
       }
     });
@@ -466,14 +497,17 @@ Return JSON:
     coherenceScore: number,
     plagiarismScore: number
   ): number {
-    const factCheckScore = factCheckResults.length > 0 ?
-      factCheckResults.filter(r => r.isVerified).length / factCheckResults.length : 1.0;
+    const factCheckScore =
+      factCheckResults.length > 0
+        ? factCheckResults.filter(r => r.isVerified).length /
+          factCheckResults.length
+        : 1.0;
 
     const weights = {
       hallucination: 0.3,
       factCheck: 0.3,
       coherence: 0.2,
-      plagiarism: 0.2
+      plagiarism: 0.2,
     };
 
     return (
@@ -487,13 +521,18 @@ Return JSON:
   /**
    * Generate improvement suggestions
    */
-  private generateSuggestions(issues: ValidationIssue[], metrics: ContentMetrics): string[] {
+  private generateSuggestions(
+    issues: ValidationIssue[],
+    metrics: ContentMetrics
+  ): string[] {
     const suggestions: string[] = [];
 
     // Hallucination suggestions
     const hallucinationIssues = issues.filter(i => i.type === 'hallucination');
     if (hallucinationIssues.length > 0) {
-      suggestions.push('Review and verify factual claims with reliable sources');
+      suggestions.push(
+        'Review and verify factual claims with reliable sources'
+      );
     }
 
     // Fact check suggestions
@@ -531,4 +570,4 @@ Return JSON:
 }
 
 // Export singleton instance
-export const contentQualityValidator = new ContentQualityValidator(); 
+export const contentQualityValidator = new ContentQualityValidator();

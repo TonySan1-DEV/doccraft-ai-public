@@ -1,8 +1,9 @@
 import { supabase } from '../lib/supabase';
 import * as Y from 'yjs';
 import { AuditLogger } from '../lib/audit/auditLogger';
-import { MCPContext, AuditDetails } from '@/types/domain';
+import { MCPContext, AuditDetails } from '../types/domain';
 
+// DocumentService - Core document management functionality with audit logging
 export interface Document {
   id: string;
   title: string;

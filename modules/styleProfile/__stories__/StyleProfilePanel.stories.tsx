@@ -11,7 +11,7 @@ import React, { useState } from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import StyleProfilePanel from '../components/StyleProfilePanel';
 import { stylePresets } from '../configs/stylePresets';
-import type { NarrativeStyleProfile, StyleTargetProfile } from '../types/styleTypes';
+import type { NarrativeStyleProfile } from '../types/styleTypes';
 
 // Mock profiles
 const YAProfile: NarrativeStyleProfile = {
@@ -28,7 +28,7 @@ const YAProfile: NarrativeStyleProfile = {
   emotionDensityConfidence: 0.8,
   lexicalComplexityConfidence: 0.8,
   sentenceVarianceConfidence: 0.8,
-  keyDescriptorsConfidence: 0.8
+  keyDescriptorsConfidence: 0.8,
 };
 
 const LiteraryDriftProfile: NarrativeStyleProfile = {
@@ -45,7 +45,7 @@ const LiteraryDriftProfile: NarrativeStyleProfile = {
   emotionDensityConfidence: 0.7,
   lexicalComplexityConfidence: 0.9,
   sentenceVarianceConfidence: 0.8,
-  keyDescriptorsConfidence: 0.7
+  keyDescriptorsConfidence: 0.7,
 };
 
 const ThrillerOverIntensityProfile: NarrativeStyleProfile = {
@@ -62,10 +62,11 @@ const ThrillerOverIntensityProfile: NarrativeStyleProfile = {
   emotionDensityConfidence: 0.9,
   lexicalComplexityConfidence: 0.7,
   sentenceVarianceConfidence: 0.7,
-  keyDescriptorsConfidence: 0.7
+  keyDescriptorsConfidence: 0.7,
 };
 
-const mockSceneText = 'The night was dark and stormy. I felt a chill run down my spine. The city lights flickered in the rain.';
+// Mock scene text for future use
+// const _mockSceneText = 'The night was dark and stormy. I felt a chill run down my spine. The city lights flickered in the rain.';
 
 // Storybook meta
 const meta: Meta<typeof StyleProfilePanel> = {
@@ -80,27 +81,41 @@ const meta: Meta<typeof StyleProfilePanel> = {
 - Accessible: All charts and warnings are ARIA-labeled, keyboard navigable.
 - Use the genre preset toggle to preview different style targets.
 - Storybook-addon-a11y is enabled for accessibility checks.
-        `
-      }
-    }
+        `,
+      },
+    },
   },
   argTypes: {
     sceneId: { control: 'text', description: 'Scene ID to analyze' },
-    target: { control: 'select', options: Object.keys(stylePresets), description: 'Genre preset target' },
-    chartMode: { control: 'radio', options: ['radar', 'bars'], description: 'Chart visualization mode' }
-  }
+    target: {
+      control: 'select',
+      options: Object.keys(stylePresets),
+      description: 'Genre preset target',
+    },
+    chartMode: {
+      control: 'radio',
+      options: ['radar', 'bars'],
+      description: 'Chart visualization mode',
+    },
+  },
 };
 export default meta;
 
 type Story = StoryObj<typeof StyleProfilePanel>;
 
 // Helper for live preset toggle
-const WithPresetToggle: React.FC<{ profile: NarrativeStyleProfile; defaultPreset: string; chartMode: 'radar' | 'bars' }> = ({ profile, defaultPreset, chartMode }) => {
+const WithPresetToggle: React.FC<{
+  profile: NarrativeStyleProfile;
+  defaultPreset: string;
+  chartMode: 'radar' | 'bars';
+}> = ({ _profile, defaultPreset, _chartMode }) => {
   const [preset, setPreset] = useState<string>(defaultPreset);
   return (
     <div>
       <div className="mb-2 flex gap-2 items-center">
-        <label htmlFor="preset-toggle" className="text-xs font-semibold">Preset:</label>
+        <label htmlFor="preset-toggle" className="text-xs font-semibold">
+          Preset:
+        </label>
         <select
           id="preset-toggle"
           className="px-2 py-1 rounded border border-zinc-300 text-xs"
@@ -109,7 +124,9 @@ const WithPresetToggle: React.FC<{ profile: NarrativeStyleProfile; defaultPreset
           aria-label="Select style preset"
         >
           {Object.keys(stylePresets).map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
           ))}
         </select>
       </div>
@@ -123,21 +140,57 @@ const WithPresetToggle: React.FC<{ profile: NarrativeStyleProfile; defaultPreset
 
 export const YAMatch: Story = {
   name: 'YA Style Match (No Drift)',
-  render: (args) => <WithPresetToggle profile={YAProfile} defaultPreset="YA" chartMode={args.chartMode || 'radar'} />,
+  render: args => (
+    <WithPresetToggle
+      profile={YAProfile}
+      defaultPreset="YA"
+      chartMode={args.chartMode || 'radar'}
+    />
+  ),
   args: { sceneId: 'storybook-scene', target: 'YA', chartMode: 'radar' },
-  parameters: { docs: { storyDescription: 'YA style, high pacing, casual voice. No drift.' } }
+  parameters: {
+    docs: {
+      storyDescription: 'YA style, high pacing, casual voice. No drift.',
+    },
+  },
 };
 
 export const LiteraryDrift: Story = {
   name: 'Literary Drift (Major Drift)',
-  render: (args) => <WithPresetToggle profile={LiteraryDriftProfile} defaultPreset="LiteraryFiction" chartMode={args.chartMode || 'bars'} />,
-  args: { sceneId: 'storybook-scene', target: 'LiteraryFiction', chartMode: 'bars' },
-  parameters: { docs: { storyDescription: 'Literary style, slow pacing, high complexity. Major drift flagged.' } }
+  render: args => (
+    <WithPresetToggle
+      profile={LiteraryDriftProfile}
+      defaultPreset="LiteraryFiction"
+      chartMode={args.chartMode || 'bars'}
+    />
+  ),
+  args: {
+    sceneId: 'storybook-scene',
+    target: 'LiteraryFiction',
+    chartMode: 'bars',
+  },
+  parameters: {
+    docs: {
+      storyDescription:
+        'Literary style, slow pacing, high complexity. Major drift flagged.',
+    },
+  },
 };
 
 export const ThrillerOverIntensity: Story = {
   name: 'Thriller Over-Intensity (Soft Recommendations)',
-  render: (args) => <WithPresetToggle profile={ThrillerOverIntensityProfile} defaultPreset="Thriller" chartMode={args.chartMode || 'radar'} />,
+  render: args => (
+    <WithPresetToggle
+      profile={ThrillerOverIntensityProfile}
+      defaultPreset="Thriller"
+      chartMode={args.chartMode || 'radar'}
+    />
+  ),
   args: { sceneId: 'storybook-scene', target: 'Thriller', chartMode: 'radar' },
-  parameters: { docs: { storyDescription: 'Thriller style, emotion spike, tonal sharpness. Minor drift and recommendations.' } }
-}; 
+  parameters: {
+    docs: {
+      storyDescription:
+        'Thriller style, emotion spike, tonal sharpness. Minor drift and recommendations.',
+    },
+  },
+};

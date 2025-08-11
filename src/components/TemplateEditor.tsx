@@ -7,10 +7,10 @@ import {
   Type,
   Layout,
   Image as ImageIcon,
-  Eye,
   RotateCcw,
   Save,
   CheckCircle,
+  Eye,
 } from 'lucide-react';
 import {
   EbookTemplate,
@@ -88,7 +88,9 @@ export function TemplateEditor({
       imageSettings: {
         ...prev.imageSettings,
         [section]: {
-          ...(prev.imageSettings?.[section as keyof typeof prev.imageSettings] || {}),
+          ...(prev.imageSettings?.[
+            section as keyof typeof prev.imageSettings
+          ] || {}),
           [field]: value,
         },
       },

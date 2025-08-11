@@ -57,6 +57,20 @@ export {
   validateEmotionalArc,
 } from './utils/validation';
 
+// Scaling utilities (used by other modules)
+export {
+  clamp100,
+  clamp01,
+  toPercentDisplay,
+  assert0to100,
+  isValid100,
+  isValid01,
+  toPercentage,
+  toDecimal,
+  formatPercentage,
+  formatPosition,
+} from './utils/scaling';
+
 // Constants
 export { EMOTION_CATEGORIES, EMOTION_COLORS } from './constants/emotions';
 

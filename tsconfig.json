@@ -33,9 +33,72 @@
     },
 
     /* Type definitions */
-    "types": ["node"]
+    "types": ["node", "vite/client"]
   },
   "include": ["src/**/*", "modules/**/*"],
+  "exclude": [
+    // Test files and patterns
+    "**/*.spec.*",
+    "**/*.test.*",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.js",
+    "**/*.spec.jsx",
+    "**/*.test.js",
+    "**/*.test.jsx",
+
+    // Test directories
+    "**/__tests__/**",
+    "**/__stories__/**",
+    "**/__visual__/**",
+    "**/__mocks__/**",
+    "**/__test__/**",
+    "**/tests/**",
+    "**/test/**",
+
+    // Specific test file patterns
+    "**/*Test.*",
+    "**/*TestPage.*",
+    "**/*TestPage.tsx",
+    "**/CollabTest.*",
+    "**/SupabaseTest.*",
+    "**/SimpleTest.*",
+    "**/EmotionalArcTest.*",
+    "**/testHooks.*",
+    "**/testHooks.tsx",
+    "**/testHooks.ts",
+    "**/testHooks.js",
+    "**/testHooks.jsx",
+
+    // Test configuration files
+    "**/jest.config.*",
+    "**/jest.setup.*",
+    "**/setupTests.*",
+    "**/test-utils.*",
+    "**/testUtils.*",
+    "**/testHelpers.*",
+    "**/testHelpers.ts",
+    "**/testHelpers.js",
+    "**/testHelpers.tsx",
+    "**/testHelpers.jsx",
+
+    // Storybook files
+    "**/*.stories.*",
+    "**/*.stories.ts",
+    "**/*.stories.tsx",
+    "**/*.stories.js",
+    "**/*.stories.jsx",
+
+    // Build and development files
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    ".jest",
+    "**/.jest/**"
+  ],
   "exclude": [
     // Test files and patterns
     "**/*.spec.*",

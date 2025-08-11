@@ -507,12 +507,13 @@ function GenreCard({
     sm: 'p-3',
     md: 'p-4',
     lg: 'p-6',
+    medium: 'p-4', // Add medium as alias for md
   };
 
   return (
     <button
       onClick={() => onSelect(genre)}
-      className={`w-full text-left border rounded-lg transition-all duration-200 ${sizeClasses[size]} ${
+      className={`w-full text-left border rounded-lg transition-all duration-200 ${sizeClasses[size || 'medium']} ${
         isSelected
           ? 'border-blue-500 bg-blue-50 shadow-md'
           : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'

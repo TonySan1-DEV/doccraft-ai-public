@@ -38,7 +38,7 @@ Your role and personality are defined as follows:
 - Archetype: ${persona.archetype}
 - Personality: ${persona.personality}
 - Speaking Style: ${persona.voiceStyle}
-- Known connections: ${persona.knownConnections.map(c => `${c.relationship} of ${c.name}${c.description ? ` (${c.description})` : ''}`).join('; ')}
+- Known connections: ${persona.knownConnections?.map(c => `${c.relationship} of ${c.name}${c.description ? ` (${c.description})` : ''}`).join('; ') || ''}
 - Motivations: ${persona.goals}
 ${persona.backstory ? `- Backstory: ${persona.backstory}` : ''}
 Never break character. Respond only as this persona would, even under pressure.
@@ -55,9 +55,9 @@ The author says: "${input}"
     { role: 'system', content: systemPrompt },
     ...(history?.slice(-5).map(msg => ({
       role: msg.sender === 'user' ? 'user' : 'assistant',
-      content: msg.text
+      content: msg.text,
     })) || []),
-    { role: 'user', content: userPrompt }
+    { role: 'user', content: userPrompt },
   ];
 
   try {
@@ -69,13 +69,13 @@ The author says: "${input}"
         model: 'gpt-4',
         messages,
         temperature: 0.85,
-        max_tokens: 300
-      })
+        max_tokens: 300,
+      }),
     });
     if (!res.ok) throw new Error('LLM API error');
     const data = await res.json();
     return data.choices?.[0]?.message?.content?.trim() || '[No reply]';
-  } catch (err) {
+  } catch (_err) {
     // Fallback: return a generic in-character message
     return `(${persona.name} seems momentarily lost in thought, but soon regains composure.) "I apologize, could you repeat that?"`;
   }

@@ -62,7 +62,7 @@ export const ProUpgradeNudge: React.FC<ProUpgradeNudgeProps> = ({
       userTier,
       feature,
       message,
-      variant,
+      customData: { variant },
     });
 
     if (onUpgrade) {
@@ -79,7 +79,7 @@ export const ProUpgradeNudge: React.FC<ProUpgradeNudgeProps> = ({
       userTier,
       feature,
       message,
-      variant,
+      customData: { variant },
     });
 
     setIsVisible(false);

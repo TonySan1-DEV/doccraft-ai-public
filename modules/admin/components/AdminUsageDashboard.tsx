@@ -161,12 +161,6 @@ function formatFileSize(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-function formatDuration(ms: number): string {
-  if (ms < 1000) return `${ms}ms`;
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-  return `${(ms / 60000).toFixed(1)}m`;
-}
-
 function getAssetTypeColor(assetType: string): string {
   switch (assetType) {
     case 'slide':
@@ -1910,7 +1904,7 @@ export default function AdminUsageDashboard() {
                           }
                           return true;
                         })
-                        .map((alert, index) => (
+                        .map(alert => (
                           <div
                             key={alert.id}
                             className={`border rounded-lg p-4 ${

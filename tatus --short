@@ -1,0 +1,5 @@
+[33mef10c97[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m types: Phase 3 critical fixes - import paths, unions, null-safety, zustand
+[33me26c7b0[m types: Phase 1 hardening
+[33m30b0b55[m build: stabilize production compile
+[33m81749ac[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m feat: Implement comprehensive Genre Selector system
+[33mc2b64c7[m  Update Continue Project Prompt: MCP Compliance Status & Linting Priorities

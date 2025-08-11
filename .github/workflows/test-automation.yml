@@ -1,0 +1,420 @@
+name: Test Automation
+
+on:
+  workflow_call:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: false
+        default: 'all'
+        type: string
+      run_scheduled:
+        description: 'Run scheduled tests'
+        required: false
+        default: false
+        type: boolean
+      notify_on_failure:
+        description: 'Send notifications on test failure'
+        required: false
+        default: true
+        type: boolean
+      parallel_execution:
+        description: 'Enable parallel test execution'
+        required: false
+        default: true
+        type: boolean
+      retry_failed:
+        description: 'Retry failed tests'
+        required: false
+        default: true
+        type: boolean
+
+  schedule:
+    # Run tests every 6 hours during business hours
+    - cron: '0 */6 * * 1-5'
+    # Run comprehensive tests daily at 2 AM
+    - cron: '0 2 * * *'
+    # Run performance tests weekly on Sunday
+    - cron: '0 3 * * 0'
+
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - unit
+          - e2e
+          - performance
+          - integration
+          - smoke
+
+jobs:
+  test-orchestrator:
+    name: Test Orchestrator
+    runs-on: ubuntu-latest
+    outputs:
+      test_matrix: ${{ steps.generate-matrix.outputs.matrix }}
+      execution_plan: ${{ steps.generate-plan.outputs.plan }}
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Generate test matrix
+        id: generate-matrix
+        run: |
+          TEST_SUITE="${{ inputs.test_suite || 'all' }}"
+          
+          if [ "$TEST_SUITE" = "all" ]; then
+            MATRIX='{"suite":["unit","e2e","performance","integration"],"browser":["chromium","firefox","webkit"]}'
+          elif [ "$TEST_SUITE" = "e2e" ]; then
+            MATRIX='{"suite":["e2e"],"browser":["chromium","firefox","webkit"]}'
+          elif [ "$TEST_SUITE" = "performance" ]; then
+            MATRIX='{"suite":["performance"],"browser":["chromium"]}'
+          elif [ "$TEST_SUITE" = "unit" ]; then
+            MATRIX='{"suite":["unit"],"browser":["node"]}'
+          else
+            MATRIX='{"suite":["$TEST_SUITE"],"browser":["chromium"]}'
+          fi
+          
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+          
+      - name: Generate execution plan
+        id: generate-plan
+        run: |
+          TEST_SUITE="${{ inputs.test_suite || 'all' }}"
+          SCHEDULED="${{ inputs.run_scheduled }}"
+          PARALLEL="${{ inputs.parallel_execution }}"
+          
+          PLAN=""
+          
+          if [ "$SCHEDULED" = "true" ]; then
+            PLAN="$PLAN - Scheduled execution enabled\n"
+          fi
+          
+          if [ "$PARALLEL" = "true" ]; then
+            PLAN="$PLAN - Parallel execution enabled\n"
+          fi
+          
+          PLAN="$PLAN - Test suite: $TEST_SUITE\n"
+          PLAN="$PLAN - Retry failed: ${{ inputs.retry_failed }}\n"
+          PLAN="$PLAN - Notifications: ${{ inputs.notify_on_failure }}\n"
+          
+          echo "plan<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$PLAN" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+      - name: Display execution plan
+        run: |
+          echo "## 🎯 Test Execution Plan"
+          echo ""
+          echo "${{ steps.generate-plan.outputs.plan }}"
+          
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: test-orchestrator
+    if: contains(fromJson(needs.test-orchestrator.outputs.test_matrix).suite, 'unit')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run unit tests
+        id: unit-tests
+        run: |
+          echo "Running unit tests..."
+          npm test -- --ci --passWithNoTests --coverage
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+          
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-reports
+          path: coverage/
+          retention-days: 30
+          
+      - name: Comment on PR with unit test results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const exitCode = '${{ steps.unit-tests.outputs.exit_code }}';
+            const testStatus = exitCode === '0' ? '✅ PASSED' : '❌ FAILED';
+            
+            const comment = `## 🧪 Unit Test Results
+            
+            **Status:** ${testStatus}
+            
+            **Coverage:** Available in artifacts
+            **Retry Failed:** ${{ inputs.retry_failed }}
+            
+            ---
+            *Generated by GitHub Actions*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+            
+  e2e-tests:
+    name: E2E Tests
+    uses: ./.github/workflows/e2e-testing.yml
+    needs: test-orchestrator
+    if: contains(fromJson(needs.test-orchestrator.outputs.test_matrix).suite, 'e2e')
+    with:
+      run_advanced_patterns: true
+      run_performance_tests: true
+      run_visual_regression: true
+      browsers: ${{ join(fromJson(needs.test-orchestrator.outputs.test_matrix).browser, ',') }}
+      parallel: ${{ inputs.parallel_execution }}
+      
+  performance-tests:
+    name: Performance Tests
+    uses: ./.github/workflows/performance-testing.yml
+    needs: test-orchestrator
+    if: contains(fromJson(needs.test-orchestrator.outputs.test_matrix).suite, 'performance')
+    with:
+      performance_threshold: 3000
+      lighthouse_score: 80
+      run_web_vitals: true
+      run_memory_tests: true
+      
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: test-orchestrator
+    if: contains(fromJson(needs.test-orchestrator.outputs.test_matrix).suite, 'integration')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Setup test database
+        run: |
+          echo "Setting up test database..."
+          npm run supabase:setup
+          
+      - name: Run integration tests
+        id: integration-tests
+        run: |
+          echo "Running integration tests..."
+          npm test -- --testPathPattern="integration" --ci
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+          
+      - name: Cleanup test database
+        if: always()
+        run: |
+          echo "Cleaning up test database..."
+          npm run supabase:reset || true
+          
+      - name: Comment on PR with integration test results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const exitCode = '${{ steps.integration-tests.outputs.exit_code }}';
+            const testStatus = exitCode === '0' ? '✅ PASSED' : '❌ FAILED';
+            
+            const comment = `## 🔗 Integration Test Results
+            
+            **Status:** ${testStatus}
+            
+            **Database:** Test database setup and cleanup completed
+            **Test Pattern:** Integration tests
+            
+            ---
+            *Generated by GitHub Actions*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+            
+  test-summary:
+    name: Test Automation Summary
+    runs-on: ubuntu-latest
+    needs: [test-orchestrator, unit-tests, e2e-tests, performance-tests, integration-tests]
+    if: always()
+    
+    steps:
+      - name: Generate comprehensive test report
+        run: |
+          echo "## 🚀 Test Automation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### 📋 Execution Plan" >> $GITHUB_STEP_SUMMARY
+          echo "${{ needs.test-orchestrator.outputs.execution_plan }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### 🎯 Test Results" >> $GITHUB_STEP_SUMMARY
+          
+          # Unit Tests
+          if contains(fromJson('${{ needs.test-orchestrator.outputs.test_matrix }}').suite, 'unit'); then
+            echo "- Unit Tests: ${{ needs.unit-tests.result == 'success' && '✅ PASSED' || '❌ FAILED' }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # E2E Tests
+          if contains(fromJson('${{ needs.test-orchestrator.outputs.test_matrix }}').suite, 'e2e'); then
+            echo "- E2E Tests: ${{ needs.e2e-tests.result == 'success' && '✅ PASSED' || '❌ FAILED' }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Performance Tests
+          if contains(fromJson('${{ needs.test-orchestrator.outputs.test_matrix }}').suite, 'performance'); then
+            echo "- Performance Tests: ${{ needs.performance-tests.result == 'success' && '✅ PASSED' || '❌ FAILED' }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Integration Tests
+          if contains(fromJson('${{ needs.test-orchestrator.outputs.test_matrix }}').suite, 'integration'); then
+            echo "- Integration Tests: ${{ needs.integration-tests.result == 'success' && '✅ PASSED' || '❌ FAILED' }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### 📊 Overall Status" >> $GITHUB_STEP_SUMMARY
+          
+          # Calculate overall success
+          FAILED_JOBS=0
+          TOTAL_JOBS=0
+          
+          if contains(fromJson('${{ needs.test-orchestrator.outputs.test_matrix }}').suite, 'unit'); then
+            TOTAL_JOBS=$((TOTAL_JOBS + 1))
+            if [ "${{ needs.unit-tests.result }}" != "success" ]; then
+              FAILED_JOBS=$((FAILED_JOBS + 1))
+            fi
+          fi
+          
+          if contains(fromJson('${{ needs.test-orchestrator.outputs.test_matrix }}').suite, 'e2e'); then
+            TOTAL_JOBS=$((TOTAL_JOBS + 1))
+            if [ "${{ needs.e2e-tests.result }}" != "success" ]; then
+              FAILED_JOBS=$((FAILED_JOBS + 1))
+            fi
+          fi
+          
+          if contains(fromJson('${{ needs.test-orchestrator.outputs.test_matrix }}').suite, 'performance'); then
+            TOTAL_JOBS=$((TOTAL_JOBS + 1))
+            if [ "${{ needs.performance-tests.result }}" != "success" ]; then
+              FAILED_JOBS=$((FAILED_JOBS + 1))
+            fi
+          fi
+          
+          if contains(fromJson('${{ needs.test-orchestrator.outputs.test_matrix }}').suite, 'integration'); then
+            TOTAL_JOBS=$((TOTAL_JOBS + 1))
+            if [ "${{ needs.integration-tests.result }}" != "success" ]; then
+              FAILED_JOBS=$((FAILED_JOBS + 1))
+            fi
+          fi
+          
+          if [ $FAILED_JOBS -eq 0 ]; then
+            echo "🎉 **All tests passed successfully!**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **$FAILED_JOBS out of $TOTAL_JOBS test suites failed**" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### 🔄 Next Steps" >> $GITHUB_STEP_SUMMARY
+          if [ $FAILED_JOBS -gt 0 ]; then
+            echo "- Review failed test results in artifacts" >> $GITHUB_STEP_SUMMARY
+            echo "- Check test logs for debugging information" >> $GITHUB_STEP_SUMMARY
+            if [ "${{ inputs.retry_failed }}" = "true" ]; then
+              echo "- Failed tests will be retried automatically" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "- All tests passed! Ready for deployment" >> $GITHUB_STEP_SUMMARY
+            echo "- Performance metrics available in artifacts" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+      - name: Comment on PR with comprehensive summary
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const matrix = JSON.parse('${{ needs.test-orchestrator.outputs.test_matrix }}');
+            const plan = '${{ needs.test-orchestrator.outputs.execution_plan }}';
+            
+            let testResults = '';
+            let failedJobs = 0;
+            let totalJobs = 0;
+            
+            if (matrix.suite.includes('unit')) {
+              totalJobs++;
+              const status = '${{ needs.unit-tests.result }}' === 'success' ? '✅ PASSED' : '❌ FAILED';
+              testResults += `- Unit Tests: ${status}\n`;
+              if ('${{ needs.unit-tests.result }}' !== 'success') failedJobs++;
+            }
+            
+            if (matrix.suite.includes('e2e')) {
+              totalJobs++;
+              const status = '${{ needs.e2e-tests.result }}' === 'success' ? '✅ PASSED' : '❌ FAILED';
+              testResults += `- E2E Tests: ${status}\n`;
+              if ('${{ needs.e2e-tests.result }}' !== 'success') failedJobs++;
+            }
+            
+            if (matrix.suite.includes('performance')) {
+              totalJobs++;
+              const status = '${{ needs.performance-tests.result }}' === 'success' ? '✅ PASSED' : '❌ FAILED';
+              testResults += `- Performance Tests: ${status}\n`;
+              if ('${{ needs.performance-tests.result }}' !== 'success') failedJobs++;
+            }
+            
+            if (matrix.suite.includes('integration')) {
+              totalJobs++;
+              const status = '${{ needs.integration-tests.result }}' === 'success' ? '✅ PASSED' : '❌ FAILED';
+              testResults += `- Integration Tests: ${status}\n`;
+              if ('${{ needs.integration-tests.result }}' !== 'success') failedJobs++;
+            }
+            
+            const overallStatus = failedJobs === 0 ? '🎉 ALL TESTS PASSED' : `⚠️ ${failedJobs}/${totalJobs} TEST SUITES FAILED`;
+            
+            const comment = `## 🚀 Test Automation Summary
+            
+            **Overall Status:** ${overallStatus}
+            
+            **Execution Plan:**
+            ${plan}
+            
+            **Test Results:**
+            ${testResults}
+            
+            **Configuration:**
+            - Parallel Execution: ${{ inputs.parallel_execution }}
+            - Retry Failed: ${{ inputs.retry_failed }}
+            - Notifications: ${{ inputs.notify_on_failure }}
+            
+            ---
+            *Generated by GitHub Actions*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
