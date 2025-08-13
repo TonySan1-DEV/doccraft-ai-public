@@ -2,39 +2,35 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { LandingHero } from '../components/LandingHero';
 import { Footer } from '../components/Footer';
+import Header from '../components/Header';
+import { useState, useEffect } from 'react';
+import {
+  Check,
+  User,
+  Users,
+  Bot,
+  Zap,
+  Brain,
+  Target,
+  Crown,
+  Star,
+  ArrowRight,
+  Play,
+} from 'lucide-react';
 
 export default function Home() {
-  console.log('🏠 Home component loading...');
-
   const { user } = useAuth();
-  console.log('🏠 User from auth context:', user);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 relative overflow-hidden flex flex-col">
-      {/* AI Texture Overlay */}
-      <div className="absolute inset-0 opacity-5 dark:opacity-10">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-              radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 40% 40%, rgba(244, 114, 182, 0.1) 0%, transparent 50%)
-            `,
-          }}
-        ></div>
-      </div>
-      {/* AI Background Overlay */}
-      <div className="absolute inset-0">
-        {/* Enhanced Animated Grid Pattern */}
-        <div className="absolute inset-0 opacity-15 dark:opacity-25">
+      {/* Enhanced animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Enhanced grid pattern with multiple layers */}
+        <div className="absolute inset-0 opacity-20">
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `
-                linear-gradient(rgba(99, 102, 241, 0.15) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(99, 102, 241, 0.15) 1px, transparent 1px)
-              `,
+              backgroundImage: `radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.4) 1px, transparent 0)`,
               backgroundSize: '40px 40px',
               animation: 'gridMove 20s linear infinite',
             }}
@@ -42,767 +38,346 @@ export default function Home() {
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `
-                linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px)
-              `,
-              backgroundSize: '80px 80px',
-              animation: 'gridMove 30s linear infinite reverse',
+              backgroundImage: `radial-gradient(circle at 1px 1px, rgba(99, 102, 241, 0.3) 1px, transparent 0)`,
+              backgroundSize: '60px 60px',
+              animation: 'gridMove 25s linear infinite reverse',
             }}
           ></div>
         </div>
 
-        {/* Enhanced Floating AI Particles */}
-        <div className="absolute inset-0">
+        {/* Enhanced digital rain effect with multiple streams */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute left-1/6 top-0 w-px h-full bg-gradient-to-b from-transparent via-blue-400 to-transparent animate-digitalRain1"></div>
+          <div className="absolute left-1/3 top-0 w-px h-full bg-gradient-to-b from-transparent via-indigo-400 to-transparent animate-digitalRain2"></div>
+          <div className="absolute left-1/2 top-0 w-px h-full bg-gradient-to-b from-transparent via-purple-400 to-transparent animate-digitalRain3"></div>
           <div
-            className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-400 rounded-full animate-pulse"
-            style={{ animationDelay: '0s' }}
-          ></div>
-          <div
-            className="absolute top-1/3 right-1/3 w-1 h-1 bg-purple-400 rounded-full animate-pulse"
+            className="absolute left-2/3 top-0 w-px h-full bg-gradient-to-b from-transparent via-blue-500 to-transparent animate-digitalRain1"
             style={{ animationDelay: '1s' }}
           ></div>
           <div
-            className="absolute top-2/3 left-1/2 w-1.5 h-1.5 bg-pink-400 rounded-full animate-pulse"
+            className="absolute left-5/6 top-0 w-px h-full bg-gradient-to-b from-transparent via-indigo-500 to-transparent animate-digitalRain2"
+            style={{ animationDelay: '2s' }}
+          ></div>
+        </div>
+
+        {/* Enhanced light beam effects with multiple directions */}
+        <div className="absolute inset-0 opacity-40">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent animate-lightBeam1"></div>
+          <div
+            className="absolute top-1/4 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-400 to-transparent animate-lightBeam1"
             style={{ animationDelay: '2s' }}
           ></div>
           <div
-            className="absolute top-1/2 right-1/4 w-1 h-1 bg-indigo-400 rounded-full animate-pulse"
-            style={{ animationDelay: '3s' }}
-          ></div>
-          <div
-            className="absolute top-3/4 left-1/3 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse"
+            className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-400 to-transparent animate-lightBeam1"
             style={{ animationDelay: '4s' }}
           ></div>
           <div
-            className="absolute top-1/6 right-1/6 w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"
+            className="absolute top-3/4 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent animate-lightBeam1"
+            style={{ animationDelay: '6s' }}
+          ></div>
+
+          {/* Vertical beams */}
+          <div
+            className="absolute top-0 left-0 h-full w-1 bg-gradient-to-b from-transparent via-blue-400 to-transparent animate-lightBeam1"
+            style={{ animationDelay: '1s' }}
+          ></div>
+          <div
+            className="absolute top-0 left-1/4 h-full w-1 bg-gradient-to-b from-transparent via-indigo-400 to-transparent animate-lightBeam1"
+            style={{ animationDelay: '3s' }}
+          ></div>
+          <div
+            className="absolute top-0 left-1/2 h-full w-1 bg-gradient-to-b from-transparent via-purple-400 to-transparent animate-lightBeam1"
             style={{ animationDelay: '5s' }}
           ></div>
           <div
-            className="absolute top-5/6 left-1/6 w-1 h-1 bg-orange-400 rounded-full animate-pulse"
-            style={{ animationDelay: '6s' }}
-          ></div>
-          <div
-            className="absolute top-1/8 right-1/3 w-2 h-2 bg-teal-400 rounded-full animate-pulse"
+            className="absolute top-0 left-3/4 h-full w-1 bg-gradient-to-b from-transparent via-blue-500 to-transparent animate-lightBeam1"
             style={{ animationDelay: '7s' }}
           ></div>
         </div>
 
-        {/* AI Data Streams */}
-        <div className="absolute inset-0 opacity-30 dark:opacity-40">
-          <div className="absolute top-0 left-1/6 w-px h-full bg-gradient-to-b from-transparent via-blue-400 to-transparent animate-digitalRain1"></div>
-          <div className="absolute top-0 left-1/3 w-px h-full bg-gradient-to-b from-transparent via-purple-400 to-transparent animate-digitalRain2"></div>
-          <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-transparent via-pink-400 to-transparent animate-digitalRain3"></div>
-          <div
-            className="absolute top-0 right-1/6 w-px h-full bg-gradient-to-b from-transparent via-cyan-400 to-transparent animate-digitalRain1"
-            style={{ animationDelay: '1s' }}
-          ></div>
-        </div>
-
-        {/* Enhanced Moving Light Beams */}
+        {/* Enhanced neural network nodes with more complexity */}
         <div className="absolute inset-0">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-40 animate-lightBeam1"></div>
-          <div className="absolute top-1/3 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-400 to-transparent opacity-30 animate-lightBeam2"></div>
-          <div className="absolute top-2/3 left-0 w-full h-1 bg-gradient-to-r from-transparent via-pink-400 to-transparent opacity-35 animate-lightBeam3"></div>
-          <div
-            className="absolute top-1/6 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-25 animate-lightBeam1"
-            style={{ animationDelay: '2s' }}
-          ></div>
-          <div
-            className="absolute top-5/6 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-20 animate-lightBeam2"
-            style={{ animationDelay: '3s' }}
-          ></div>
+          {[...Array(12)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-3 h-3 bg-blue-400 rounded-full animate-neuralPulse"
+              style={{
+                left: `${15 + i * 6}%`,
+                top: `${20 + i * 5}%`,
+                animationDelay: `${i * 0.3}s`,
+                animationDuration: `${2 + (i % 3)}s`,
+              }}
+            ></div>
+          ))}
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={`secondary-${i}`}
+              className="absolute w-2 h-2 bg-indigo-400 rounded-full animate-neuralPulse"
+              style={{
+                left: `${25 + i * 8}%`,
+                top: `${40 + i * 7}%`,
+                animationDelay: `${i * 0.4}s`,
+                animationDuration: `${1.5 + (i % 2)}s`,
+              }}
+            ></div>
+          ))}
         </div>
 
-        {/* AI Circuit Patterns */}
-        <div className="absolute inset-0 opacity-20 dark:opacity-30">
-          <svg
-            className="w-full h-full"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <linearGradient
-                id="circuitGradient"
-                x1="0%"
-                y1="0%"
-                x2="100%"
-                y2="100%"
-              >
-                <stop offset="0%" stopColor="#6366F1" stopOpacity="0.4" />
-                <stop offset="50%" stopColor="#8B5CF6" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#F472B6" stopOpacity="0.4" />
-              </linearGradient>
-            </defs>
-            <g className="animate-neuralPulse">
-              <path
-                d="M10,20 L30,20 L30,40 L50,40 L50,60 L70,60 L70,80 L90,80"
-                stroke="url(#circuitGradient)"
-                strokeWidth="0.2"
-                fill="none"
-              />
-              <path
-                d="M20,10 L40,10 L40,30 L60,30 L60,50 L80,50"
-                stroke="url(#circuitGradient)"
-                strokeWidth="0.2"
-                fill="none"
-              />
-              <circle cx="30" cy="20" r="0.8" fill="url(#circuitGradient)" />
-              <circle cx="50" cy="40" r="0.8" fill="url(#circuitGradient)" />
-              <circle cx="70" cy="60" r="0.8" fill="url(#circuitGradient)" />
-              <circle cx="40" cy="10" r="0.8" fill="url(#circuitGradient)" />
-              <circle cx="60" cy="30" r="0.8" fill="url(#circuitGradient)" />
-              <circle cx="80" cy="50" r="0.8" fill="url(#circuitGradient)" />
-            </g>
-          </svg>
-        </div>
-
-        {/* Enhanced Neural Network Connections */}
-        <div className="absolute inset-0 opacity-8 dark:opacity-15">
-          <svg
-            className="w-full h-full"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <linearGradient
-                id="neuralGradient"
-                x1="0%"
-                y1="0%"
-                x2="100%"
-                y2="100%"
-              >
-                <stop offset="0%" stopColor="#6366F1" stopOpacity="0.4" />
-                <stop offset="50%" stopColor="#8B5CF6" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#F472B6" stopOpacity="0.4" />
-              </linearGradient>
-            </defs>
-            <g className="animate-neuralPulse">
-              <circle cx="20" cy="30" r="0.8" fill="url(#neuralGradient)" />
-              <circle cx="80" cy="40" r="0.8" fill="url(#neuralGradient)" />
-              <circle cx="40" cy="70" r="0.8" fill="url(#neuralGradient)" />
-              <circle cx="60" cy="20" r="0.8" fill="url(#neuralGradient)" />
-              <circle cx="10" cy="60" r="0.8" fill="url(#neuralGradient)" />
-              <circle cx="90" cy="80" r="0.8" fill="url(#neuralGradient)" />
-              <circle cx="30" cy="50" r="0.6" fill="url(#neuralGradient)" />
-              <circle cx="70" cy="30" r="0.6" fill="url(#neuralGradient)" />
-              <line
-                x1="20"
-                y1="30"
-                x2="80"
-                y2="40"
-                stroke="url(#neuralGradient)"
-                strokeWidth="0.15"
-              />
-              <line
-                x1="80"
-                y1="40"
-                x2="40"
-                y2="70"
-                stroke="url(#neuralGradient)"
-                strokeWidth="0.15"
-              />
-              <line
-                x1="40"
-                y1="70"
-                x2="60"
-                y2="20"
-                stroke="url(#neuralGradient)"
-                strokeWidth="0.15"
-              />
-              <line
-                x1="60"
-                y1="20"
-                x2="10"
-                y2="60"
-                stroke="url(#neuralGradient)"
-                strokeWidth="0.15"
-              />
-              <line
-                x1="10"
-                y1="60"
-                x2="90"
-                y2="80"
-                stroke="url(#neuralGradient)"
-                strokeWidth="0.15"
-              />
-              <line
-                x1="30"
-                y1="50"
-                x2="70"
-                y2="30"
-                stroke="url(#neuralGradient)"
-                strokeWidth="0.15"
-              />
-              <line
-                x1="20"
-                y1="30"
-                x2="30"
-                y2="50"
-                stroke="url(#neuralGradient)"
-                strokeWidth="0.15"
-              />
-              <line
-                x1="80"
-                y1="40"
-                x2="70"
-                y2="30"
-                stroke="url(#neuralGradient)"
-                strokeWidth="0.15"
-              />
-            </g>
-          </svg>
-        </div>
-
-        {/* Enhanced Rotating Data Rings */}
-        <div className="absolute inset-0 opacity-20 dark:opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-32 h-32 border border-blue-400/40 rounded-full animate-spin-slow"></div>
-          <div className="absolute top-1/2 right-1/4 w-24 h-24 border border-purple-400/40 rounded-full animate-spin-reverse"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-20 h-20 border border-pink-400/40 rounded-full animate-spin-slow"></div>
-          <div className="absolute top-1/3 left-1/6 w-16 h-16 border border-cyan-400/35 rounded-full animate-spin-reverse"></div>
-          <div className="absolute bottom-1/3 right-1/6 w-28 h-28 border border-emerald-400/35 rounded-full animate-spin-slow"></div>
-          <div className="absolute top-2/3 left-2/3 w-12 h-12 border border-orange-400/35 rounded-full animate-spin-reverse"></div>
-        </div>
-
-        {/* AI Holographic Orbs */}
+        {/* Additional floating elements */}
         <div className="absolute inset-0">
-          <div className="absolute top-1/4 right-1/4 w-6 h-6 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full animate-pulse-glow"></div>
-          <div
-            className="absolute top-3/4 left-1/4 w-4 h-4 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full animate-pulse-glow"
-            style={{ animationDelay: '1s' }}
-          ></div>
-          <div
-            className="absolute top-1/2 right-1/2 w-5 h-5 bg-gradient-to-r from-pink-400/20 to-indigo-400/20 rounded-full animate-pulse-glow"
-            style={{ animationDelay: '2s' }}
-          ></div>
-          <div
-            className="absolute top-1/6 left-1/2 w-3 h-3 bg-gradient-to-r from-cyan-400/20 to-emerald-400/20 rounded-full animate-pulse-glow"
-            style={{ animationDelay: '3s' }}
-          ></div>
-        </div>
-
-        {/* Enhanced Floating Geometric Shapes */}
-        <div className="absolute inset-0">
-          <div className="absolute top-1/6 right-1/6 w-3 h-3 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-float-slow opacity-70"></div>
-          <div className="absolute top-2/3 left-1/6 w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full animate-float-medium opacity-80"></div>
-          <div className="absolute bottom-1/3 right-1/3 w-2.5 h-2.5 bg-gradient-to-r from-pink-400 to-indigo-400 rounded-full animate-float-fast opacity-60"></div>
-          <div className="absolute top-1/3 left-2/3 w-2 h-2 bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full animate-float-slow opacity-65"></div>
-          <div className="absolute bottom-1/6 right-1/6 w-1.5 h-1.5 bg-gradient-to-r from-orange-400 to-red-400 rounded-full animate-float-medium opacity-75"></div>
-          <div className="absolute top-5/6 left-1/3 w-2.5 h-2.5 bg-gradient-to-r from-teal-400 to-blue-400 rounded-full animate-float-fast opacity-55"></div>
-        </div>
-
-        {/* AI Energy Fields */}
-        <div className="absolute inset-0 opacity-15 dark:opacity-25">
-          <div className="absolute top-1/4 left-1/4 w-48 h-48 border border-blue-400/20 rounded-full animate-pulse-glow"></div>
-          <div
-            className="absolute top-1/2 right-1/4 w-32 h-32 border border-purple-400/20 rounded-full animate-pulse-glow"
-            style={{ animationDelay: '1s' }}
-          ></div>
-          <div
-            className="absolute bottom-1/4 left-1/3 w-40 h-40 border border-pink-400/20 rounded-full animate-pulse-glow"
-            style={{ animationDelay: '2s' }}
-          ></div>
-        </div>
-
-        {/* Enhanced Glowing Orbs */}
-        <div className="absolute inset-0">
-          <div className="absolute top-1/3 left-1/2 w-4 h-4 bg-blue-400/25 rounded-full animate-pulse-glow"></div>
-          <div
-            className="absolute top-2/3 right-1/3 w-3 h-3 bg-purple-400/25 rounded-full animate-pulse-glow"
-            style={{ animationDelay: '1s' }}
-          ></div>
-          <div
-            className="absolute bottom-1/3 left-1/4 w-3.5 h-3.5 bg-pink-400/25 rounded-full animate-pulse-glow"
-            style={{ animationDelay: '2s' }}
-          ></div>
-          <div
-            className="absolute top-1/6 right-1/3 w-2.5 h-2.5 bg-cyan-400/25 rounded-full animate-pulse-glow"
-            style={{ animationDelay: '3s' }}
-          ></div>
-          <div
-            className="absolute bottom-1/6 left-1/2 w-3 h-3 bg-emerald-400/25 rounded-full animate-pulse-glow"
-            style={{ animationDelay: '4s' }}
-          ></div>
-          <div
-            className="absolute top-5/6 right-1/6 w-2 h-2 bg-orange-400/25 rounded-full animate-pulse-glow"
-            style={{ animationDelay: '5s' }}
-          ></div>
-        </div>
-
-        {/* AI Matrix Code Rain */}
-        <div className="absolute inset-0 opacity-25 dark:opacity-35">
-          <div className="absolute top-0 left-1/8 w-px h-full bg-gradient-to-b from-transparent via-blue-400 to-transparent animate-digitalRain1"></div>
-          <div className="absolute top-0 left-3/8 w-px h-full bg-gradient-to-b from-transparent via-purple-400 to-transparent animate-digitalRain2"></div>
-          <div className="absolute top-0 left-5/8 w-px h-full bg-gradient-to-b from-transparent via-pink-400 to-transparent animate-digitalRain3"></div>
-          <div
-            className="absolute top-0 left-7/8 w-px h-full bg-gradient-to-b from-transparent via-cyan-400 to-transparent animate-digitalRain1"
-            style={{ animationDelay: '1s' }}
-          ></div>
-        </div>
-
-        {/* Floating Brand Watermark */}
-        <div className="absolute inset-0 opacity-3 dark:opacity-5 pointer-events-none">
-          <div className="absolute top-1/4 right-1/6 text-6xl font-bold bg-gradient-to-r from-blue-400/10 via-purple-400/10 to-pink-400/10 bg-clip-text text-transparent animate-float-slow">
-            DocCraft
-          </div>
-          <div className="absolute bottom-1/4 left-1/6 text-4xl font-bold bg-gradient-to-r from-purple-400/10 via-pink-400/10 to-blue-400/10 bg-clip-text text-transparent animate-float-medium">
-            AI
-          </div>
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={`float-${i}`}
+              className="absolute w-4 h-4 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full opacity-60 animate-float"
+              style={{
+                left: `${10 + i * 15}%`,
+                top: `${60 + i * 6}%`,
+                animationDelay: `${i * 0.8}s`,
+                animationDuration: `${3 + (i % 2)}s`,
+              }}
+            ></div>
+          ))}
         </div>
       </div>
 
-      {/* Main Content with AI Highlights */}
-      <div className="relative z-10">
-        {/* AI Content Highlights */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-blue-400/5 to-purple-400/5 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 right-1/4 w-48 h-48 bg-gradient-to-r from-purple-400/5 to-pink-400/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-56 h-56 bg-gradient-to-r from-pink-400/5 to-indigo-400/5 rounded-full blur-3xl"></div>
-        </div>
+      {/* Header */}
+      <Header />
 
-        {/* Professional Brand Header */}
-        <header className="relative z-20 py-2 px-8">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            {/* Brand Logo and Name */}
-            <div className="flex items-center space-x-3 group cursor-pointer">
-              {/* AI Brain Icon */}
-              <div className="relative flex-shrink-0 flex items-center">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all duration-300 group-hover:scale-105">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                    />
-                  </svg>
-                </div>
-                {/* Glowing Ring Effect */}
-                <div className="absolute inset-0 w-10 h-10 border-2 border-blue-400/30 rounded-lg animate-pulse-glow"></div>
-                <div className="absolute inset-0 w-10 h-10 border border-purple-400/20 rounded-lg animate-spin-slow"></div>
-              </div>
-
-              {/* Brand Name and Tagline */}
-              <div className="flex flex-col justify-center">
-                <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent group-hover:from-blue-500 group-hover:via-purple-500 group-hover:to-pink-500 transition-all duration-300 leading-tight">
-                  DocCraft AI
-                </h1>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300 font-medium tracking-wide leading-tight">
-                  Intelligent Content Creation Platform
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-light tracking-wider opacity-0 group-hover:opacity-100 transition-all duration-500 transform group-hover:translate-y-1 leading-tight">
-                  Powered by Advanced AI Technology
-                </p>
-              </div>
-
-              {/* Neural Network Connection Lines */}
-              <div className="absolute inset-0 pointer-events-none opacity-20">
-                <svg
-                  className="w-full h-full"
-                  viewBox="0 0 200 100"
-                  preserveAspectRatio="none"
-                >
-                  <defs>
-                    <linearGradient
-                      id="brandGradient"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#6366F1" stopOpacity="0.3" />
-                      <stop
-                        offset="50%"
-                        stopColor="#8B5CF6"
-                        stopOpacity="0.2"
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor="#F472B6"
-                        stopOpacity="0.3"
-                      />
-                    </linearGradient>
-                  </defs>
-                  <g className="animate-neuralPulse">
-                    <line
-                      x1="50"
-                      y1="50"
-                      x2="150"
-                      y2="50"
-                      stroke="url(#brandGradient)"
-                      strokeWidth="0.5"
-                    />
-                    <circle cx="50" cy="50" r="1" fill="url(#brandGradient)" />
-                    <circle cx="150" cy="50" r="1" fill="url(#brandGradient)" />
-                  </g>
-                </svg>
-              </div>
-            </div>
-
-            {/* Login Button */}
-            <div className="flex items-center space-x-4">
-              <Link
-                to="/login"
-                className="group relative inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 overflow-hidden"
-              >
-                {/* Notification Pulse */}
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full animate-ping"></div>
-                {/* Animated Background */}
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                {/* Glowing Ring Effect */}
-                <div className="absolute inset-0 border-2 border-blue-400/30 rounded-xl animate-pulse-glow"></div>
-
-                {/* Icon */}
-                <svg
-                  className="w-5 h-5 mr-2 relative z-10"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                  />
-                </svg>
-
-                {/* Text */}
-                <span className="relative z-10">Login</span>
-
-                {/* Shimmer Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-ai-shimmer"></div>
-              </Link>
-
-              {/* Sign Up Button */}
-              <Link
-                to="/signup"
-                className="group relative inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-xl border border-white/20 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-white/20 hover:border-white/30 transition-all duration-300 hover:scale-105"
-              >
-                <span className="relative z-10">Sign Up</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-ai-shimmer"></div>
-              </Link>
-
-              {/* User Status Indicator */}
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                  Live
-                </span>
-              </div>
-            </div>
-          </div>
-        </header>
-
+      {/* Main content */}
+      <div className="relative z-10 flex-1 flex flex-col">
+        {/* Hero Section */}
         <LandingHero />
 
         {/* Features Section */}
-        <section className="py-16 px-8">
+        <section className="features-section py-20 px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
-              <div className="flex items-center justify-center mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center mr-3">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                    />
-                  </svg>
-                </div>
-                <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wider">
-                  DOCCRAFT AI FEATURES
-                </span>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-                Powerful AI Tools for
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  {' '}
-                  Creators
-                </span>
+              <h2 className="features-title text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+                Powerful AI Tools for Writers
               </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                Transform your content with intelligent enhancement, analysis,
-                creation, and collaboration tools
+              <p className="features-subtitle text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                Transform your writing process with cutting-edge AI technology
+                designed specifically for authors, content creators, and
+                storytellers.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Feature Cards */}
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-8 border border-white/20 dark:border-slate-700/20 hover:shadow-xl hover:shadow-blue-500/25 hover:-translate-y-2 hover:scale-105 hover:border-blue-300/50 dark:hover:border-blue-400/50 transition-all duration-300 group cursor-pointer relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-ai-shimmer"></div>
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 group-hover:animate-icon-pulse transition-all duration-300">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
+              {/* Document Processing */}
+              <div className="feature-card feature-card-blue group">
+                <div className="feature-card-icon">
+                  <Bot className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
-                  Document Processing
+                <h3 className="feature-card-title text-gray-900 dark:text-white">
+                  AI Document Processing
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-300">
-                  Upload and enhance your documents with AI-powered analysis and
-                  intelligent suggestions.
+                <p className="feature-card-description">
+                  Intelligent document analysis, enhancement, and optimization
+                  powered by advanced AI algorithms.
                 </p>
+                <ul className="feature-card-list">
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Smart content analysis
+                  </li>
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Style optimization
+                  </li>
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Grammar enhancement
+                  </li>
+                </ul>
               </div>
 
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-8 border border-white/20 dark:border-slate-700/20 hover:shadow-xl hover:shadow-green-500/25 hover:-translate-y-2 hover:scale-105 transition-all duration-300 group cursor-pointer">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
+              {/* Character Development */}
+              <div className="feature-card feature-card-green group">
+                <div className="feature-card-icon">
+                  <User className="w-8 h-8 text-green-600 dark:text-green-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
-                  AI Image Generation
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-300">
-                  Create stunning visuals with AI-powered image generation and
-                  contextual suggestions.
-                </p>
-              </div>
-
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-8 border border-white/20 dark:border-slate-700/20 hover:shadow-xl hover:shadow-purple-500/25 hover:-translate-y-2 hover:scale-105 transition-all duration-300 group cursor-pointer">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
-                  Content Analysis
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-300">
-                  Get deep insights into your content with advanced AI analysis
-                  and recommendations.
-                </p>
-              </div>
-
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-8 border border-white/20 dark:border-slate-700/20 hover:shadow-xl hover:shadow-orange-500/25 hover:-translate-y-2 hover:scale-105 transition-all duration-300 group cursor-pointer">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  eBook Analysis
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Analyze and extract insights from eBooks with intelligent
-                  content breakdown and summaries.
-                </p>
-              </div>
-
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-8 border border-white/20 dark:border-slate-700/20 hover:shadow-xl hover:shadow-indigo-500/25 hover:-translate-y-2 hover:scale-105 transition-all duration-300 group cursor-pointer">
-                <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  Book Outlining
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Create comprehensive book outlines with AI-powered structure
-                  and chapter planning.
-                </p>
-              </div>
-
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-8 border border-white/20 dark:border-slate-700/20 hover:shadow-xl hover:shadow-teal-500/25 hover:-translate-y-2 hover:scale-105 transition-all duration-300 group cursor-pointer">
-                <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                <h3 className="feature-card-title text-gray-900 dark:text-white">
                   Character Development
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Build rich, complex characters with AI-assisted personality
-                  and backstory creation.
+                <p className="feature-card-description">
+                  Create compelling, multi-dimensional characters with
+                  AI-assisted personality development and arc planning.
                 </p>
+                <ul className="feature-card-list">
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Personality profiling
+                  </li>
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Character arc planning
+                  </li>
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Relationship mapping
+                  </li>
+                </ul>
               </div>
 
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-8 border border-white/20 dark:border-slate-700/20 hover:shadow-xl hover:shadow-yellow-500/25 hover:-translate-y-2 hover:scale-105 transition-all duration-300 group cursor-pointer">
-                <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2M9 4v2h6V4M9 4a2 2 0 012-2h4a2 2 0 012 2"
-                    />
-                  </svg>
+              {/* Plot Structure */}
+              <div className="feature-card feature-card-purple group">
+                <div className="feature-card-icon">
+                  <Target className="w-8 h-8 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  Content Enhancement
+                <h3 className="feature-card-title text-gray-900 dark:text-white">
+                  Plot Structure
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Enhance your writing with AI-powered suggestions for tone,
-                  style, and clarity improvements.
+                <p className="feature-card-description">
+                  Build engaging story structures with AI-powered plot analysis
+                  and narrative optimization tools.
                 </p>
+                <ul className="feature-card-list">
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Story arc analysis
+                  </li>
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Pacing optimization
+                  </li>
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Conflict resolution
+                  </li>
+                </ul>
               </div>
 
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-8 border border-white/20 dark:border-slate-700/20 hover:shadow-xl hover:shadow-pink-500/25 hover:-translate-y-2 hover:scale-105 transition-all duration-300 group cursor-pointer">
-                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    />
-                  </svg>
+              {/* Style Analysis */}
+              <div className="feature-card feature-card-yellow group">
+                <div className="feature-card-icon">
+                  <Brain className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  Analytics Dashboard
+                <h3 className="feature-card-title text-gray-900 dark:text-white">
+                  Style Analysis
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Track your content performance with detailed analytics and
-                  engagement insights.
+                <p className="feature-card-description">
+                  Analyze and enhance your writing style with AI-powered
+                  insights and personalized recommendations.
                 </p>
+                <ul className="feature-card-list">
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Style consistency
+                  </li>
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Tone analysis
+                  </li>
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Voice optimization
+                  </li>
+                </ul>
               </div>
 
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-8 border border-white/20 dark:border-slate-700/20 hover:shadow-xl hover:shadow-emerald-500/25 hover:-translate-y-2 hover:scale-105 transition-all duration-300 group cursor-pointer">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                    />
-                  </svg>
+              {/* Collaboration Tools */}
+              <div className="feature-card feature-card-red group">
+                <div className="feature-card-icon">
+                  <Users className="w-8 h-8 text-red-600 dark:text-red-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  Collaborative Workspace
+                <h3 className="feature-card-title text-gray-900 dark:text-white">
+                  Collaboration Tools
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Work together with real-time collaboration tools and shared
-                  project management.
+                <p className="feature-card-description">
+                  Work seamlessly with teams using real-time collaboration
+                  features and AI-assisted feedback systems.
                 </p>
+                <ul className="feature-card-list">
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Real-time editing
+                  </li>
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    AI feedback system
+                  </li>
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Version control
+                  </li>
+                </ul>
+              </div>
+
+              {/* Performance Analytics */}
+              <div className="feature-card feature-card-indigo group">
+                <div className="feature-card-icon">
+                  <Zap className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <h3 className="feature-card-title text-gray-900 dark:text-white">
+                  Performance Analytics
+                </h3>
+                <p className="feature-card-description">
+                  Track your writing progress and performance with detailed
+                  analytics and AI-powered insights.
+                </p>
+                <ul className="feature-card-list">
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Progress tracking
+                  </li>
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Performance metrics
+                  </li>
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Improvement suggestions
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
-              Ready to Transform Your Content?
+        <section className="cta-section py-20 px-4 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 via-purple-600/90 to-indigo-700/90"></div>
+          <div className="absolute inset-0 opacity-30">
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage:
+                  'radial-gradient(circle at 20px 20px, rgba(255, 255, 255, 0.1) 2px, transparent 2px)',
+                backgroundSize: '40px 40px',
+              }}
+            ></div>
+          </div>
+
+          <div className="relative max-w-4xl mx-auto text-center z-10">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 animate-pulse">
+              Ready to Transform Your Writing?
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
-              Join thousands of creators who are already using DocCraft-AI to
-              enhance their work
+            <p className="text-xl text-blue-100 mb-8 leading-relaxed">
+              Join thousands of writers who have already revolutionized their
+              creative process with DocCraft AI.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                to="/signup"
-                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                to="/dashboard"
+                className="group cta-button-primary inline-flex items-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-50 transition-all duration-300 text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-105"
               >
-                Get Started Free
+                <span className="mr-2">Get Started</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
               </Link>
               <Link
                 to="/demo"
-                className="inline-flex items-center px-8 py-4 bg-white/90 dark:bg-slate-800/90 text-gray-900 dark:text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 border border-gray-200 dark:border-slate-700"
+                className="group cta-button-secondary inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-blue-600 transition-all duration-300 text-lg backdrop-blur-sm hover:backdrop-blur-none"
               >
-                Try Demo
+                <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                <span>Watch Demo</span>
               </Link>
             </div>
           </div>
         </section>
-
-        {/* Footer */}
-        <div className="relative z-10">
-          <Footer />
-        </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

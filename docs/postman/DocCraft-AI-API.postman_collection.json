@@ -1,0 +1,815 @@
+{
+  "info": {
+    "name": "DocCraft-AI API",
+    "description": "Comprehensive Postman collection for testing DocCraft-AI's revolutionary AI writing platform API. Includes all endpoints, authentication, and example requests for the three AI modes: MANUAL, HYBRID, and FULLY_AUTO.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "3.0.0"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-API-Key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{api_key}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api.doccraft-ai.com/v3",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "dca_live_your_api_key_here",
+      "type": "string"
+    },
+    {
+      "key": "request_id",
+      "value": "{{$guid}}",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Getting Started",
+      "item": [
+        {
+          "name": "Test Authentication",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Test if your API key is valid and the service is running."
+          }
+        },
+        {
+          "name": "Get API Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["status"]
+            },
+            "description": "Check the current status of the DocCraft-AI API service."
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Processing",
+      "item": [
+        {
+          "name": "Content Enhancement - HYBRID Mode",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "X-Mode",
+                "value": "HYBRID"
+              },
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"content-enhancement\",\n  \"content\": \"The old lighthouse stood abandoned on the rocky cliff, its broken windows staring blindly into the storm-churned sea.\",\n  \"context\": {\n    \"genre\": \"creative-fiction\",\n    \"tone\": \"mysterious\",\n    \"targetAudience\": \"young-adult\"\n  },\n  \"options\": {\n    \"enhanceEmotion\": true,\n    \"improvePacing\": true,\n    \"addSensoryDetails\": true\n  },\n  \"explicitUserInitiated\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/process",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "process"]
+            },
+            "description": "Enhance creative content using HYBRID mode for collaborative AI assistance."
+          }
+        },
+        {
+          "name": "Content Enhancement - MANUAL Mode",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "X-Mode",
+                "value": "MANUAL"
+              },
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"content-enhancement\",\n  \"content\": \"The quarterly performance analysis shows promising growth trends in our core markets.\",\n  \"context\": {\n    \"genre\": \"business-writing\",\n    \"tone\": \"professional\",\n    \"targetAudience\": \"executives\"\n  },\n  \"options\": {\n    \"improveClarity\": true,\n    \"optimizeStructure\": true\n  },\n  \"explicitUserInitiated\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/process",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "process"]
+            },
+            "description": "Process content in MANUAL mode for complete user control."
+          }
+        },
+        {
+          "name": "Content Enhancement - FULLY_AUTO Mode",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "X-Mode",
+                "value": "FULLY_AUTO"
+              },
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"document-optimization\",\n  \"content\": \"Our team has been working diligently to improve customer satisfaction scores through enhanced service delivery and streamlined processes.\",\n  \"context\": {\n    \"genre\": \"business-writing\",\n    \"tone\": \"professional\",\n    \"targetAudience\": \"stakeholders\"\n  },\n  \"options\": {\n    \"enhanceEmotion\": true,\n    \"improvePacing\": true,\n    \"addSensoryDetails\": false,\n    \"improveClarity\": true,\n    \"addExecutiveSummary\": true,\n    \"optimizeStructure\": true\n  },\n  \"explicitUserInitiated\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/process",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "process"]
+            },
+            "description": "Process content in FULLY_AUTO mode for proactive AI assistance."
+          }
+        },
+        {
+          "name": "Creative Writing Assistance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "X-Mode",
+                "value": "HYBRID"
+              },
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"creative-assistance\",\n  \"content\": \"She walked through the empty house, memories flooding back with each step. The creaking floorboards told stories of laughter and tears, of family dinners and quiet moments.\",\n  \"context\": {\n    \"genre\": \"drama\",\n    \"tone\": \"melancholy\",\n    \"targetAudience\": \"general-audience\"\n  },\n  \"options\": {\n    \"enhanceEmotion\": true,\n    \"improvePacing\": true,\n    \"addSensoryDetails\": true\n  },\n  \"explicitUserInitiated\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/process",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "process"]
+            },
+            "description": "Get creative writing assistance with emotional depth and pacing improvements."
+          }
+        },
+        {
+          "name": "Technical Writing Optimization",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "X-Mode",
+                "value": "HYBRID"
+              },
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"technical-writing\",\n  \"content\": \"The API endpoint accepts POST requests with JSON payloads containing user authentication credentials and request parameters. Response times typically range from 200-500ms depending on server load and request complexity.\",\n  \"context\": {\n    \"genre\": \"technical-documentation\",\n    \"tone\": \"informative\",\n    \"targetAudience\": \"developers\"\n  },\n  \"options\": {\n    \"improveClarity\": true,\n    \"optimizeStructure\": true\n  },\n  \"explicitUserInitiated\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/process",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "process"]
+            },
+            "description": "Optimize technical documentation for clarity and structure."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Emotional Analysis",
+      "item": [
+        {
+          "name": "Basic Emotional Arc Analysis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"She walked through the empty house, memories flooding back with each step. The creaking floorboards told stories of laughter and tears, of family dinners and quiet moments. In the kitchen, she could almost hear her mother's voice calling everyone to dinner. The living room held echoes of her father's deep laugh. But now, the house was silent except for the memories.\",\n  \"analysisDepth\": \"basic\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/emotional-arc",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "emotional-arc"]
+            },
+            "description": "Analyze emotional journey with basic depth analysis."
+          }
+        },
+        {
+          "name": "Detailed Emotional Arc Analysis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"The story begins with hope as Sarah receives her acceptance letter to medical school. Her excitement builds as she packs her bags and says goodbye to her family. The journey to the city brings nervous anticipation. Arriving at the university, she feels overwhelmed by the new environment. The first day of classes brings both excitement and fear. As weeks pass, she struggles with the workload and begins to doubt herself. A kind professor offers encouragement, and she finds her confidence returning. By the end of the semester, she's thriving and looking forward to the next chapter of her education.\",\n  \"analysisDepth\": \"detailed\",\n  \"context\": {\n    \"genre\": \"drama\",\n    \"targetEmotion\": \"hope\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/emotional-arc",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "emotional-arc"]
+            },
+            "description": "Detailed emotional analysis with context and target emotion."
+          }
+        },
+        {
+          "name": "Comprehensive Emotional Arc Analysis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"The novel opens with Detective Martinez arriving at a crime scene on a rainy night. His initial reaction is professional detachment, but as he examines the evidence, a growing sense of unease takes hold. The discovery of a personal item belonging to his missing daughter sends him into a spiral of fear and desperation. His investigation becomes personal, driving him to work tirelessly despite exhaustion. Along the way, he forms an unlikely partnership with a witness who helps him see the case from a new perspective. As he gets closer to the truth, his fear transforms into determination. The final confrontation brings both terror and relief, culminating in a bittersweet resolution that leaves him changed forever.\",\n  \"analysisDepth\": \"comprehensive\",\n  \"context\": {\n    \"genre\": \"thriller\",\n    \"targetEmotion\": \"tension\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/emotional-arc",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "emotional-arc"]
+            },
+            "description": "Comprehensive emotional analysis for complex narrative content."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mode Management",
+      "item": [
+        {
+          "name": "Configure HYBRID Mode",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"HYBRID\",\n  \"settings\": {\n    \"initiativeLevel\": \"responsive\",\n    \"userControlLevel\": 75,\n    \"interventionStyle\": \"balanced\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/mode/configure",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "mode", "configure"]
+            },
+            "description": "Configure HYBRID mode with balanced user control and AI initiative."
+          }
+        },
+        {
+          "name": "Configure MANUAL Mode",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"MANUAL\",\n  \"settings\": {\n    \"initiativeLevel\": \"passive\",\n    \"userControlLevel\": 100,\n    \"interventionStyle\": \"subtle\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/mode/configure",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "mode", "configure"]
+            },
+            "description": "Configure MANUAL mode for complete user control."
+          }
+        },
+        {
+          "name": "Configure FULLY_AUTO Mode",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"FULLY_AUTO\",\n  \"settings\": {\n    \"initiativeLevel\": \"proactive\",\n    \"userControlLevel\": 25,\n    \"interventionStyle\": \"prominent\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/mode/configure",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "mode", "configure"]
+            },
+            "description": "Configure FULLY_AUTO mode for proactive AI assistance."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Performance Analytics",
+      "item": [
+        {
+          "name": "Get Performance Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/analytics/performance",
+              "host": ["{{base_url}}"],
+              "path": ["analytics", "performance"]
+            },
+            "description": "Retrieve current performance metrics and analytics."
+          }
+        },
+        {
+          "name": "Get Performance Metrics by Date Range",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/analytics/performance?startDate=2024-01-01&endDate=2024-01-31",
+              "host": ["{{base_url}}"],
+              "path": ["analytics", "performance"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-01-31"
+                }
+              ]
+            },
+            "description": "Get performance metrics for a specific date range."
+          }
+        },
+        {
+          "name": "Get Performance Metrics by Mode",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/analytics/performance?mode=HYBRID",
+              "host": ["{{base_url}}"],
+              "path": ["analytics", "performance"],
+              "query": [
+                {
+                  "key": "mode",
+                  "value": "HYBRID"
+                }
+              ]
+            },
+            "description": "Get performance metrics filtered by AI mode."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Handling Examples",
+      "item": [
+        {
+          "name": "Invalid API Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "invalid_key"
+              },
+              {
+                "key": "X-Mode",
+                "value": "HYBRID"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"content-enhancement\",\n  \"content\": \"Test content\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/process",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "process"]
+            },
+            "description": "Test error handling with invalid API key."
+          }
+        },
+        {
+          "name": "Missing Required Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "X-Mode",
+                "value": "HYBRID"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"content-enhancement\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/process",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "process"]
+            },
+            "description": "Test error handling with missing required content field."
+          }
+        },
+        {
+          "name": "Invalid Mode Header",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "X-Mode",
+                "value": "INVALID_MODE"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"content-enhancement\",\n  \"content\": \"Test content\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/process",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "process"]
+            },
+            "description": "Test error handling with invalid mode header."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Performance Testing",
+      "item": [
+        {
+          "name": "Large Content Processing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "X-Mode",
+                "value": "HYBRID"
+              },
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"content-enhancement\",\n  \"content\": \"This is a test of large content processing capabilities. The content will be repeated multiple times to simulate a longer document that needs enhancement. This is a test of large content processing capabilities. The content will be repeated multiple times to simulate a longer document that needs enhancement. This is a test of large content processing capabilities. The content will be repeated multiple times to simulate a longer document that needs enhancement. This is a test of large content processing capabilities. The content will be repeated multiple times to simulate a longer document that needs enhancement. This is a test of large content processing capabilities. The content will be repeated multiple times to simulate a longer document that needs enhancement. This is a test of large content processing capabilities. The content will be repeated multiple times to simulate a longer document that needs enhancement. This is a test of large content processing capabilities. The content will be repeated multiple times to simulate a longer document that needs enhancement. This is a test of large content processing capabilities. The content will be repeated multiple times to simulate a longer document that needs enhancement.\",\n  \"context\": {\n    \"genre\": \"test-content\",\n    \"tone\": \"neutral\"\n  },\n  \"options\": {\n    \"enhanceEmotion\": false,\n    \"improvePacing\": true,\n    \"addSensoryDetails\": false\n  },\n  \"explicitUserInitiated\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/process",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "process"]
+            },
+            "description": "Test performance with larger content to measure processing time and response quality."
+          }
+        },
+        {
+          "name": "Batch Processing Simulation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "X-Mode",
+                "value": "HYBRID"
+              },
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"content-enhancement\",\n  \"content\": \"Batch processing test content 1. This simulates multiple requests being processed in sequence.\",\n  \"context\": {\n    \"genre\": \"test-content\",\n    \"tone\": \"neutral\",\n    \"batchId\": \"{{request_id}}\"\n  },\n  \"options\": {\n    \"enhanceEmotion\": false,\n    \"improvePacing\": true,\n    \"addSensoryDetails\": false\n  },\n  \"explicitUserInitiated\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ai/process",
+              "host": ["{{base_url}}"],
+              "path": ["ai", "process"]
+            },
+            "description": "Simulate batch processing to test system performance under load."
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set request ID for tracking",
+          "pm.globals.set('request_id', pm.variables.get('request_id'));",
+          "",
+          "// Log request details for debugging",
+          "console.log('Request:', pm.request.name);",
+          "console.log('URL:', pm.request.url.toString());",
+          "console.log('Method:', pm.request.method);",
+          "console.log('Request ID:', pm.variables.get('request_id'));"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Test response status",
+          "pm.test('Response status is 200', function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "",
+          "// Test response time (should be under 500ms)",
+          "pm.test('Response time is under 500ms', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(500);",
+          "});",
+          "",
+          "// Test response structure",
+          "pm.test('Response has required fields', function () {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response).to.have.property('success');",
+          "    pm.expect(response).to.have.property('content');",
+          "    pm.expect(response).to.have.property('performance');",
+          "});",
+          "",
+          "// Test performance metrics",
+          "pm.test('Performance metrics are valid', function () {",
+          "    const response = pm.response.json();",
+          "    if (response.performance) {",
+          "        pm.expect(response.performance.processingTime).to.be.a('number');",
+          "        pm.expect(response.performance.processingTime).to.be.above(0);",
+          "        pm.expect(response.performance.mode).to.be.oneOf(['MANUAL', 'HYBRID', 'FULLY_AUTO']);",
+          "    }",
+          "});",
+          "",
+          "// Log response details",
+          "console.log('Response Status:', pm.response.status);",
+          "console.log('Response Time:', pm.response.responseTime + 'ms');",
+          "if (pm.response.json().performance) {",
+          "    console.log('Processing Time:', pm.response.json().performance.processingTime + 'ms');",
+          "    console.log('AI Mode:', pm.response.json().performance.mode);",
+          "    console.log('Cache Hit:', pm.response.json().performance.cacheHit);",
+          "}",
+          "",
+          "// Store response data for comparison",
+          "if (pm.response.json().performance) {",
+          "    pm.globals.set('last_processing_time', pm.response.json().performance.processingTime);",
+          "    pm.globals.set('last_ai_mode', pm.response.json().performance.mode);",
+          "}"
+        ]
+      }
+    }
+  ]
+}

@@ -32,10 +32,20 @@ import DocumentEditorDemo from './pages/DocumentEditorDemo';
 import Support from './pages/Support';
 import ShareableAccessPage from './pages/ShareableAccessPage';
 import { Footer } from './components/Footer';
+import DemoModeIndicator from './components/DemoModeIndicator';
+import TestPage from './pages/TestPage';
+import MinimalTest from './pages/MinimalTest';
 
 import './index.css';
 
 console.log('🚀 App.tsx loading...');
+
+// Check if running in demo mode
+const isDemoMode =
+  import.meta.env.VITE_SUPABASE_URL === 'https://placeholder.supabase.co' ||
+  !import.meta.env.VITE_SUPABASE_URL;
+
+console.log('🔍 Demo mode:', isDemoMode);
 
 // Sidebar layout handler
 const handleSidebarToggle = (event: CustomEvent) => {
@@ -88,11 +98,18 @@ function App() {
   console.log('🚀 App component rendering...');
 
   return (
-    <WriterProfileProvider>
-      <DocCraftAgentProvider>
-        <div className="App">
+    <div
+      className="App"
+      style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}
+    >
+      <DemoModeIndicator isVisible={isDemoMode} />
+
+      <WriterProfileProvider>
+        <DocCraftAgentProvider>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/test" element={<TestPage />} />
+            <Route path="/minimal" element={<MinimalTest />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route
@@ -285,9 +302,9 @@ function App() {
             />
             <Route path="*" element={<Home />} />
           </Routes>
-        </div>
-      </DocCraftAgentProvider>
-    </WriterProfileProvider>
+        </DocCraftAgentProvider>
+      </WriterProfileProvider>
+    </div>
   );
 }
 

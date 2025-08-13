@@ -1,0 +1,135 @@
+# Multi-stage production Dockerfile for DocCraft AI
+FROM node:18-alpine AS base
+
+# Install system dependencies
+RUN apk add --no-cache \
+    curl \
+    dumb-init \
+    && rm -rf /var/cache/apk/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY pnpm-lock.yaml ./
+
+# Install dependencies
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Frontend Build Stage
+FROM base AS frontend-builder
+
+# Build the frontend application
+RUN pnpm run build
+
+# Frontend Production Stage
+FROM nginx:alpine AS frontend
+
+# Copy built frontend files
+COPY --from=frontend-builder /app/dist /usr/share/nginx/html
+
+# Copy custom nginx configuration
+COPY deploy/production/nginx-frontend.conf /etc/nginx/conf.d/default.conf
+
+# Create health check endpoint
+RUN echo '{"status":"healthy"}' > /usr/share/nginx/html/health
+
+# Expose port
+EXPOSE 3000
+
+# Use dumb-init for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["nginx", "-g", "daemon off;"]
+
+# Backend Build Stage
+FROM base AS backend-builder
+
+# Build the backend application
+RUN pnpm run server:build
+
+# Backend Production Stage
+FROM node:18-alpine AS backend
+
+# Install production dependencies only
+RUN apk add --no-cache curl dumb-init
+
+WORKDIR /app
+
+# Copy built backend files
+COPY --from=backend-builder /app/dist/server ./server
+COPY --from=backend-builder /app/package*.json ./
+COPY --from=backend-builder /app/pnpm-lock.yaml ./
+
+# Install only production dependencies
+RUN npm install -g pnpm && pnpm install --frozen-lockfile --prod
+
+# Create health check endpoint
+RUN echo '{"status":"healthy"}' > /app/health
+
+# Expose port
+EXPOSE 8000
+
+# Use dumb-init for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "server/collaboration-server.js"]
+
+# AI Processor Build Stage
+FROM base AS processor-builder
+
+# Build the AI processor service
+RUN pnpm run build
+
+# AI Processor Production Stage
+FROM node:18-alpine AS processor
+
+# Install production dependencies only
+RUN apk add --no-cache curl dumb-init
+
+WORKDIR /app
+
+# Copy built processor files
+COPY --from=processor-builder /app/dist ./dist
+COPY --from=processor-builder /app/package*.json ./
+COPY --from=processor-builder /app/pnpm-lock.yaml ./
+
+# Install only production dependencies
+RUN npm install -g pnpm && pnpm install --frozen-lockfile --prod
+
+# Create health check endpoint
+RUN echo '{"status":"healthy"}' > /app/health
+
+# Expose port
+EXPOSE 8001
+
+# Use dumb-init for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "dist/ai-processor.js"]
+
+# Final stage for all services
+FROM base AS production
+
+# This stage can be used for additional production configurations
+# or as a base for custom service implementations
+
+WORKDIR /app
+
+# Copy all necessary files
+COPY --from=frontend-builder /app/dist ./dist
+COPY --from=backend-builder /app/dist/server ./server
+COPY --from=processor-builder /app/dist ./dist-processor
+
+# Install production dependencies
+RUN pnpm install --frozen-lockfile --prod
+
+# Create health check endpoints
+RUN echo '{"status":"healthy"}' > /app/health
+
+# Expose ports
+EXPOSE 3000 8000 8001
+
+# Default command (can be overridden)
+CMD ["node", "server/collaboration-server.js"]

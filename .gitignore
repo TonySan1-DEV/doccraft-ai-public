@@ -88,4 +88,25 @@ tmp/
 temp/
 
 # Vite
-.vite/ 
+.vite/
+
+# Test artifacts and debug files
+test-results/debug-*.png
+test-results/performance-*/
+test-results/.last-run.json
+test-results/results.json
+test-results/results.xml
+debug-browser.html
+test-simple.html
+playwright-report/data/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Environment files (keep templates)
+.env
+.env.local
+.env.development
+.env.production
+!env.template 

@@ -1,3 +1,5 @@
+import { CharacterPersonaExtension } from './psychologicalAnalysis';
+
 export interface CharacterMemory {
   id: string;
   timestamp: number;
@@ -18,6 +20,58 @@ export interface CharacterTrait {
   description: string;
   mbtiType?: string;
   enneagramType?: string;
+}
+
+// Enhanced psychological analysis interfaces
+export interface CognitiveTrait {
+  trait: string;
+  strength: number; // 0-1 scale
+  flexibility: number; // 0-1 scale
+  adaptability: number; // 0-1 scale
+  cognitiveStyle:
+    | 'analytical'
+    | 'intuitive'
+    | 'creative'
+    | 'systematic'
+    | 'holistic';
+  learningPreference:
+    | 'visual'
+    | 'auditory'
+    | 'kinesthetic'
+    | 'reading'
+    | 'social';
+  problemSolvingApproach: string;
+  decisionMakingStyle: string;
+  cognitiveBiases: string[];
+  strengths: string[];
+  areasForGrowth: string[];
+}
+
+export interface EmotionalPattern {
+  emotion: string;
+  intensity: number; // 0-1 scale
+  frequency: number; // 0-1 scale
+  duration: number; // 0-1 scale
+  triggers: string[];
+  expressions: string[];
+  physiologicalResponses: string[];
+  cognitiveEffects: string[];
+  behavioralConsequences: string[];
+  regulationStrategies: string[];
+  therapeuticInterventions: string[];
+}
+
+export interface MotivationalDriver {
+  driver: string;
+  strength: number; // 0-1 scale
+  origin: string;
+  sustainability: number; // 0-1 scale
+  conflicts: string[];
+  reinforcements: string[];
+  obstacles: string[];
+  strategies: string[];
+  longTermImpact: string;
+  therapeuticValue: number;
 }
 
 export interface CharacterPersona {
@@ -60,6 +114,20 @@ export interface CharacterPersona {
     relationship: string;
     description?: string;
   }>;
+
+  // Enhanced psychological analysis capabilities
+  cognitiveTraits?: CognitiveTrait[];
+  emotionalPatterns?: EmotionalPattern[];
+  motivationalDrivers?: MotivationalDriver[];
+  psychologicalFrameworks?: string[];
+  traumaHistory?: string[];
+  therapeuticApproaches?: string[];
+  complexityScore?: number;
+  psychologicalStability?: number;
+  growthPotential?: number;
+
+  // Advanced Character Psychology System integration
+  psychologicalProfile?: CharacterPersonaExtension;
 }
 
 export interface CharacterProfile {

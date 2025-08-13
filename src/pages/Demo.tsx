@@ -16,18 +16,78 @@ import {
   Palette,
   MessageCircle,
   Lightbulb,
+  Zap,
+  User,
+  Bot,
+  Eye,
+  Code,
+  Crown,
+  Rocket,
+  Target,
+  TrendingUp,
+  Clock,
+  Star,
+  Layers,
+  Activity,
+  PieChart,
+  LineChart,
+  Target as TargetIcon,
+  Zap as ZapIcon,
+  Shield as ShieldIcon,
+  Brain as BrainIcon,
+  X,
 } from 'lucide-react';
 import { useDocCraftAgent } from '../contexts/AgentContext';
+import ModeController from '../components/ModeController';
+import { ModeErrorBoundary } from '../components/ModeErrorBoundary';
+import { SystemMode } from '../types/systemModes';
+import { useAgentPreferences } from '../contexts/AgentPreferencesContext';
 // import DocCraftAgentChat from "../../modules/agent/components/DocCraftAgentChat";
 // import { useMCP } from "../useMCP"; // Available for future MCP integration
 
-interface DemoStep {
+// Enhanced demo interfaces for mode system showcase
+interface DemoScenario {
   id: string;
   title: string;
   description: string;
-  icon: React.ReactNode;
-  duration: number;
-  status: 'pending' | 'active' | 'completed' | 'error';
+  content: string;
+  targetMode: SystemMode;
+  expectedBehavior: string;
+  demoSteps: DemoStep[];
+  estimatedDuration: number;
+}
+
+interface DemoStep {
+  id: string;
+  action: string;
+  description: string;
+  expectedResult: string;
+  mode: SystemMode;
+  delay: number;
+}
+
+interface ModeComparisonData {
+  features: Array<{
+    feature: string;
+    manual: string;
+    hybrid: string;
+    fullyAuto: string;
+    highlight: 'manual' | 'hybrid' | 'fullyAuto';
+  }>;
+  performance: Array<{
+    metric: string;
+    manual: number;
+    hybrid: number;
+    fullyAuto: number;
+    unit: string;
+  }>;
+  ux: Array<{
+    aspect: string;
+    manual: string;
+    hybrid: string;
+    fullyAuto: string;
+    rating: number;
+  }>;
 }
 
 interface Particle {
@@ -199,6 +259,14 @@ const ConfettiExplosion = () => {
 };
 
 export default function Demo() {
+  return (
+    <ModeErrorBoundary>
+      <DemoContent />
+    </ModeErrorBoundary>
+  );
+}
+
+function DemoContent() {
   const navigate = useNavigate();
 
   /* MCP: { role: "curator", allowedActions: ["refactor", "animate", "style", "organize", "present"] } */
@@ -248,70 +316,200 @@ export default function Demo() {
     return () => clearTimeout(timer);
   }, [agentActivated]);
 
+  // Enhanced demo scenarios for mode system showcase
+  const demoScenarios: DemoScenario[] = useMemo(
+    () => [
+      {
+        id: 'creative-writing',
+        title: 'Creative Writing: Three Different Experiences',
+        description:
+          'See how the same creative writing task feels completely different in each mode',
+        content:
+          'The old lighthouse stood abandoned on the rocky cliff, its beacon long since extinguished...',
+        targetMode: 'MANUAL',
+        expectedBehavior: 'AI waits silently until explicitly asked for help',
+        estimatedDuration: 45,
+        demoSteps: [
+          {
+            id: 'manual-typing',
+            action: 'Type creative content',
+            description: 'User types freely without AI interruption',
+            expectedResult: 'AI remains silent, preserving creative flow',
+            mode: 'MANUAL',
+            delay: 2000,
+          },
+          {
+            id: 'manual-request',
+            action: 'Request AI assistance',
+            description: 'User explicitly asks for help with description',
+            expectedResult: 'AI provides focused, requested assistance',
+            mode: 'MANUAL',
+            delay: 3000,
+          },
+          {
+            id: 'hybrid-switch',
+            action: 'Switch to Hybrid mode',
+            description: 'Experience collaborative writing assistance',
+            expectedResult: 'AI begins offering contextual suggestions',
+            mode: 'HYBRID',
+            delay: 2000,
+          },
+          {
+            id: 'hybrid-suggestions',
+            action: 'Continue writing',
+            description: 'AI provides smart suggestions with options',
+            expectedResult:
+              'Multiple suggestion options appear for user choice',
+            mode: 'HYBRID',
+            delay: 4000,
+          },
+          {
+            id: 'auto-switch',
+            action: 'Switch to Fully Auto',
+            description: 'Experience maximum AI assistance',
+            expectedResult: 'AI actively enhances and optimizes writing',
+            mode: 'FULLY_AUTO',
+            delay: 2000,
+          },
+          {
+            id: 'auto-enhancement',
+            action: 'Continue writing',
+            description: 'AI proactively improves and enhances content',
+            expectedResult:
+              'Real-time enhancements and optimization suggestions',
+            mode: 'FULLY_AUTO',
+            delay: 5000,
+          },
+        ],
+      },
+      {
+        id: 'business-writing',
+        title: 'Business Communication: Professional Efficiency',
+        description:
+          'Discover how AI modes adapt to professional writing needs',
+        content:
+          'Dear Mr. Johnson, I am writing to discuss the quarterly performance...',
+        targetMode: 'HYBRID',
+        expectedBehavior:
+          'AI provides professional writing assistance with tone optimization',
+        estimatedDuration: 30,
+        demoSteps: [
+          {
+            id: 'business-start',
+            action: 'Begin business letter',
+            description: 'Start writing professional communication',
+            expectedResult: 'AI recognizes business context and adapts',
+            mode: 'HYBRID',
+            delay: 2000,
+          },
+          {
+            id: 'business-suggestions',
+            action: 'Receive tone suggestions',
+            description: 'AI offers professional tone optimization',
+            expectedResult: 'Multiple tone options for business context',
+            mode: 'HYBRID',
+            delay: 3000,
+          },
+        ],
+      },
+      {
+        id: 'academic-research',
+        title: 'Academic Research: Scholarly Precision',
+        description: 'See how modes support rigorous academic writing',
+        content:
+          'This study examines the correlation between artificial intelligence integration...',
+        targetMode: 'FULLY_AUTO',
+        expectedBehavior:
+          'AI provides comprehensive research support and citation assistance',
+        estimatedDuration: 40,
+        demoSteps: [
+          {
+            id: 'academic-start',
+            action: 'Begin academic writing',
+            description: 'Start research paper with AI assistance',
+            expectedResult: 'AI provides research structure and citation help',
+            mode: 'FULLY_AUTO',
+            delay: 2000,
+          },
+          {
+            id: 'academic-enhancement',
+            action: 'Receive academic enhancements',
+            description: 'AI enhances academic rigor and clarity',
+            expectedResult: 'Improved academic language and structure',
+            mode: 'FULLY_AUTO',
+            delay: 4000,
+          },
+        ],
+      },
+    ],
+    []
+  );
+
+  // Legacy demo steps for backward compatibility
   const demoSteps: DemoStep[] = useMemo(
     () => [
       {
         id: 'document-upload',
-        title: 'Document Upload & Analysis',
+        action: 'Document Upload & Analysis',
         description:
           'Upload your document and watch AI analyze its structure, tone, and content',
-        icon: <FileText className="w-6 h-6" />,
-        duration: 15000, // 15 seconds - extended for reading time
-        status: 'pending',
+        expectedResult: 'AI analyzes document and provides insights',
+        mode: 'MANUAL',
+        delay: 15000,
       },
       {
         id: 'ai-enhancement',
-        title: 'AI-Powered Enhancement',
+        action: 'AI-Powered Enhancement',
         description:
           'See how AI improves your content with intelligent suggestions and corrections',
-        icon: <Sparkles className="w-6 h-6" />,
-        duration: 12000, // 12 seconds - extended for reading time
-        status: 'pending',
+        expectedResult: 'Enhanced content with AI assistance',
+        mode: 'HYBRID',
+        delay: 12000,
       },
       {
         id: 'ebook-analysis',
-        title: 'Ebook Analysis & Creation',
+        action: 'Ebook Analysis & Creation',
         description:
           'Analyze existing ebooks and create compelling new content with AI assistance',
-        icon: <BookOpen className="w-6 h-6" />,
-        duration: 14000, // 14 seconds - extended for reading time
-        status: 'pending',
+        expectedResult: 'Comprehensive ebook analysis and creation guidance',
+        mode: 'HYBRID',
+        delay: 14000,
       },
       {
         id: 'character-development',
-        title: 'Character Development',
+        action: 'Character Development',
         description:
           'Create rich, multi-dimensional characters with AI-powered development tools',
-        icon: <Brain className="w-6 h-6" />,
-        duration: 12000, // 12 seconds - extended for reading time
-        status: 'pending',
+        expectedResult: 'Rich character development with AI insights',
+        mode: 'FULLY_AUTO',
+        delay: 12000,
       },
       {
         id: 'collaboration',
-        title: 'Real-Time Collaboration',
+        action: 'Real-Time Collaboration',
         description:
           'Work together seamlessly with real-time editing and feedback integration',
-        icon: <Users className="w-6 h-6" />,
-        duration: 10000, // 10 seconds - extended for reading time
-        status: 'pending',
+        expectedResult: 'Seamless team collaboration experience',
+        mode: 'HYBRID',
+        delay: 10000,
       },
       {
         id: 'analytics',
-        title: 'Advanced Analytics',
+        action: 'Advanced Analytics',
         description:
           'Track performance and engagement with comprehensive analytics and insights',
-        icon: <BarChart3 className="w-6 h-6" />,
-        duration: 12000, // 12 seconds - extended for reading time
-        status: 'pending',
+        expectedResult: 'Detailed performance analytics and insights',
+        mode: 'FULLY_AUTO',
+        delay: 12000,
       },
       {
         id: 'personalization',
-        title: 'AI Personalization',
+        action: 'AI Personalization',
         description:
           'Experience personalized content recommendations and adaptive AI responses',
-        icon: <Settings className="w-6 h-6" />,
-        duration: 10000, // 10 seconds - extended for reading time
-        status: 'pending',
+        expectedResult: 'Personalized AI experience adapted to user',
+        mode: 'FULLY_AUTO',
+        delay: 10000,
       },
     ],
     []
@@ -380,8 +578,8 @@ export default function Demo() {
     if (!isPlaying) return;
 
     console.log(
-      `Starting timer for step ${currentStep + 1}, duration: ${
-        demoSteps[currentStep].duration
+      `Starting timer for step ${currentStep + 1},         delay: ${
+        demoSteps[currentStep].delay
       }ms`
     );
 
@@ -439,7 +637,7 @@ Congratulations! You've just witnessed the full power of DocCraft-AI in action. 
 Do you have any questions about what you've seen or how DocCraft-AI can help with your specific projects?`);
         }, 1000);
       }
-    }, demoSteps[currentStep].duration);
+    }, demoSteps[currentStep].delay);
 
     return () => {
       console.log(`Clearing timer for step ${currentStep + 1}`);
@@ -454,8 +652,8 @@ Do you have any questions about what you've seen or how DocCraft-AI can help wit
     const interval = setInterval(() => {
       setProgress(() => {
         const stepProgress =
-          (Date.now() % demoSteps[currentStep].duration) /
-          demoSteps[currentStep].duration;
+          (Date.now() % demoSteps[currentStep].delay) /
+          demoSteps[currentStep].delay;
         return ((currentStep + stepProgress) / demoSteps.length) * 100;
       });
     }, 100);
@@ -566,6 +764,20 @@ Do you have any questions about what you've seen or how DocCraft-AI can help wit
     } else {
       return `${baseClasses} text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400`;
     }
+  };
+
+  // Function to get step icon based on step index
+  const getStepIcon = (stepIndex: number) => {
+    const icons = [
+      <FileText className="w-6 h-6" key="file" />,
+      <Sparkles className="w-6 h-6" key="sparkles" />,
+      <BookOpen className="w-6 h-6" key="book" />,
+      <Brain className="w-6 h-6" key="brain" />,
+      <Users className="w-6 h-6" key="users" />,
+      <BarChart3 className="w-6 h-6" key="chart" />,
+      <Settings className="w-6 h-6" key="settings" />,
+    ];
+    return icons[stepIndex] || <FileText className="w-6 h-6" />;
   };
 
   // Function to get step-specific guidance
@@ -816,6 +1028,17 @@ Do you have any questions about the personalized AI experience?`,
                       </span>
                     </div>
                   </div>
+
+                  <div className="mt-4 p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg border border-purple-200 dark:border-purple-700">
+                    <div className="flex items-center space-x-2">
+                      <Crown className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                      <span className="text-sm font-medium text-purple-800 dark:text-purple-200">
+                        🚀 New: Experience our revolutionary three-mode system!
+                        See how AI adapts from silent assistance to proactive
+                        enhancement.
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -857,6 +1080,30 @@ Do you have any questions about the personalized AI experience?`,
             </div>
           </div>
 
+          {/* Enhanced Mode System Demo */}
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-purple-200 dark:border-purple-700">
+              <div className="text-center mb-6">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                  🚀 Revolutionary Mode System
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                  Experience three distinct AI writing modes that adapt to your
+                  needs. From silent assistance to proactive enhancement, choose
+                  your perfect writing experience.
+                </p>
+              </div>
+
+              {/* Mode Controller Showcase */}
+              <div className="mb-8">
+                <ModeController
+                  showAdvancedSettings={false}
+                  className="max-w-4xl mx-auto"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Demo Content */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Demo Area */}
@@ -872,7 +1119,7 @@ Do you have any questions about the personalized AI experience?`,
                       </span>
                     </div>
                     <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {demoSteps[currentStep]?.title}
+                      {demoSteps[currentStep]?.action}
                     </div>
                   </div>
                 </div>
@@ -891,12 +1138,12 @@ Do you have any questions about the personalized AI experience?`,
                                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                             }`}
                           >
-                            {demoSteps[currentStep].icon}
+                            {getStepIcon(currentStep)}
                           </div>
                         </div>
                         <div className="relative z-10">
                           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                            {demoSteps[currentStep].title}
+                            {demoSteps[currentStep].action}
                           </h2>
                           <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mb-4 rounded-full"></div>
                           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
@@ -1019,7 +1266,7 @@ Do you have any questions about the personalized AI experience?`,
                         {getStepStatus(index) === 'completed' ? (
                           <CheckCircle className="w-6 h-6" />
                         ) : (
-                          <div className="w-6 h-6">{step.icon}</div>
+                          <div className="w-6 h-6">{getStepIcon(index)}</div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -1032,7 +1279,7 @@ Do you have any questions about the personalized AI experience?`,
                                 : 'text-gray-700 dark:text-gray-300'
                           }`}
                         >
-                          {step.title}
+                          {step.action}
                         </p>
                         <p
                           className={`text-xs transition-colors duration-300 ${
@@ -1071,16 +1318,288 @@ Do you have any questions about the personalized AI experience?`,
             </div>
           </div>
 
+          {/* Performance Showcase */}
+          <div className="mt-12 mb-8">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-6 border border-green-200 dark:border-green-700">
+              <div className="text-center mb-6">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                  ⚡ Unmatched Performance
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                  Experience lightning-fast AI responses and seamless mode
+                  transitions. Our optimized system delivers enterprise-grade
+                  performance.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg text-center">
+                  <BarChart3 className="w-12 h-12 text-green-500 mx-auto mb-3" />
+                  <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
+                    &lt;500ms
+                  </div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Mode Transition
+                  </div>
+                  <div className="text-xs text-green-600 dark:text-green-400 mt-1">
+                    ✓ Under target
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg text-center">
+                  <Zap className="w-12 h-12 text-blue-500 mx-auto mb-3" />
+                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+                    &lt;300ms
+                  </div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    AI Response
+                  </div>
+                  <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                    ✓ Lightning fast
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg text-center">
+                  <Code className="w-12 h-12 text-purple-500 mx-auto mb-3" />
+                  <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+                    95%
+                  </div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Cache Hit Rate
+                  </div>
+                  <div className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                    ✓ Highly optimized
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg text-center">
+                  <BarChart3 className="w-12 h-12 text-orange-500 mx-auto mb-3" />
+                  <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
+                    40MB
+                  </div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Memory Usage
+                  </div>
+                  <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                    ✓ Efficient
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mode Comparison */}
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-700">
+              <div className="text-center mb-6">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                  🔄 Live Mode Comparison
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                  See how each mode transforms your writing experience. From
+                  complete control to maximum assistance, find your perfect
+                  balance.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg border-2 border-gray-200 dark:border-gray-600">
+                  <div className="text-center mb-4">
+                    <User className="w-12 h-12 text-gray-500 mx-auto mb-3" />
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                      Manual Mode
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      You're in complete control
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        AI waits silently
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        No interruptions
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        Explicit requests only
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg border-2 border-blue-200 dark:border-blue-600">
+                  <div className="text-center mb-4">
+                    <Users className="w-12 h-12 text-blue-500 mx-auto mb-3" />
+                    <h3 className="text-xl font-bold text-blue-900 dark:text-blue-200 mb-2">
+                      Hybrid Mode
+                    </h3>
+                    <p className="text-sm text-blue-600 dark:text-blue-400">
+                      Collaborative assistance
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-sm text-blue-600 dark:text-blue-400">
+                        Contextual suggestions
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-sm text-blue-600 dark:text-blue-400">
+                        User choice options
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-sm text-blue-600 dark:text-blue-400">
+                        Balanced assistance
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg border-2 border-purple-200 dark:border-purple-600">
+                  <div className="text-center mb-4">
+                    <Bot className="w-12 h-12 text-purple-500 mx-auto mb-3" />
+                    <h3 className="text-xl font-bold text-purple-900 dark:text-purple-200 mb-2">
+                      Fully Auto Mode
+                    </h3>
+                    <p className="text-sm text-purple-600 dark:text-purple-400">
+                      Maximum AI assistance
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <span className="text-sm text-purple-600 dark:text-purple-400">
+                        Proactive enhancement
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <span className="text-sm text-purple-600 dark:text-purple-400">
+                        Real-time optimization
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <span className="text-sm text-purple-600 dark:text-purple-400">
+                        Continuous improvement
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Demo Section */}
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl p-6 border border-yellow-200 dark:border-yellow-700">
+              <div className="text-center mb-6">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                  🎯 Try It Yourself
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                  Experience the different modes with your own writing sample.
+                  See how AI adapts to your content and style.
+                </p>
+              </div>
+
+              <div className="max-w-4xl mx-auto">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                        Your Content
+                      </h3>
+                      <textarea
+                        placeholder="Start typing your story, article, or any content..."
+                        className="w-full h-32 p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                        Mode Selection
+                      </h3>
+                      <div className="space-y-3">
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="demoMode"
+                            value="MANUAL"
+                            className="text-blue-600"
+                            defaultChecked
+                          />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">
+                            Manual Mode
+                          </span>
+                        </label>
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="demoMode"
+                            value="HYBRID"
+                            className="text-blue-600"
+                          />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">
+                            Hybrid Mode
+                          </span>
+                        </label>
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="demoMode"
+                            value="FULLY_AUTO"
+                            className="text-blue-600"
+                          />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">
+                            Fully Auto Mode
+                          </span>
+                        </label>
+                      </div>
+
+                      <button className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                        <Zap className="w-5 h-5 inline mr-2" />
+                        Experience AI Response
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                    <div className="flex items-center space-x-2">
+                      <Lightbulb className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      <span className="text-sm text-blue-800 dark:text-blue-200">
+                        💡 Pro Tip: Try the same content in different modes to
+                        see how AI behavior changes dramatically!
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* CTA Section */}
           <div className="mt-12 text-center">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                Ready to Get Started?
+                Ready to Experience the Future of AI Writing?
               </h2>
-              <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-                Experience the full power of DocCraft-AI with your own
-                documents. Sign up now and start transforming your content
-                creation workflow.
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+                You've just witnessed the revolutionary three-mode system that
+                adapts to your writing style. From complete control to maximum
+                assistance, DocCraft-AI transforms how you create content.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button

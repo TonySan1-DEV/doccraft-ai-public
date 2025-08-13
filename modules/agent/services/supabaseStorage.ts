@@ -11,16 +11,22 @@ import { SlideDeck } from './slideGenerator';
 import { NarratedSlideDeck } from './scriptGenerator';
 import { TTSNarration } from './ttsSyncEngine';
 
-// Environment variable validation
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Environment variable validation - use fallback values for development
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
 
 // Create a mock Supabase client if environment variables are not set
 let supabase: SupabaseClient;
 
-if (!supabaseUrl || !supabaseKey) {
+if (
+  !supabaseUrl ||
+  !supabaseKey ||
+  supabaseUrl === 'https://placeholder.supabase.co' ||
+  supabaseKey === 'placeholder-key'
+) {
   console.warn(
-    'Missing Supabase credentials in environment variables. Using mock client for development.'
+    'Missing or invalid Supabase credentials. Using mock client for development.'
   );
   // Create a mock client that doesn't actually connect to Supabase
   supabase = createClient('https://mock.supabase.co', 'mock-key');
@@ -735,7 +741,8 @@ export async function storeNarratedDeck(
       (acc, slide: any) => acc + slide.narration.length,
       0
     );
-    const averageNarrationLength = deck.slides.length > 0 ? totalNarrationLength / deck.slides.length : 0;
+    const averageNarrationLength =
+      deck.slides.length > 0 ? totalNarrationLength / deck.slides.length : 0;
     const totalWords = deck.slides.reduce(
       (acc, slide: any) => acc + slide.narration.split(' ').length,
       0
@@ -752,7 +759,8 @@ export async function storeNarratedDeck(
       },
       analysis: {
         totalWords,
-        averageWordsPerSlide: deck.slides.length > 0 ? totalWords / deck.slides.length : 0,
+        averageWordsPerSlide:
+          deck.slides.length > 0 ? totalWords / deck.slides.length : 0,
         tone: 'conversational',
         hasIntroduction: deck.slides.some(slide =>
           slide.title.toLowerCase().includes('introduction')
@@ -849,7 +857,8 @@ export async function storeTTSNarration(
       (acc, entry) => acc + (entry.endTime - entry.startTime),
       0
     );
-    const averageDurationPerSlide = tts.timeline.length > 0 ? totalDurationPerSlide / tts.timeline.length : 0;
+    const averageDurationPerSlide =
+      tts.timeline.length > 0 ? totalDurationPerSlide / tts.timeline.length : 0;
     const totalWords = tts.timeline.reduce(
       (acc, entry) => acc + entry.narration.split(' ').length,
       0

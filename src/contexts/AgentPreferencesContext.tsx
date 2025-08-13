@@ -10,11 +10,27 @@
 }
 */
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useCallback,
+  useState,
+} from 'react';
 import { AgentPrefs } from '../types/agentPreferences';
 import { loadInitialPrefs } from '../utils/loadInitialPrefs';
 import { useMCP } from '../useMCP';
-import { preferenceVersionService, PreferenceVersion, CreateVersionOptions } from '../services/preferenceVersionService';
+import {
+  preferenceVersionService,
+  PreferenceVersion,
+  CreateVersionOptions,
+} from '../services/preferenceVersionService';
+import {
+  SystemMode,
+  ModeConfiguration,
+  ModeTransitionPreferences,
+} from '../types/systemModes';
 
 // Default preference values
 const DEFAULT_PREFERENCES: AgentPrefs = {
@@ -23,21 +39,86 @@ const DEFAULT_PREFERENCES: AgentPrefs = {
   copilotEnabled: true,
   memoryEnabled: true,
   defaultCommandView: 'list',
-  lockedFields: []
+  lockedFields: [],
+
+  // === UNIFIED MODE SYSTEM DEFAULTS ===
+  systemMode: 'HYBRID',
+  modeConfiguration: {
+    mode: 'HYBRID',
+    aiInitiativeLevel: 'RESPONSIVE',
+    suggestionFrequency: 'CONTEXTUAL',
+    userControlLevel: 70,
+    interventionStyle: 'GENTLE',
+    autoEnhancement: true,
+    realTimeAnalysis: true,
+    proactiveSuggestions: true,
+  },
+  modeCustomizations: {
+    MANUAL: {
+      mode: 'MANUAL',
+      aiInitiativeLevel: 'MINIMAL',
+      suggestionFrequency: 'ON_REQUEST',
+      userControlLevel: 100,
+      interventionStyle: 'SILENT',
+      autoEnhancement: false,
+      realTimeAnalysis: false,
+      proactiveSuggestions: false,
+    },
+    HYBRID: {
+      mode: 'HYBRID',
+      aiInitiativeLevel: 'RESPONSIVE',
+      suggestionFrequency: 'CONTEXTUAL',
+      userControlLevel: 70,
+      interventionStyle: 'GENTLE',
+      autoEnhancement: true,
+      realTimeAnalysis: true,
+      proactiveSuggestions: true,
+    },
+    FULLY_AUTO: {
+      mode: 'FULLY_AUTO',
+      aiInitiativeLevel: 'PROACTIVE',
+      suggestionFrequency: 'CONTINUOUS',
+      userControlLevel: 30,
+      interventionStyle: 'COMPREHENSIVE',
+      autoEnhancement: true,
+      realTimeAnalysis: true,
+      proactiveSuggestions: true,
+    },
+  },
+  autoModeSwitch: false,
+  modeTransitionPreferences: {
+    preserveSettings: true,
+    adaptToContext: true,
+    showTransitionGuide: true,
+    rememberPerDocumentType: false,
+  },
+
+  // === ENHANCED MODE CONTROLLER ===
+  hasSeenModeOnboarding: false,
+  writingStyle: 'collaborative',
+  collaborationLevel: 'medium',
 };
 
 // Context interface
 interface AgentPreferencesContextType {
   preferences: AgentPrefs;
-  updatePreferences: (updates: Partial<AgentPrefs>, options?: CreateVersionOptions) => Promise<boolean>;
+  updatePreferences: (
+    updates: Partial<AgentPrefs>,
+    options?: CreateVersionOptions
+  ) => Promise<boolean>;
   resetToDefaults: () => Promise<void>;
   isFieldLocked: (field: keyof AgentPrefs) => boolean;
   onPreferencesChange?: () => void;
   // Version management
-  createVersion: (options?: CreateVersionOptions) => Promise<PreferenceVersion | null>;
+  createVersion: (
+    options?: CreateVersionOptions
+  ) => Promise<PreferenceVersion | null>;
   getCurrentVersion: () => Promise<PreferenceVersion | null>;
   getVersionHistory: () => Promise<PreferenceVersion[]>;
-  restoreVersion: (versionId: string, options?: CreateVersionOptions) => Promise<boolean>;
+  restoreVersion: (
+    versionId: string,
+    options?: CreateVersionOptions
+  ) => Promise<boolean>;
   deleteVersion: (versionId: string) => Promise<boolean>;
   updateVersionLabel: (versionId: string, label: string) => Promise<boolean>;
   // Version state
@@ -47,30 +128,35 @@ interface AgentPreferencesContextType {
 }
 
 // Create context
-const AgentPreferencesContext = createContext<AgentPreferencesContextType | undefined>(undefined);
+const AgentPreferencesContext = createContext<
+  AgentPreferencesContextType | undefined
+>(undefined);
 
 // Action types for reducer
-type PreferenceAction = 
+type PreferenceAction =
   | { type: 'UPDATE_PREFERENCES'; payload: Partial<AgentPrefs> }
   | { type: 'RESET_PREFERENCES' }
   | { type: 'SET_LOCKED_FIELDS'; payload: string[] };
 
 // Reducer for managing preference state
-function preferencesReducer(state: AgentPrefs, action: PreferenceAction): AgentPrefs {
+function preferencesReducer(
+  state: AgentPrefs,
+  action: PreferenceAction
+): AgentPrefs {
   switch (action.type) {
     case 'UPDATE_PREFERENCES':
       return {
         ...state,
         ...action.payload,
         // Preserve locked fields
-        lockedFields: state.lockedFields
+        lockedFields: state.lockedFields,
       };
     case 'RESET_PREFERENCES':
       return DEFAULT_PREFERENCES;
     case 'SET_LOCKED_FIELDS':
       return {
         ...state,
-        lockedFields: action.payload
+        lockedFields: action.payload,
       };
     default:
       return state;
@@ -84,18 +170,22 @@ interface AgentPreferencesProviderProps {
   initialPrefs?: Partial<AgentPrefs>;
 }
 
-export function AgentPreferencesProvider({ 
-  children, 
+export function AgentPreferencesProvider({
+  children,
   onPreferencesChange,
-  initialPrefs 
+  initialPrefs,
 }: AgentPreferencesProviderProps) {
   const mcp = useMCP('AgentPreferencesContext.tsx');
-  const [preferences, dispatch] = useReducer(preferencesReducer, DEFAULT_PREFERENCES);
-  
+  const [preferences, dispatch] = useReducer(
+    preferencesReducer,
+    DEFAULT_PREFERENCES
+  );
+
   // Version management state
   const [versionHistory, setVersionHistory] = useState<PreferenceVersion[]>([]);
   const [isLoadingVersions, setIsLoadingVersions] = useState(false);
-  const [currentVersion, setCurrentVersion] = useState<PreferenceVersion | null>(null);
+  const [currentVersion, setCurrentVersion] =
+    useState<PreferenceVersion | null>(null);
 
   // Load initial preferences on mount
   useEffect(() => {
@@ -119,7 +209,7 @@ export function AgentPreferencesProvider({
       try {
         const history = await preferenceVersionService.getVersionHistory();
         setVersionHistory(history);
-        
+
         const current = await preferenceVersionService.getCurrentVersion();
         setCurrentVersion(current);
       } catch (error) {
@@ -138,67 +228,75 @@ export function AgentPreferencesProvider({
   }, [mcp.allowedActions]);
 
   // Secure preference update function with versioning
-  const updatePreferences = useCallback(async (
-    updates: Partial<AgentPrefs>, 
-    options: CreateVersionOptions = {}
-  ): Promise<boolean> => {
-    if (!canUpdatePreferences()) {
-      console.warn('Agent preference update blocked by MCP policy');
-      return false;
-    }
-
-    try {
-      // Filter out locked fields
-      const unlockedUpdates = Object.entries(updates).reduce((acc, [key, value]) => {
-        if (mcp.allowedActions.includes('updatePrefs')) {
-          acc[key as keyof AgentPrefs] = value as any;
-        }
-        return acc;
-      }, {} as Partial<AgentPrefs>);
-
-      if (Object.keys(unlockedUpdates).length === 0) {
-        console.warn('All requested preference fields are locked by admin policy');
+  const updatePreferences = useCallback(
+    async (
+      updates: Partial<AgentPrefs>,
+      options: CreateVersionOptions = {}
+    ): Promise<boolean> => {
+      if (!canUpdatePreferences()) {
+        console.warn('Agent preference update blocked by MCP policy');
         return false;
       }
 
-      // Update state
-      const updatedPrefs = { ...preferences, ...unlockedUpdates };
-      dispatch({ type: 'UPDATE_PREFERENCES', payload: unlockedUpdates });
+      try {
+        // Filter out locked fields
+        const unlockedUpdates = Object.entries(updates).reduce(
+          (acc, [key, value]) => {
+            if (mcp.allowedActions.includes('updatePrefs')) {
+              acc[key as keyof AgentPrefs] = value as any;
+            }
+            return acc;
+          },
+          {} as Partial<AgentPrefs>
+        );
 
-      // Persist to localStorage
-      localStorage.setItem('agentPreferences', JSON.stringify(updatedPrefs));
+        if (Object.keys(unlockedUpdates).length === 0) {
+          console.warn(
+            'All requested preference fields are locked by admin policy'
+          );
+          return false;
+        }
 
-      // Create version if options provided
-      if (options.label || options.reason) {
-        await preferenceVersionService.createVersion(updatedPrefs, options);
-        
-        // Refresh version history
-        const history = await preferenceVersionService.getVersionHistory();
-        setVersionHistory(history);
-        
-        const current = await preferenceVersionService.getCurrentVersion();
-        setCurrentVersion(current);
+        // Update state
+        const updatedPrefs = { ...preferences, ...unlockedUpdates };
+        dispatch({ type: 'UPDATE_PREFERENCES', payload: unlockedUpdates });
+
+        // Persist to localStorage
+        localStorage.setItem('agentPreferences', JSON.stringify(updatedPrefs));
+
+        // Create version if options provided
+        if (options.label || options.reason) {
+          await preferenceVersionService.createVersion(updatedPrefs, options);
+
+          // Refresh version history
+          const history = await preferenceVersionService.getVersionHistory();
+          setVersionHistory(history);
+
+          const current = await preferenceVersionService.getCurrentVersion();
+          setCurrentVersion(current);
+        }
+
+        // Log telemetry if available
+        if (window.logTelemetryEvent) {
+          window.logTelemetryEvent('agent_pref_changed', {
+            updatedFields: Object.keys(unlockedUpdates),
+            timestamp: Date.now(),
+            userTier: mcp.tier,
+            versionCreated: !!(options.label || options.reason),
+          });
+        }
+
+        // Call change listener
+        onPreferencesChange?.();
+
+        return true;
+      } catch (error) {
+        console.error('Failed to update agent preferences:', error);
+        return false;
       }
-
-      // Log telemetry if available
-      if (window.logTelemetryEvent) {
-        window.logTelemetryEvent('agent_pref_changed', {
-          updatedFields: Object.keys(unlockedUpdates),
-          timestamp: Date.now(),
-          userTier: mcp.tier,
-          versionCreated: !!(options.label || options.reason)
-        });
-      }
-
-      // Call change listener
-      onPreferencesChange?.();
-
-      return true;
-    } catch (error) {
-      console.error('Failed to update agent preferences:', error);
-      return false;
-    }
-  }, [preferences, canUpdatePreferences, onPreferencesChange, mcp.tier]);
+    },
+    [preferences, canUpdatePreferences, onPreferencesChange, mcp.tier]
+  );
 
   // Reset to defaults
   const resetToDefaults = useCallback(async () => {
@@ -214,13 +312,13 @@ export function AgentPreferencesProvider({
       // Create version for reset
       await preferenceVersionService.createVersion(DEFAULT_PREFERENCES, {
         label: 'Reset to Defaults',
-        reason: 'User reset preferences to defaults'
+        reason: 'User reset preferences to defaults',
       });
 
       // Refresh version history
       const history = await preferenceVersionService.getVersionHistory();
       setVersionHistory(history);
-      
+
       const current = await preferenceVersionService.getCurrentVersion();
       setCurrentVersion(current);
 
@@ -228,7 +326,7 @@ export function AgentPreferencesProvider({
       if (window.logTelemetryEvent) {
         window.logTelemetryEvent('agent_pref_reset', {
           timestamp: Date.now(),
-          userTier: mcp.tier
+          userTier: mcp.tier,
         });
       }
 
@@ -239,39 +337,53 @@ export function AgentPreferencesProvider({
   }, [canUpdatePreferences, onPreferencesChange, mcp.tier]);
 
   // Check if field is locked by admin policy
-  const isFieldLocked = useCallback((field: keyof AgentPrefs): boolean => {
-    return preferences.lockedFields.includes(field);
-  }, [preferences.lockedFields]);
+  const isFieldLocked = useCallback(
+    (field: keyof AgentPrefs): boolean => {
+      return preferences.lockedFields.includes(field);
+    },
+    [preferences.lockedFields]
+  );
 
   // Version management functions
-  const createVersion = useCallback(async (options?: CreateVersionOptions): Promise<PreferenceVersion | null> => {
-    try {
-      const version = await preferenceVersionService.createVersion(preferences, options);
-      if (version) {
-        // Refresh version history
-        const history = await preferenceVersionService.getVersionHistory();
-        setVersionHistory(history);
-        setCurrentVersion(version);
+  const createVersion = useCallback(
+    async (
+      options?: CreateVersionOptions
+    ): Promise<PreferenceVersion | null> => {
+      try {
+        const version = await preferenceVersionService.createVersion(
+          preferences,
+          options
+        );
+        if (version) {
+          // Refresh version history
+          const history = await preferenceVersionService.getVersionHistory();
+          setVersionHistory(history);
+          setCurrentVersion(version);
+        }
+        return version;
+      } catch (error) {
+        console.error('Failed to create version:', error);
+        return null;
       }
-      return version;
-    } catch (error) {
-      console.error('Failed to create version:', error);
-      return null;
-    }
-  }, [preferences]);
+    },
+    [preferences]
+  );
 
-  const getCurrentVersion = useCallback(async (): Promise<PreferenceVersion | null> => {
-    try {
-      const version = await preferenceVersionService.getCurrentVersion();
-      setCurrentVersion(version);
-      return version;
-    } catch (error) {
-      console.error('Failed to get current version:', error);
-      return null;
-    }
-  }, []);
+  const getCurrentVersion =
+    useCallback(async (): Promise<PreferenceVersion | null> => {
+      try {
+        const version = await preferenceVersionService.getCurrentVersion();
+        setCurrentVersion(version);
+        return version;
+      } catch (error) {
+        console.error('Failed to get current version:', error);
+        return null;
+      }
+    }, []);
 
-  const getVersionHistory = useCallback(async (): Promise<PreferenceVersion[]> => {
+  const getVersionHistory = useCallback(async (): Promise<
+    PreferenceVersion[]
+  > => {
     try {
       const history = await preferenceVersionService.getVersionHistory();
       setVersionHistory(history);
@@ -282,65 +394,78 @@ export function AgentPreferencesProvider({
     }
   }, []);
 
-  const restoreVersion = useCallback(async (
-    versionId: string, 
+  const restoreVersion = useCallback(
+    async (versionId: string): Promise<boolean> => {
+      try {
+        const restoredPrefs =
+          await preferenceVersionService.restoreVersion(versionId);
+        if (restoredPrefs) {
+          // Update local state with restored preferences
+          dispatch({ type: 'UPDATE_PREFERENCES', payload: restoredPrefs });
+          localStorage.setItem(
+            'agentPreferences',
+            JSON.stringify(restoredPrefs)
+          );
 
-  ): Promise<boolean> => {
-    try {
-      const restoredPrefs = await preferenceVersionService.restoreVersion(versionId);
-      if (restoredPrefs) {
-        // Update local state with restored preferences
-        dispatch({ type: 'UPDATE_PREFERENCES', payload: restoredPrefs });
-        localStorage.setItem('agentPreferences', JSON.stringify(restoredPrefs));
-        
-        // Refresh version history
-        const history = await preferenceVersionService.getVersionHistory();
-        setVersionHistory(history);
-        
-        const current = await preferenceVersionService.getCurrentVersion();
-        setCurrentVersion(current);
+          // Refresh version history
+          const history = await preferenceVersionService.getVersionHistory();
+          setVersionHistory(history);
 
-        // Call change listener
-        onPreferencesChange?.();
+          const current = await preferenceVersionService.getCurrentVersion();
+          setCurrentVersion(current);
 
-        return true;
+          // Call change listener
+          onPreferencesChange?.();
+
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error('Failed to restore version:', error);
+        return false;
       }
-      return false;
-    } catch (error) {
-      console.error('Failed to restore version:', error);
-      return false;
-    }
-  }, [onPreferencesChange]);
+    },
+    [onPreferencesChange]
+  );
 
-  const deleteVersion = useCallback(async (versionId: string): Promise<boolean> => {
-    try {
-      const success = await preferenceVersionService.deleteVersion(versionId);
-      if (success) {
-        // Refresh version history
-        const history = await preferenceVersionService.getVersionHistory();
-        setVersionHistory(history);
+  const deleteVersion = useCallback(
+    async (versionId: string): Promise<boolean> => {
+      try {
+        const success = await preferenceVersionService.deleteVersion(versionId);
+        if (success) {
+          // Refresh version history
+          const history = await preferenceVersionService.getVersionHistory();
+          setVersionHistory(history);
+        }
+        return success;
+      } catch (error) {
+        console.error('Failed to delete version:', error);
+        return false;
       }
-      return success;
-    } catch (error) {
-      console.error('Failed to delete version:', error);
-      return false;
-    }
-  }, []);
+    },
+    []
+  );
 
-  const updateVersionLabel = useCallback(async (versionId: string, label: string): Promise<boolean> => {
-    try {
-      const success = await preferenceVersionService.updateVersionLabel(versionId, label);
-      if (success) {
-        // Refresh version history
-        const history = await preferenceVersionService.getVersionHistory();
-        setVersionHistory(history);
+  const updateVersionLabel = useCallback(
+    async (versionId: string, label: string): Promise<boolean> => {
+      try {
+        const success = await preferenceVersionService.updateVersionLabel(
+          versionId,
+          label
+        );
+        if (success) {
+          // Refresh version history
+          const history = await preferenceVersionService.getVersionHistory();
+          setVersionHistory(history);
+        }
+        return success;
+      } catch (error) {
+        console.error('Failed to update version label:', error);
+        return false;
       }
-      return success;
-    } catch (error) {
-      console.error('Failed to update version label:', error);
-      return false;
-    }
-  }, []);
+    },
+    []
+  );
 
   const contextValue: AgentPreferencesContextType = {
     preferences,
@@ -358,7 +483,7 @@ export function AgentPreferencesProvider({
     // Version state
     versionHistory,
     isLoadingVersions,
-    currentVersion
+    currentVersion,
   };
 
   return (
@@ -372,13 +497,17 @@ export function AgentPreferencesProvider({
 export function useAgentPreferences() {
   const context = useContext(AgentPreferencesContext);
   if (context === undefined) {
-    throw new Error('useAgentPreferences must be used within an AgentPreferencesProvider');
+    throw new Error(
+      'useAgentPreferences must be used within an AgentPreferencesProvider'
+    );
   }
   return context;
 }
 
 // Future server sync utility (stub for now)
-export async function syncToServer(_updatedPrefs: AgentPrefs): Promise<boolean> {
+export async function syncToServer(
+  _updatedPrefs: AgentPrefs
+): Promise<boolean> {
   try {
     // TODO: Implement server sync
     // const response = await fetch('/api/agent/preferences', {
@@ -387,11 +516,11 @@ export async function syncToServer(_updatedPrefs: AgentPrefs): Promise<boolean> 
     //   body: JSON.stringify(updatedPrefs)
     // });
     // return response.ok;
-    
+
     console.log('Server sync not yet implemented');
     return true; // Stub success
   } catch (error) {
     console.error('Failed to sync preferences to server:', error);
     return false;
   }
-} 
+}

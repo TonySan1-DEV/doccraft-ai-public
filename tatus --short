@@ -3,3 +3,42 @@
 [33m30b0b55[m build: stabilize production compile
 [33m81749ac[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m feat: Implement comprehensive Genre Selector system
 [33mc2b64c7[m  Update Continue Project Prompt: MCP Compliance Status & Linting Priorities
+.github/workflows/ci.yml
+.gitignore
+modules/agent/services/supabaseStorage.ts
+modules/emotionArc/components/EmotionalArcModule.tsx
+package-lock.json
+package.json
+playwright-report/index.html
+src/App.tsx
+src/components/Header.tsx
+src/contexts/AgentPreferencesContext.tsx
+src/contexts/AuthContext.tsx
+src/index.css
+src/lib/supabase.ts
+src/main.tsx
+src/pages/Demo.tsx
+src/pages/Home.tsx
+src/pages/TestPage.tsx
+src/services/advancedCharacterAI.ts
+src/services/profileTrainer.ts
+src/types/CharacterPersona.ts
+src/types/agentPreferences.ts
+test-results/.last-run.json
+test-results/debug-after-button-0-click-1754887629702.png
+test-results/debug-after-button-0-click-1754887676483.png
+test-results/debug-after-button-0-click-1754887729601.png
+test-results/debug-after-button-0-click-1754887749348.png
+test-results/debug-after-button-0-click-1754887772580.png
+test-results/debug-app-loaded-1754887627039.png
+test-results/debug-app-loaded-1754887673225.png
+test-results/debug-app-loaded-1754887721680.png
+test-results/debug-app-loaded-1754887742079.png
+test-results/debug-app-loaded-1754887767321.png
+test-results/debug-before-button-0-click-1754887627540.png
+test-results/debug-before-button-0-click-1754887673939.png
+test-results/debug-before-button-0-click-1754887721829.png
+test-results/debug-before-button-0-click-1754887742149.png
+test-results/debug-before-button-0-click-1754887767509.png
+tsconfig.json
+tsconfig.prod.json

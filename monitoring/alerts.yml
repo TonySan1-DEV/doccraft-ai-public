@@ -1,0 +1,47 @@
+groups:
+  - name: doccraft-ai-alerts
+    rules:
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High response time detected'
+          description: '95th percentile response time is {{ $value }}s'
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.01
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'High error rate detected'
+          description: 'Error rate is {{ $value | humanizePercentage }}'
+
+      - alert: AIServiceDown
+        expr: up{job="doccraft-ai"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'DocCraft-AI service is down'
+          description: 'DocCraft-AI service has been down for more than 1 minute'
+
+      - alert: LowCacheHitRate
+        expr: ai_cache_hit_rate < 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Low cache hit rate'
+          description: 'Cache hit rate is {{ $value | humanizePercentage }}'
+
+      - alert: SecurityThreatDetected
+        expr: security_threat_level > 0.8
+        for: 0s
+        labels:
+          severity: critical
+        annotations:
+          summary: 'High security threat detected'
+          description: 'Security threat level: {{ $value }}'
