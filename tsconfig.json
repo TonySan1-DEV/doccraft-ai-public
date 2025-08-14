@@ -24,7 +24,6 @@
     "esModuleInterop": true,
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
-    "skipLibCheck": true,
 
     /* Path mapping */
     "baseUrl": ".",
@@ -36,12 +35,7 @@
     /* Type definitions */
     "types": ["node", "vite/client"]
   },
-  "include": [
-    "src/**/*",
-    "modules/**/*",
-    "server/**/*",
-    "tests/**/*"
-  ],
+  "include": ["src/**/*", "modules/**/*", "server/**/*"],
   "exclude": [
     // Test files and patterns
     "**/*.spec.*",

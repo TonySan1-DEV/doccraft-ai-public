@@ -117,4 +117,8 @@ playwright-report/data/
 .env.local
 .env.development
 .env.production
-!env.template 
+!env.template
+
+# Lock files (force npm usage)
+pnpm-lock.yaml
+yarn.lock 
