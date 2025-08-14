@@ -90,6 +90,9 @@ temp/
 # Vite
 .vite/
 
+# Deployment
+.vercel
+
 # Test artifacts and debug files
 test-results/debug-*.png
 test-results/performance-*/
@@ -99,6 +102,11 @@ test-results/results.xml
 debug-browser.html
 test-simple.html
 playwright-report/data/
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
 
 # Temporary files
 *.tmp
