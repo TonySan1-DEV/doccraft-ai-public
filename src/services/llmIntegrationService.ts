@@ -459,7 +459,7 @@ export class LLMIntegrationService {
     if (!apiKey) {
       try {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { apiKeyManager } = require('./apiKeyManager');
+        const { apiKeyManager } = await import('./apiKeyManager');
         const keyConfig = apiKeyManager.getKey(provider);
         if (keyConfig) {
           apiKey = keyConfig.apiKey;

@@ -57,7 +57,12 @@ interface CharacterChatResponse {
 // Character chat endpoint
 app.post('/api/character-chat', async (req, res) => {
   try {
-    const { message, character, context = '', conversationHistory = [] }: CharacterChatRequest = req.body;
+    const {
+      message,
+      character,
+      context = '',
+      conversationHistory = [],
+    }: CharacterChatRequest = req.body;
 
     if (!message || !character) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -80,37 +85,46 @@ ${character.knownConnections?.map(conn => `- ${conn.relationship} of ${conn.name
 CONTEXT: ${context}
 
 CONVERSATION HISTORY:
-${conversationHistory.slice(-5).map(msg => `${msg.sender === 'user' ? 'User' : character.name}: ${msg.content}`).join('\n')}
+${conversationHistory
+  .slice(-5)
+  .map(
+    msg => `${msg.sender === 'user' ? 'User' : character.name}: ${msg.content}`
+  )
+  .join('\n')}
 
 Respond as ${character.name} would, maintaining their personality, speaking style, and worldview. Stay in character at all times. Keep responses natural and conversational, not overly formal. Respond in a way that feels authentic to this character.
 `;
 
     // Call OpenAI API
-    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: message }
-        ],
-        temperature: 0.8,
-        max_tokens: 300,
-        presence_penalty: 0.1,
-        frequency_penalty: 0.1
-      })
-    });
+    const openaiResponse = await fetch(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: message },
+          ],
+          temperature: 0.8,
+          max_tokens: 300,
+          presence_penalty: 0.1,
+          frequency_penalty: 0.1,
+        }),
+      }
+    );
 
     if (!openaiResponse.ok) {
       throw new Error(`OpenAI API error: ${openaiResponse.status}`);
     }
 
     const openaiData = await openaiResponse.json();
-    const characterResponse = openaiData.choices?.[0]?.message?.content?.trim() || 
+    const characterResponse =
+      openaiData.choices?.[0]?.message?.content?.trim() ||
       `${character.name} seems lost in thought...`;
 
     // Simple emotion analysis
@@ -122,16 +136,15 @@ Respond as ${character.name} would, maintaining their personality, speaking styl
       emotion,
       intensity,
       context,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     res.status(200).json(response);
-
   } catch (error) {
     console.error('Character chat error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to generate character response',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -144,48 +157,109 @@ app.get('/api/health', (req, res) => {
 // Simple emotion analysis
 function analyzeEmotion(text: string): string {
   const emotionKeywords = {
-    joy: ['happy', 'excited', 'thrilled', 'delighted', 'joyful', 'great', 'wonderful', 'amazing'],
-    anger: ['angry', 'furious', 'mad', 'irritated', 'frustrated', 'upset', 'annoyed'],
-    sadness: ['sad', 'depressed', 'melancholy', 'sorrowful', 'grief', 'disappointed', 'heartbroken'],
-    fear: ['afraid', 'scared', 'terrified', 'anxious', 'worried', 'nervous', 'frightened'],
-    surprise: ['surprised', 'shocked', 'amazed', 'astonished', 'stunned', 'wow'],
+    joy: [
+      'happy',
+      'excited',
+      'thrilled',
+      'delighted',
+      'joyful',
+      'great',
+      'wonderful',
+      'amazing',
+    ],
+    anger: [
+      'angry',
+      'furious',
+      'mad',
+      'irritated',
+      'frustrated',
+      'upset',
+      'annoyed',
+    ],
+    sadness: [
+      'sad',
+      'depressed',
+      'melancholy',
+      'sorrowful',
+      'grief',
+      'disappointed',
+      'heartbroken',
+    ],
+    fear: [
+      'afraid',
+      'scared',
+      'terrified',
+      'anxious',
+      'worried',
+      'nervous',
+      'frightened',
+    ],
+    surprise: [
+      'surprised',
+      'shocked',
+      'amazed',
+      'astonished',
+      'stunned',
+      'wow',
+    ],
     disgust: ['disgusted', 'repulsed', 'revolted', 'appalled', 'gross'],
     trust: ['trusting', 'confident', 'assured', 'certain', 'sure', 'believe'],
-    anticipation: ['eager', 'hopeful', 'optimistic', 'expectant', 'looking forward']
+    anticipation: [
+      'eager',
+      'hopeful',
+      'optimistic',
+      'expectant',
+      'looking forward',
+    ],
   };
 
   const lowerText = text.toLowerCase();
-  
+
   for (const [emotion, keywords] of Object.entries(emotionKeywords)) {
     if (keywords.some(keyword => lowerText.includes(keyword))) {
       return emotion;
     }
   }
-  
+
   return 'neutral';
 }
 
 // Simple intensity analysis
 function analyzeIntensity(text: string): number {
   const intensityIndicators = {
-    high: ['!', 'very', 'extremely', 'absolutely', 'completely', 'totally', 'really'],
+    high: [
+      '!',
+      'very',
+      'extremely',
+      'absolutely',
+      'completely',
+      'totally',
+      'really',
+    ],
     medium: ['quite', 'rather', 'somewhat', 'fairly', 'pretty'],
-    low: ['slightly', 'a bit', 'kind of', 'sort of', 'maybe']
+    low: ['slightly', 'a bit', 'kind of', 'sort of', 'maybe'],
   };
 
   const lowerText = text.toLowerCase();
   const exclamationCount = (text.match(/!/g) || []).length;
   const capsCount = (text.match(/[A-Z]/g) || []).length;
-  
-  if (exclamationCount > 2 || capsCount > text.length * 0.1 || 
-      intensityIndicators.high.some(indicator => lowerText.includes(indicator))) {
+
+  if (
+    exclamationCount > 2 ||
+    capsCount > text.length * 0.1 ||
+    intensityIndicators.high.some(indicator => lowerText.includes(indicator))
+  ) {
     return 0.8;
-  } else if (intensityIndicators.medium.some(indicator => lowerText.includes(indicator))) {
+  } else if (
+    intensityIndicators.medium.some(indicator => lowerText.includes(indicator))
+  ) {
     return 0.6;
-  } else if (intensityIndicators.low.some(indicator => lowerText.includes(indicator))) {
+  } else if (
+    intensityIndicators.low.some(indicator => lowerText.includes(indicator))
+  ) {
     return 0.4;
   }
-  
+
   return 0.5;
 }
 
@@ -194,4 +268,4 @@ app.listen(PORT, () => {
   console.log(`Character Chat API server running on port ${PORT}`);
 });
 
-export default app; 
+export default app;

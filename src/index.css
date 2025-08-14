@@ -14,15 +14,17 @@
   }
 
   body {
-    @apply bg-white text-gray-900;
+    background-color: var(--color-background);
+    color: var(--color-text);
     font-feature-settings:
       'rlig' 1,
       'calt' 1;
-    /* Fallback background to prevent white screen */
-    background-color: #f8fafc;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
   }
 
-  /* Theme CSS Variables */
+  /* Theme CSS Variables - These will be dynamically updated by JavaScript */
   :root {
     --color-primary: #3b82f6;
     --color-secondary: #1e40af;
@@ -76,6 +78,199 @@
   .border-theme {
     border-color: var(--color-border);
   }
+
+  /* Enhanced theme color applications */
+  .bg-gradient-primary {
+    background: linear-gradient(
+      135deg,
+      var(--color-primary),
+      var(--color-secondary)
+    );
+  }
+
+  .bg-gradient-accent {
+    background: linear-gradient(
+      135deg,
+      var(--color-accent),
+      var(--color-primary)
+    );
+  }
+
+  .text-gradient-primary {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+  }
+
+  .border-primary {
+    border-color: var(--color-primary);
+  }
+
+  .border-secondary {
+    border-color: var(--color-secondary);
+  }
+
+  .ring-primary {
+    --tw-ring-color: var(--color-primary);
+  }
+
+  .ring-secondary {
+    --tw-ring-color: var(--color-secondary);
+  }
+
+  .shadow-primary {
+    box-shadow: 0 4px 14px 0 rgba(var(--color-primary), 0.25);
+  }
+
+  .shadow-secondary {
+    box-shadow: 0 4px 14px 0 rgba(var(--color-secondary), 0.25);
+  }
+
+  /* Hover states with theme colors */
+  .hover\:bg-primary:hover {
+    background-color: var(--color-primary);
+  }
+
+  .hover\:bg-secondary:hover {
+    background-color: var(--color-secondary);
+  }
+
+  .hover\:text-primary:hover {
+    color: var(--color-primary);
+  }
+
+  .hover\:text-secondary:hover {
+    color: var(--color-secondary);
+  }
+
+  .hover\:border-primary:hover {
+    border-color: var(--color-primary);
+  }
+
+  .hover\:border-secondary:hover {
+    border-color: var(--color-secondary);
+  }
+
+  /* Focus states with theme colors */
+  .focus\:ring-primary:focus {
+    --tw-ring-color: var(--color-primary);
+  }
+
+  .focus\:ring-secondary:focus {
+    --tw-ring-color: var(--color-secondary);
+  }
+
+  .focus\:border-primary:focus {
+    border-color: var(--color-primary);
+  }
+
+  .focus\:border-secondary:focus {
+    border-color: var(--color-secondary);
+  }
+
+  /* Additional theme color applications */
+  .bg-theme-primary {
+    background-color: var(--color-primary);
+  }
+
+  .bg-theme-secondary {
+    background-color: var(--color-secondary);
+  }
+
+  .bg-theme-accent {
+    background-color: var(--color-accent);
+  }
+
+  .bg-theme-surface {
+    background-color: var(--color-surface);
+  }
+
+  .text-theme-primary {
+    color: var(--color-primary);
+  }
+
+  .text-theme-secondary {
+    color: var(--color-secondary);
+  }
+
+  .border-theme-primary {
+    border-color: var(--color-primary);
+  }
+
+  .border-theme-secondary {
+    border-color: var(--color-secondary);
+  }
+
+  /* Theme-aware gradients */
+  .bg-gradient-theme {
+    background: linear-gradient(
+      135deg,
+      var(--color-primary),
+      var(--color-secondary)
+    );
+  }
+
+  .bg-gradient-theme-reverse {
+    background: linear-gradient(
+      135deg,
+      var(--color-secondary),
+      var(--color-primary)
+    );
+  }
+
+  /* Theme-aware shadows */
+  .shadow-theme {
+    box-shadow: 0 4px 14px 0 rgba(var(--color-primary), 0.15);
+  }
+
+  .shadow-theme-lg {
+    box-shadow: 0 10px 25px -5px rgba(var(--color-primary), 0.2);
+  }
+
+  /* Theme-aware hover effects */
+  .hover\:bg-theme-primary:hover {
+    background-color: var(--color-primary);
+  }
+
+  .hover\:bg-theme-secondary:hover {
+    background-color: var(--color-secondary);
+  }
+
+  .hover\:text-theme-primary:hover {
+    color: var(--color-primary);
+  }
+
+  .hover\:text-theme-secondary:hover {
+    color: var(--color-secondary);
+  }
+
+  .hover\:border-theme-primary:hover {
+    border-color: var(--color-primary);
+  }
+
+  .hover\:border-theme-secondary:hover {
+    border-color: var(--color-secondary);
+  }
+
+  /* Theme-aware focus effects */
+  .focus\:ring-theme-primary:focus {
+    --tw-ring-color: var(--color-primary);
+  }
+
+  .focus\:ring-theme-secondary:focus {
+    --tw-ring-color: var(--color-secondary);
+  }
+
+  .focus\:border-theme-primary:focus {
+    border-color: var(--color-primary);
+  }
+
+  .focus\:border-theme-secondary:focus {
+    border-color: var(--color-secondary);
+  }
 }
 
 @layer utilities {
@@ -124,6 +319,15 @@
 /* Gradient text */
 .gradient-text {
   @apply bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent;
+}
+
+/* Brand name gradient text */
+.text-gradient-primary {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
 }
 
 /* Custom focus styles */
@@ -1004,36 +1208,94 @@
 }
 
 .btn-primary {
-  @apply bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 focus:ring-blue-500 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
+  color: white;
+  @apply font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(
+    135deg,
+    var(--color-secondary),
+    var(--color-primary)
+  );
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:focus {
+  --tw-ring-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.3);
 }
 
 .btn-secondary {
-  @apply bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
+  @apply font-medium shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200;
 }
 
-/* Enhanced CTA button animations */
-.cta-button-primary {
-  @apply inline-flex items-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg transition-all duration-300 text-lg shadow-lg;
+.btn-secondary:hover {
+  background-color: var(--color-accent);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
 }
 
-.cta-button-primary:hover {
-  @apply hover:bg-gray-50 shadow-xl;
-  transform: translateY(-2px) scale(1.05);
-  box-shadow:
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+.btn-secondary:focus {
+  --tw-ring-color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
-.cta-button-secondary {
-  @apply inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg transition-all duration-300 text-lg backdrop-blur-sm;
+/* Enhanced CTA button for sign-in */
+.btn-cta {
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: none;
+  box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.2);
 }
 
-.cta-button-secondary:hover {
-  @apply hover:bg-white hover:text-blue-600 backdrop-blur-none;
-  transform: translateY(-2px) scale(1.05);
-  box-shadow:
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+.btn-cta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.6s;
+}
+
+.btn-cta:hover::before {
+  left: 100%;
+}
+
+.btn-cta:hover {
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.25);
+}
+
+.btn-cta:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.4);
 }
 
 /* Enhanced page animations */
@@ -1136,4 +1398,346 @@ html {
       rgba(17, 24, 39, 1)
     );
   }
+}
+
+/* Additional theme-aware utility classes */
+.form-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.1);
+}
+
+.form-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.1);
+}
+
+.form-checkbox:checked {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.form-radio:checked {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.link-theme {
+  color: var(--color-primary);
+}
+
+.link-theme:hover {
+  color: var(--color-secondary);
+}
+
+.divider-theme {
+  background-color: var(--color-border);
+}
+
+.progress-theme {
+  background-color: var(--color-primary);
+}
+
+.progress-theme-secondary {
+  background-color: var(--color-secondary);
+}
+
+.badge-theme {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.badge-theme-secondary {
+  background-color: var(--color-secondary);
+  color: white;
+}
+
+.badge-theme-accent {
+  background-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+/* Theme-aware text colors */
+.text-theme-text {
+  color: var(--color-text);
+}
+
+.text-theme-text\/70 {
+  color: rgba(var(--color-text), 0.7);
+}
+
+/* Theme-aware background colors */
+.bg-theme-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-theme-secondary {
+  background-color: var(--color-secondary);
+}
+
+.bg-theme-accent {
+  background-color: var(--color-accent);
+}
+
+.bg-theme-surface {
+  background-color: var(--color-surface);
+}
+
+.bg-theme-background {
+  background-color: var(--color-background);
+}
+
+/* Theme-aware border colors */
+.border-theme-primary {
+  border-color: var(--color-primary);
+}
+
+.border-theme-secondary {
+  border-color: var(--color-secondary);
+}
+
+.border-theme-accent {
+  border-color: var(--color-accent);
+}
+
+.border-theme-border {
+  border-color: var(--color-border);
+}
+
+/* Enhanced sign-in button with shimmer effect */
+.btn-signin {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
+  color: white;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: none;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+.btn-signin::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.6s;
+}
+
+.btn-signin:hover::before {
+  left: 100%;
+}
+
+.btn-signin:hover {
+  background: linear-gradient(
+    135deg,
+    var(--color-secondary),
+    var(--color-primary)
+  );
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+}
+
+.btn-signin:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(var(--color-primary), 0.4);
+}
+
+/* Enhanced brand hover effects */
+.brand-link:hover .brand-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.brand-link:hover .brand-name {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Header theme styling */
+.header-theme {
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.header-theme .brand-link {
+  color: var(--color-text);
+}
+
+.header-theme .brand-link:hover {
+  color: var(--color-primary);
+}
+
+.header-theme .brand-icon {
+  color: var(--color-primary);
+}
+
+.header-theme .brand-name {
+  color: var(--color-primary);
+}
+
+.header-theme .brand-name:hover {
+  color: var(--color-secondary);
+}
+
+/* Force theme colors with higher specificity */
+.header-theme .brand-icon {
+  color: var(--color-primary) !important;
+}
+
+.header-theme .brand-name {
+  color: var(--color-primary) !important;
+}
+
+.header-theme .brand-name:hover {
+  color: var(--color-secondary) !important;
+}
+
+/* Ensure theme colors are applied to header buttons */
+.header-theme .bg-theme-primary {
+  background-color: var(--color-primary) !important;
+}
+
+.header-theme .bg-theme-secondary {
+  background-color: var(--color-secondary) !important;
+}
+
+.header-theme .text-theme-primary {
+  color: var(--color-primary) !important;
+}
+
+.header-theme .text-theme-secondary {
+  color: var(--color-secondary) !important;
+}
+
+.header-theme .text-theme-text {
+  color: var(--color-text) !important;
+}
+
+.header-theme .text-theme-text\/70 {
+  color: rgba(var(--color-text), 0.7) !important;
+}
+
+/* Ensure smooth theme transitions */
+* {
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+/* Page layout theme coordination */
+.page-theme {
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+.page-theme .container {
+  background-color: var(--color-background);
+}
+
+.page-theme .card {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.page-theme .section {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+/* Ensure theme colors are applied to common elements */
+.theme-coordinated {
+  color: var(--color-text);
+  background-color: var(--color-background);
+}
+
+.theme-coordinated h1,
+.theme-coordinated h2,
+.theme-coordinated h3,
+.theme-coordinated h4,
+.theme-coordinated h5,
+.theme-coordinated h6 {
+  color: var(--color-text);
+}
+
+.theme-coordinated p {
+  color: var(--color-text);
+}
+
+.theme-coordinated a {
+  color: var(--color-primary);
+}
+
+.theme-coordinated a:hover {
+  color: var(--color-secondary);
+}
+
+/* Force theme colors on all elements */
+.theme-active {
+  --color-primary: var(--color-primary) !important;
+  --color-secondary: var(--color-secondary) !important;
+  --color-accent: var(--color-accent) !important;
+  --color-background: var(--color-background) !important;
+  --color-surface: var(--color-surface) !important;
+  --color-text: var(--color-text) !important;
+  --color-border: var(--color-border) !important;
+}
+
+/* Ensure theme colors are applied to the document root */
+:root {
+  --color-primary: #3b82f6;
+  --color-secondary: #1e40af;
+  --color-accent: #dbeafe;
+  --color-background: #ffffff;
+  --color-surface: #f8fafc;
+  --color-text: #1e293b;
+  --color-border: #e2e8f0;
+}
+
+/* Dark mode overrides */
+.dark {
+  --color-primary: #60a5fa;
+  --color-secondary: #3b82f6;
+  --color-accent: #1e3a8a;
+  --color-background: #0f172a;
+  --color-surface: #1e293b;
+  --color-text: #f1f5f9;
+  --color-border: #334155;
+}
+
+/* Force theme colors on body and html */
+html,
+body {
+  --color-primary: var(--color-primary) !important;
+  --color-secondary: var(--color-secondary) !important;
+  --color-accent: var(--color-accent) !important;
+  --color-background: var(--color-background) !important;
+  --color-surface: var(--color-surface) !important;
+  --color-text: var(--color-text) !important;
+  --color-border: var(--color-border) !important;
 }

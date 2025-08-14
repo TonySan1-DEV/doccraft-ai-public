@@ -261,10 +261,7 @@ export class AICacheService {
   }> = [];
   private isWarming = false;
 
-  constructor(
-    private writerProfile: any,
-    private maxMemorySize: number = 100 * 1024 * 1024 // 100MB
-  ) {
+  constructor() {
     this.persistentCache = new IndexedDBCache('doccraft-ai-cache');
     this.cacheMetrics = this.initializeMetrics();
     this.moduleStrategies = this.initializeModuleStrategies();
@@ -400,7 +397,6 @@ export class AICacheService {
 
       // Check persistent cache with similarity matching
       const persistentResult = await this.findSimilarCachedResponse(
-        cacheKey,
         context,
         strategy
       );
@@ -582,7 +578,6 @@ export class AICacheService {
    * Find similar cached response in persistent storage
    */
   private async findSimilarCachedResponse(
-    cacheKey: string,
     context: CacheContext,
     strategy: CachingStrategy
   ): Promise<CachedResponse | null> {
@@ -739,7 +734,7 @@ export class AICacheService {
     context: CacheContext
   ): Promise<void> {
     // Simulate cache warming by predicting related operations
-    const relatedOperations = this.predictRelatedOperations(operation, context);
+    const relatedOperations = this.predictRelatedOperations(operation);
 
     for (const relatedOp of relatedOperations) {
       // In a real implementation, this would pre-compute and cache results
@@ -751,8 +746,7 @@ export class AICacheService {
    * Predict related operations for cache warming
    */
   private predictRelatedOperations(
-    operation: AIOperation,
-    context: CacheContext
+    operation: AIOperation
   ): AIOperation[] {
     const related: AIOperation[] = [];
 

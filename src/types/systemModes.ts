@@ -207,6 +207,33 @@ export interface WritingContext {
     collaborativeWork: boolean;
     researchIntensive: boolean;
   };
+
+  /** User identifier */
+  userId?: string;
+
+  /** Writing complexity level */
+  complexity?: 'low' | 'medium' | 'high';
+
+  /** Target length for the document */
+  targetLength?: number;
+
+  /** Quality threshold for the writing */
+  qualityThreshold?: number;
+
+  /** Emotional tone of the writing */
+  emotionalTone?: string;
+
+  /** Genre of the writing */
+  genre?: string;
+
+  /** Target audience */
+  audience?: string;
+
+  /** Writing purpose */
+  purpose?: string;
+
+  /** Writing style */
+  style?: string;
 }
 
 /**

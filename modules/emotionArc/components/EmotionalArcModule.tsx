@@ -32,6 +32,8 @@ import { ModeAwareAIService } from '../../../src/services/modeAwareAIService';
 import { SystemMode, WritingContext } from '../../../src/types/systemModes';
 import { moduleCoordinator } from '../../../src/services/moduleCoordinator';
 import { ModeErrorBoundary } from '../../../src/components/ModeErrorBoundary';
+import { aiHelperService } from '../../../src/services/aiHelperService';
+import { mcpRegistry } from '../../../src/mcpRegistry';
 
 // Debounce utility
 function useDebouncedValue<T>(value: T, delay: number): T {
@@ -70,6 +72,30 @@ export default function EmotionalArcModule({
   className = '',
   'aria-label': ariaLabel = 'Emotional Arc Module',
 }: EmotionalArcModuleProps) {
+  // --- ALL STATE VARIABLES DECLARED FIRST ---
+
+  // UI state
+  const [activeTab, setActiveTab] = useState<TabType>('timeline');
+  const [storyText, _setStoryText] = useState<string>(initialText);
+
+  // Data state
+  const [sceneInputs, _setSceneInputs] = useState<SceneInput[]>(initialScenes);
+  const [emotionalArc, setEmotionalArc] = useState<EmotionalArc | undefined>();
+  const [sceneData, setSceneData] = useState<SceneEmotionData[]>([]);
+  const [simulation, setSimulation] = useState<
+    ArcSimulationResult | undefined
+  >();
+  const [optimizationPlan, setOptimizationPlan] = useState<
+    StoryOptimizationPlan | undefined
+  >();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Service instances
+  const emotionAnalyzer = useMemo(() => new EmotionAnalyzer(), []);
+  const arcSimulator = useMemo(() => new ArcSimulator(), []);
+  const suggestionEngine = useMemo(() => new SuggestionEngine(), []);
+
   // --- Shared Narrative Sync ---
   const narrativeSync = useNarrativeSync();
   const { state, setScene, setCharacter } = narrativeSync || {
@@ -81,15 +107,11 @@ export default function EmotionalArcModule({
   // --- UNIFIED MODE SYSTEM INTEGRATION ---
   const { preferences } = useAgentPreferences();
   const currentMode = preferences.systemMode || 'HYBRID';
-  const modeConfig = preferences.modeConfiguration;
+  const _modeConfig = preferences.modeConfiguration;
 
   // Initialize mode-aware AI service
-  const modeAwareService = useMemo(
-    () =>
-      new ModeAwareAIService(
-        require('../../../src/services/aiHelperService').aiHelperService,
-        require('../../../src/mcpRegistry').mcpRegistry
-      ),
+  const _modeAwareService = useMemo(
+    () => new ModeAwareAIService(aiHelperService, mcpRegistry),
     []
   );
 
@@ -128,31 +150,10 @@ export default function EmotionalArcModule({
     };
   }, [currentMode, emotionalArc, sceneData, simulation, optimizationPlan]);
 
-  // UI state
-  const [activeTab, setActiveTab] = useState<TabType>('timeline');
-  // Replace local state with context state
+  // Context-derived values
   const selectedCharacter = state.characterFocusId || 'all';
   const selectedSceneId = state.currentSceneId;
-  const [storyText, _setStoryText] = useState<string>(initialText);
   const debouncedText = useDebouncedValue(storyText, 400);
-
-  // Data state
-  const [sceneInputs, setSceneInputs] = useState<SceneInput[]>(initialScenes);
-  const [emotionalArc, setEmotionalArc] = useState<EmotionalArc | undefined>();
-  const [sceneData, setSceneData] = useState<SceneEmotionData[]>([]);
-  const [simulation, setSimulation] = useState<
-    ArcSimulationResult | undefined
-  >();
-  const [optimizationPlan, setOptimizationPlan] = useState<
-    StoryOptimizationPlan | undefined
-  >();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Service instances
-  const emotionAnalyzer = useMemo(() => new EmotionAnalyzer(), []);
-  const arcSimulator = useMemo(() => new ArcSimulator(), []);
-  const suggestionEngine = useMemo(() => new SuggestionEngine(), []);
 
   // === MODE-SPECIFIC ANALYSIS FUNCTIONS ===
 
@@ -166,7 +167,7 @@ export default function EmotionalArcModule({
     setError(null);
 
     try {
-      const writingContext: WritingContext = {
+      const _writingContext: WritingContext = {
         documentType: 'story',
         userGoals: ['emotional_engagement', 'character_development'],
         writingPhase: 'drafting',
@@ -257,7 +258,7 @@ export default function EmotionalArcModule({
     setError(null);
 
     try {
-      const writingContext: WritingContext = {
+      const _writingContext: WritingContext = {
         documentType: 'story',
         userGoals: ['emotional_engagement', 'character_development'],
         writingPhase: 'drafting',
@@ -355,7 +356,7 @@ export default function EmotionalArcModule({
     setError(null);
 
     try {
-      const writingContext: WritingContext = {
+      const _writingContext: WritingContext = {
         documentType: 'story',
         userGoals: ['emotional_engagement', 'character_development'],
         writingPhase: 'drafting',
@@ -460,7 +461,7 @@ export default function EmotionalArcModule({
 
   // Effect: Analyze story when text or scenes change
   useEffect(() => {
-    let cancelled = false;
+    let _cancelled = false;
     async function analyzeAll() {
       // Mode-specific analysis behavior
       if (currentMode === 'MANUAL') {

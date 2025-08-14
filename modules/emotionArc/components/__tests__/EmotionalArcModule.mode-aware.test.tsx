@@ -387,7 +387,9 @@ describe('EmotionalArcModule - Mode Awareness', () => {
 
     it('handles analysis errors gracefully', async () => {
       // Mock service to throw error
-      const mockEmotionAnalyzer = require('../../services/emotionAnalyzer');
+      const mockEmotionAnalyzer = vi.mocked(
+        await import('../../services/emotionAnalyzer')
+      );
       mockEmotionAnalyzer.EmotionAnalyzer.mockImplementation(() => ({
         analyzeStoryEmotions: vi
           .fn()
@@ -440,7 +442,9 @@ describe('EmotionalArcModule - Mode Awareness', () => {
 
   describe('Integration Features', () => {
     it('registers with module coordinator', () => {
-      const mockModuleCoordinator = require('../../../../src/services/moduleCoordinator');
+      const mockModuleCoordinator = vi.mocked(
+        await import('../../../../src/services/moduleCoordinator')
+      );
       render(<EmotionalArcModule {...defaultProps} />);
 
       expect(

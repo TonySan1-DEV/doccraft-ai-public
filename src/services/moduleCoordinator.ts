@@ -534,11 +534,11 @@ export class ModuleCoordinator {
   private isCoordinating = false;
 
   // Performance optimization systems
-  private debouncedCoordinator: DebouncedCoordinator;
-  private coordinationCache: CoordinationCache;
-  private batchProcessor: BatchProcessor;
-  private memoryManager: MemoryManager;
-  private performanceMonitor: PerformanceMonitor;
+  private debouncedCoordinator!: DebouncedCoordinator;
+  private coordinationCache!: CoordinationCache;
+  private batchProcessor!: BatchProcessor;
+  private memoryManager!: MemoryManager;
+  private performanceMonitor!: PerformanceMonitor;
 
   // Performance tracking
   private coordinationStartTime: number = 0;

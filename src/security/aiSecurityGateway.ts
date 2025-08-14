@@ -18,7 +18,7 @@ import { AuditLogger } from './auditLogger';
 import { PerformanceMonitor } from '../monitoring/performanceMonitor';
 import { ThreatDetector } from './threatDetector';
 import { RateLimiter } from './rateLimiter';
-import { AlertService } from '../monitoring/alertSystem';
+import { EnterpriseAlertSystem } from '../monitoring/alertSystem';
 
 export class AISecurityGateway {
   private inputValidator: AIInputValidator;
@@ -26,11 +26,11 @@ export class AISecurityGateway {
   private performanceMonitor: PerformanceMonitor;
   private rateLimiters: Map<string, RateLimiter>;
   private threatDetector: ThreatDetector;
-  private alertService: AlertService;
+  private alertService: EnterpriseAlertSystem;
 
   constructor(
     private supabase: SupabaseClient,
-    alertService: AlertService
+    alertService: EnterpriseAlertSystem
   ) {
     this.inputValidator = new AIInputValidator();
     this.auditLogger = new AuditLogger(supabase);
@@ -59,7 +59,13 @@ export class AISecurityGateway {
           validationResult,
           context
         );
-        throw new SecurityError('Input validation failed', validationResult);
+        const securityError = new Error('Input validation failed') as SecurityError;
+        securityError.code = 'VALIDATION_FAILED';
+        securityError.severity = 'high';
+        securityError.context = context;
+        securityError.timestamp = new Date();
+        securityError.requestId = requestId;
+        throw securityError;
       }
 
       // Threat detection
@@ -118,12 +124,12 @@ export class AISecurityGateway {
     context: SecurityContext
   ): Promise<void> {
     if (!context.userId || !context.sessionId) {
-      throw new SecurityError('Authentication required', {
-        code: 'AUTH_REQUIRED',
-        severity: 'high',
-        context,
-        timestamp: new Date(),
-      });
+      const authError = new Error('Authentication required') as SecurityError;
+      authError.code = 'AUTH_REQUIRED';
+      authError.severity = 'high';
+      authError.context = context;
+      authError.timestamp = new Date();
+      throw authError;
     }
 
     // Validate session and permissions
@@ -132,12 +138,12 @@ export class AISecurityGateway {
       context.userId
     );
     if (!sessionValid) {
-      throw new SecurityError('Invalid session', {
-        code: 'INVALID_SESSION',
-        severity: 'high',
-        context,
-        timestamp: new Date(),
-      });
+      const sessionError = new Error('Invalid session') as SecurityError;
+      sessionError.code = 'INVALID_SESSION';
+      sessionError.severity = 'high';
+      sessionError.context = context;
+      sessionError.timestamp = new Date();
+      throw sessionError;
     }
   }
 
@@ -153,12 +159,12 @@ export class AISecurityGateway {
     }
 
     if (!rateLimiter.checkLimit()) {
-      throw new SecurityError('Rate limit exceeded', {
-        code: 'RATE_LIMIT_EXCEEDED',
-        severity: 'medium',
-        context: { userId, userTier } as SecurityContext,
-        timestamp: new Date(),
-      });
+      const rateLimitError = new Error('Rate limit exceeded') as SecurityError;
+      rateLimitError.code = 'RATE_LIMIT_EXCEEDED';
+      rateLimitError.severity = 'medium';
+      rateLimitError.context = { userId, userTier } as SecurityContext;
+      rateLimitError.timestamp = new Date();
+      throw rateLimitError;
     }
   }
 
@@ -320,7 +326,7 @@ export class AISecurityGateway {
         {
           content: '',
           qualityScore: 0,
-          metadata: { error: error.message },
+          metadata: { error: (error as Error).message },
         },
         {
           responseTime,
@@ -328,7 +334,7 @@ export class AISecurityGateway {
           tokenUsage: 0,
           securityLevel: 'error',
           threatScore: 0,
-          metadata: { requestId: request.id, error: error.message },
+          metadata: { requestId: request.id, error: (error as Error).message },
         }
       );
 
@@ -639,6 +645,8 @@ export class AISecurityGateway {
   }
 
   async getComplianceReport(): Promise<any> {
-    return await this.auditLogger.generateComplianceReport();
+    const endDate = new Date();
+    const startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000); // Last 30 days
+    return await this.auditLogger.generateComplianceReport(startDate, endDate);
   }
 }

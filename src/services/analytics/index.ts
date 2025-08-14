@@ -1,14 +1,10 @@
 // Analytics Services Index for DocCraft-AI
 // Central export point for all analytics and business intelligence services
 
-export {
-  BusinessIntelligenceEngine,
-  businessIntelligence,
-} from './businessIntelligence';
+import type { TimeFrame } from '../../types/analytics';
 
 // Types
 export type {
-  TimeFrame,
   DashboardData,
   RealtimeMetrics,
   BusinessInsights,
@@ -224,8 +220,6 @@ export const calculateMovingAverage = (
 
 // Export the analytics service as default
 export default {
-  BusinessIntelligenceEngine,
-  businessIntelligence,
   ANALYTICS_CONFIG,
   formatMetricValue,
   calculateTrendDirection,

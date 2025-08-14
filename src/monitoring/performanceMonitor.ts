@@ -1,6 +1,7 @@
 // Enhanced Performance Monitor for DocCraft-AI
 // Integrated with security system and real-time monitoring
 
+import { EventEmitter } from 'events';
 import { SupabaseClient } from '@supabase/supabase-js';
 import {
   AIOperation,
@@ -13,6 +14,26 @@ import {
   DashboardMetrics,
   RealtimeData,
 } from '../types/security';
+
+// Export types that are referenced in index.ts
+export interface PerformanceMetric {
+  name: string;
+  value: number;
+  unit: string;
+  timestamp: Date;
+  metadata?: Record<string, any>;
+}
+
+export interface AlertRule {
+  id: string;
+  name: string;
+  metric: string;
+  operator: 'gt' | 'lt' | 'eq';
+  threshold: number;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  enabled: boolean;
+}
+
 // Simple alert service interface
 interface AlertService {
   triggerAlert(
@@ -23,7 +44,9 @@ interface AlertService {
   ): Promise<void>;
 }
 
-export class PerformanceMonitor {
+
+
+export class PerformanceMonitor extends EventEmitter {
   private metrics: Map<string, MetricTimeSeries> = new Map();
   private realTimeStreams: Map<string, RealtimeStream> = new Map();
   private alertThresholds: AlertThresholds;
@@ -31,13 +54,230 @@ export class PerformanceMonitor {
   private supabase: SupabaseClient;
   private alertService: AlertService;
   private updateInterval: NodeJS.Timeout | null = null;
+  private alertRules: Map<string, AlertRule> = new Map();
+  private cacheHits: Map<string, number> = new Map();
+  private cacheMisses: Map<string, number> = new Map();
+  private requestLatencies: number[] = [];
+  private memoryUsage: number[] = [];
+  private activeSubscriptions: number = 0;
+  private batchEfficiency: number = 0;
 
   constructor(supabase: SupabaseClient, alertService: AlertService) {
+    super();
     this.supabase = supabase;
     this.alertService = alertService;
     this.alertThresholds = this.loadAlertThresholds();
     this.dashboardUpdater = new DashboardUpdater();
     this.startMetricCollection();
+  }
+
+  // Event emitter methods that components expect
+  public on(event: string, listener: (...args: any[]) => void): this {
+    return super.on(event, listener);
+  }
+
+  public off(event: string, listener: (...args: any[]) => void): this {
+    return super.off(event, listener);
+  }
+
+  public emit(event: string, ...args: any[]): boolean {
+    return super.emit(event, ...args);
+  }
+
+  // Add missing methods that other files are calling
+  public recordErrorMetrics(error: Error | any, context: any): void {
+    const errorData = {
+      errorType: error instanceof Error ? error.constructor.name : typeof error,
+      errorMessage: error instanceof Error ? error.message : String(error),
+      context,
+      timestamp: new Date(),
+      severity: context?.severity || 'medium',
+    };
+
+    this.storeMetric('error_metrics', errorData);
+    this.checkAlertThresholds('error_metrics', errorData);
+    this.broadcastRealtimeUpdate('error_metrics', errorData);
+    this.emit('error', errorData);
+  }
+
+  public recordError(module: string, errorMessage: string, context: any): void {
+    this.recordErrorMetrics(new Error(errorMessage), { module, ...context });
+  }
+
+  public recordCacheHit(module: string, operation: string): void {
+    const key = `${module}:${operation}`;
+    this.cacheHits.set(key, (this.cacheHits.get(key) || 0) + 1);
+
+    const data = { module, operation, hit: true, timestamp: new Date() };
+    this.storeMetric('cache_performance', data);
+    this.emit('cache_hit', data);
+  }
+
+  public recordCacheMiss(module: string, operation: string): void {
+    const key = `${module}:${operation}`;
+    this.cacheMisses.set(key, (this.cacheMisses.get(key) || 0) + 1);
+
+    const data = { module, operation, hit: false, timestamp: new Date() };
+    this.storeMetric('cache_performance', data);
+    this.emit('cache_miss', data);
+  }
+
+  public recordLatency(latency: number): void {
+    this.requestLatencies.push(latency);
+    if (this.requestLatencies.length > 1000) {
+      this.requestLatencies = this.requestLatencies.slice(-1000);
+    }
+
+    const data = { latency, timestamp: new Date() };
+    this.storeMetric('request_latency', data);
+    this.emit('latency', data);
+  }
+
+  public recordRequest(
+    duration: number,
+    cacheHit: boolean,
+    userMode: string
+  ): void {
+    const data = { duration, cacheHit, userMode, timestamp: new Date() };
+    this.storeMetric('request_performance', data);
+    this.emit('request', data);
+  }
+
+  public updateMemoryUsage(usage: number): void {
+    this.memoryUsage.push(usage);
+    if (this.memoryUsage.length > 100) {
+      this.memoryUsage = this.memoryUsage.slice(-100);
+    }
+
+    const data = { usage, timestamp: new Date() };
+    this.storeMetric('memory_usage', data);
+    this.emit('memory_update', data);
+  }
+
+  public updateActiveSubscriptions(count: number): void {
+    this.activeSubscriptions = count;
+    const data = { count, timestamp: new Date() };
+    this.storeMetric('active_subscriptions', data);
+    this.emit('subscription_update', data);
+  }
+
+  public updateBatchEfficiency(efficiency: number): void {
+    this.batchEfficiency = efficiency;
+    const data = { efficiency, timestamp: new Date() };
+    this.storeMetric('batch_efficiency', data);
+    this.emit('batch_efficiency_update', data);
+  }
+
+  public updateCacheHitRate(hitRate: number): void {
+    const data = { hitRate, timestamp: new Date() };
+    this.storeMetric('cache_hit_rate', data);
+    this.emit('cache_hit_rate_update', data);
+  }
+
+  public recordOrchestrationMetrics(metrics: any): void {
+    const data = { ...metrics, timestamp: new Date() };
+    this.storeMetric('orchestration_performance', data);
+    this.emit('orchestration_metrics', data);
+  }
+
+  public addAlertRule(rule: AlertRule): void {
+    this.alertRules.set(rule.id, rule);
+    this.emit('alert_rule_added', rule);
+  }
+
+  public removeAlertRule(ruleId: string): void {
+    this.alertRules.delete(ruleId);
+    this.emit('alert_rule_removed', ruleId);
+  }
+
+  public getAlertRules(): AlertRule[] {
+    return Array.from(this.alertRules.values());
+  }
+
+  public subscribeToMetrics(callback: (metrics: any) => void): () => void {
+    this.on('metric', callback);
+    return () => this.off('metric', callback);
+  }
+
+  public subscribeToAlerts(callback: (alert: any) => void): () => void {
+    this.on('alert', callback);
+    return () => this.off('alert', callback);
+  }
+
+  public getCurrentMetrics(): any {
+    const currentMetrics: any = {};
+    for (const [name, metric] of Array.from(this.metrics.entries())) {
+      if (metric.data.length > 0) {
+        currentMetrics[name] = metric.data[metric.data.length - 1];
+      }
+    }
+    return currentMetrics;
+  }
+
+  public getMetrics(): any {
+    return this.getCurrentMetrics();
+  }
+
+  public getInsights(): any {
+    const insights: any = {};
+
+    // Cache performance insights
+    let totalHits = 0;
+    let totalMisses = 0;
+    for (const hits of Array.from(this.cacheHits.values())) totalHits += hits;
+    for (const misses of Array.from(this.cacheMisses.values()))
+      totalMisses += misses;
+
+    insights.cacheHitRate =
+      totalHits + totalMisses > 0 ? totalHits / (totalHits + totalMisses) : 0;
+    insights.averageLatency =
+      this.requestLatencies.length > 0
+        ? this.requestLatencies.reduce((sum, lat) => sum + lat, 0) /
+          this.requestLatencies.length
+        : 0;
+    insights.memoryTrend =
+      this.memoryUsage.length > 1
+        ? this.memoryUsage[this.memoryUsage.length - 1] - this.memoryUsage[0]
+        : 0;
+    insights.activeSubscriptions = this.activeSubscriptions;
+    insights.batchEfficiency = this.batchEfficiency;
+
+    return insights;
+  }
+
+  public getPerformanceReport(): any {
+    return {
+      metrics: this.getCurrentMetrics(),
+      insights: this.getInsights(),
+      alertRules: this.getAlertRules(),
+      timestamp: new Date(),
+    };
+  }
+
+  public getPerformanceData(timeframe: string): any {
+    return this.getHistoricalMetrics(timeframe as '1h' | '24h' | '7d');
+  }
+
+  public reset(): void {
+    this.metrics.clear();
+    this.realTimeStreams.clear();
+    this.cacheHits.clear();
+    this.cacheMisses.clear();
+    this.requestLatencies = [];
+    this.memoryUsage = [];
+    this.activeSubscriptions = 0;
+    this.batchEfficiency = 0;
+    this.emit('reset');
+  }
+
+  public sendToExternalMonitoring(metrics: any): Promise<void> {
+    // Implementation for external monitoring systems
+    return Promise.resolve();
+  }
+
+  // Fix the realtimeStreams vs realTimeStreams naming issue
+  get realtimeStreams() {
+    return this.realTimeStreams;
   }
 
   async recordAIPerformance(
@@ -189,16 +429,18 @@ export class PerformanceMonitor {
     metricName: string,
     data: any
   ): Promise<void> {
-    const thresholds =
-      this.alertThresholds[metricName as keyof AlertThresholds];
-    if (!thresholds) return;
+    // Use the global alert thresholds for all metrics
+    const thresholds = this.alertThresholds;
 
     let shouldAlert = false;
     let alertMessage = '';
     let severity: 'low' | 'medium' | 'high' | 'critical' = 'low';
 
     // Check response time thresholds
-    if (data.responseTime && data.responseTime > thresholds.responseTime) {
+    if (
+      typeof data.responseTime === 'number' &&
+      data.responseTime > thresholds.responseTime
+    ) {
       shouldAlert = true;
       alertMessage = `High response time detected: ${data.responseTime}ms`;
       severity =
@@ -206,7 +448,10 @@ export class PerformanceMonitor {
     }
 
     // Check threat score thresholds
-    if (data.threatScore && data.threatScore > thresholds.threatScore) {
+    if (
+      typeof data.threatScore === 'number' &&
+      data.threatScore > thresholds.threatScore
+    ) {
       shouldAlert = true;
       alertMessage = `High threat score detected: ${data.threatScore}`;
       severity = data.threatScore > 0.9 ? 'critical' : 'high';
@@ -243,7 +488,7 @@ export class PerformanceMonitor {
   }
 
   private broadcastRealtimeUpdate(metricName: string, data: any): void {
-    const stream = this.realtimeStreams.get(metricName);
+    const stream = this.realTimeStreams.get(metricName);
     if (stream) {
       stream.data.push(data);
       stream.lastUpdate = new Date();
@@ -330,6 +575,91 @@ export class PerformanceMonitor {
   }
 
   // Public methods for external access
+
+  // Method for simplified performance recording (used by monitoring integration)
+  async recordMetric(metricData: {
+    name: string;
+    value: number;
+    unit?: string;
+    metadata?: Record<string, any>;
+  }): Promise<void> {
+    const data = {
+      ...metricData,
+      timestamp: new Date(),
+    };
+    await this.storeMetric(metricData.name, data);
+  }
+
+  // Method for user experience metrics
+  async recordUserExperience(data: {
+    userId: string;
+    sessionId: string;
+    pageLoadTime: number;
+    interactionResponseTime: number;
+    satisfaction: number;
+    errors: string[];
+  }): Promise<void> {
+    await this.recordUserExperienceMetrics(data.userId, data.sessionId, data);
+  }
+
+  // Method for business metrics
+  async recordBusinessMetric(data: {
+    name: string;
+    value: number;
+    category: string;
+    metadata?: Record<string, any>;
+  }): Promise<void> {
+    await this.recordMetric({
+      name: `business_${data.name}`,
+      value: data.value,
+      unit: data.category,
+      metadata: data.metadata,
+    });
+  }
+
+  // Method for dashboard data
+  async getDashboardData(): Promise<DashboardMetrics> {
+    return this.getHistoricalMetrics('24h');
+  }
+
+  // Method for metrics summary
+  async getMetricsSummary(
+    metricName: string,
+    timeRange: '1h' | '24h' | '7d'
+  ): Promise<{
+    current: number;
+    average: number;
+    trend: 'up' | 'down' | 'stable';
+    count: number;
+  }> {
+    const metrics = await this.getHistoricalMetrics(timeRange);
+    const metric = metrics[metricName];
+
+    if (!metric) {
+      return {
+        current: 0,
+        average: 0,
+        trend: 'stable',
+        count: 0,
+      };
+    }
+
+    const values = metric.history;
+    const average = values.reduce((sum, val) => sum + val, 0) / values.length;
+
+    return {
+      current: metric.current,
+      average,
+      trend: metric.trend,
+      count: values.length,
+    };
+  }
+
+  // Method for system health recording
+  async recordSystemHealth(): Promise<void> {
+    await this.collectSystemMetrics();
+  }
+
   async getSecurityMetrics(): Promise<SecurityMetrics> {
     try {
       const securityMetric = this.metrics.get('security_metrics');
@@ -340,32 +670,36 @@ export class PerformanceMonitor {
       const recentData = securityMetric.data.slice(-10); // Last 10 data points
 
       const avgThreatLevel =
-        recentData.reduce((sum, d) => sum + (d.metadata.threatLevel || 0), 0) /
-        recentData.length;
+        recentData.reduce(
+          (sum, d) => sum + (Number(d.metadata?.threatLevel) || 0),
+          0
+        ) / recentData.length;
       const avgValidationAccuracy =
         recentData.reduce(
-          (sum, d) => sum + (d.metadata.validationAccuracy || 0),
+          (sum, d) => sum + (Number(d.metadata?.validationAccuracy) || 0),
           0
         ) / recentData.length;
       const avgResponseTime =
-        recentData.reduce((sum, d) => sum + (d.metadata.responseTime || 0), 0) /
-        recentData.length;
+        recentData.reduce(
+          (sum, d) => sum + (Number(d.metadata?.responseTime) || 0),
+          0
+        ) / recentData.length;
       const totalBlockedAttacks = recentData.reduce(
-        (sum, d) => sum + (d.metadata.blockedAttacks || 0),
+        (sum, d) => sum + (Number(d.metadata?.blockedAttacks) || 0),
         0
       );
       const totalFalsePositives = recentData.reduce(
-        (sum, d) => sum + (d.metadata.falsePositives || 0),
+        (sum, d) => sum + (Number(d.metadata?.falsePositives) || 0),
         0
       );
       const avgEncryptionCoverage =
         recentData.reduce(
-          (sum, d) => sum + (d.metadata.encryptionCoverage || 0),
+          (sum, d) => sum + (Number(d.metadata?.encryptionCoverage) || 0),
           0
         ) / recentData.length;
       const avgComplianceScore =
         recentData.reduce(
-          (sum, d) => sum + (d.metadata.complianceScore || 0),
+          (sum, d) => sum + (Number(d.metadata?.complianceScore) || 0),
           0
         ) / recentData.length;
 
@@ -420,7 +754,7 @@ export class PerformanceMonitor {
 
     const metrics: DashboardMetrics = {};
 
-    for (const [metricName, metric] of this.metrics) {
+    for (const [metricName, metric] of Array.from(this.metrics.entries())) {
       const recentData = metric.data.filter(
         d => d.timestamp.getTime() > cutoffTime
       );
@@ -516,6 +850,21 @@ export class PerformanceMonitor {
     }
   }
 }
+
+// Create and export a default instance
+export const performanceMonitor = new PerformanceMonitor(
+  {} as SupabaseClient, // Placeholder - should be injected properly
+  {
+    triggerAlert: async (
+      type: string,
+      severity: string,
+      message: string,
+      data: any
+    ) => {
+      console.log(`Alert: ${type} - ${severity}: ${message}`, data);
+    },
+  } as AlertService
+);
 
 // Dashboard Updater
 class DashboardUpdater {

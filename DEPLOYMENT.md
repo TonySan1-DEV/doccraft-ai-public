@@ -1,293 +1,215 @@
-# 🚀 DocCraft AI Production Deployment Guide
+# DocCraft-AI Vercel Deployment Guide
 
-## 📋 **Prerequisites**
+## Prerequisites
 
-- Node.js 18+ and npm
-- Supabase account and project
-- PostgreSQL database (Supabase provides this)
-- Environment variables configured
+1. Vercel account connected to GitHub
+2. Required API keys (Supabase, OpenAI, Unsplash)
+3. Node.js 18+ and npm 8+
 
-## 🔧 **1. Environment Setup**
+## Deployment Steps
 
-### **Frontend Environment Variables**
-Create `.env.local` in the root directory:
+### 1. Import Repository in Vercel
 
-```bash
-# Supabase Configuration
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+2. Click "New Project"
+3. Import your GitHub repository
+4. Select the `doccraft-ai` repository
 
-# OpenAI Configuration
-VITE_OPENAI_API_KEY=your_openai_api_key
+### 2. Configure Build Settings
 
-# Collaboration Server
-VITE_COLLAB_SERVER_URL=ws://localhost:1234
-VITE_COLLAB_API_URL=http://localhost:1234
+The following settings are automatically detected:
+
+- **Framework**: Vite
+- **Build Command**: `npm run build:vercel`
+- **Output Directory**: `dist`
+- **Install Command**: `npm ci --omit=dev`
+
+### 3. Configure Environment Variables
+
+In Vercel Project Settings > Environment Variables, add:
+
+#### Required Variables:
+
+```
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+OPENAI_API_KEY=sk-proj-your-openai-key-here
+VITE_OPENAI_API_KEY=sk-proj-your-openai-key-here
+VITE_UNSPLASH_ACCESS_KEY=your-unsplash-access-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 ```
 
-### **Backend Environment Variables**
-Create `.env` in the server directory:
+**Note:** Both `OPENAI_API_KEY` (server-side) and `VITE_OPENAI_API_KEY` (client-side) are required for full AI functionality.
 
-```bash
-# Server Configuration
-PORT=1234
+#### Optional Variables:
+
+```
+VITE_ENABLE_COLLABORATION=true
+VITE_ENABLE_ANALYTICS=true
+VITE_ENABLE_VOICE_FEATURES=true
 NODE_ENV=production
-
-# Supabase Configuration
-SUPABASE_URL=your_supabase_url
-SUPABASE_SERVICE_KEY=your_supabase_service_key
-
-# Security
-JWT_SECRET=your_jwt_secret
-CORS_ORIGIN=https://your-domain.com
 ```
 
-## 🗄️ **2. Database Setup**
+### 4. Deploy
 
-### **Run Database Migrations**
+1. Click "Deploy"
+2. Wait for build to complete
+3. Verify deployment success
+
+## OpenAI API Key Configuration
+
+### Environment Variables Required
+
+The application uses OpenAI API keys in two contexts:
+
+1. **OPENAI_API_KEY** (Server-side)
+   - Used by: `server/openai-proxy.js`, `src/services/engagementAnalyzer.ts`
+   - Environment: Production, Preview, Development
+   - Purpose: Direct OpenAI API calls from server-side services
+
+2. **VITE_OPENAI_API_KEY** (Client-side)
+   - Used by: Client-side services making calls to `/api/openai/chat`
+   - Environment: Production, Preview, Development
+   - Purpose: Client-side OpenAI API calls through proxy endpoints
+
+### Configuration Steps
+
+1. **Vercel Dashboard**: Add both variables in Project Settings > Environment Variables
+2. **Local Development**: Copy `env.template` to `.env.local` and fill in your keys
+3. **CI/CD**: Ensure both variables are available in your CI environment
+
+### Usage Patterns
+
+- **Server-side**: Direct OpenAI SDK calls using `process.env.OPENAI_API_KEY`
+- **Client-side**: HTTP requests to proxy endpoints using `import.meta.env.VITE_OPENAI_API_KEY`
+- **Fallback**: Services gracefully degrade when API keys are unavailable
+
+## Build Configuration
+
+### TypeScript Configuration
+
+- Uses `tsconfig.vercel.json` for deployment
+- Excludes server files, tests, and development tools
+- Optimized for production builds
+
+### Vite Configuration
+
+- Optimized chunk splitting for better performance
+- Terser minification with console removal
+- ES2020 target for modern browsers
+
+### Package.json Scripts
+
+- `build:vercel`: TypeScript check + Vite build
+- `postinstall`: Conditional Playwright installation (skipped on Vercel)
+
+## Deployment Features
+
+### Routing
+
+- SPA routing with fallback to index.html
+- Clean URLs enabled
+- Proper asset caching headers
+
+### Security Headers
+
+- X-Content-Type-Options: nosniff
+- X-Frame-Options: DENY
+- X-XSS-Protection: 1; mode=block
+- Referrer-Policy: strict-origin-when-cross-origin
+
+### Performance
+
+- Asset caching (1 year for static assets)
+- Code splitting and chunk optimization
+- Tree shaking and dead code elimination
+
+## Troubleshooting
+
+### Common Issues
+
+#### Build Failures
+
+1. Check TypeScript compilation errors
+2. Verify environment variables are set
+3. Ensure all dependencies are properly installed
+
+#### Runtime Errors
+
+1. Check browser console for client-side errors
+2. Verify Supabase connection
+3. Check API key validity
+
+#### Performance Issues
+
+1. Monitor bundle size in build output
+2. Check for large dependencies
+3. Verify chunk splitting is working
+
+### Debug Commands
+
 ```bash
-# Install Supabase CLI
-npm install -g supabase
+# Test Vercel build locally
+VERCEL=1 npm run build:vercel
 
-# Login to Supabase
-supabase login
-
-# Link your project
-supabase link --project-ref your-project-ref
-
-# Push the schema
-npm run db:migrate
-```
-
-### **Verify Database Tables**
-```sql
--- Check if tables exist
-SELECT table_name FROM information_schema.tables 
-WHERE table_schema = 'public' 
-AND table_name IN ('profiles', 'documents', 'document_shares', 'collaboration_sessions');
-```
-
-## 🏗️ **3. Backend Server Setup**
-
-### **Install Server Dependencies**
-```bash
-# Install server dependencies
-npm install express ws cors dotenv tsx @types/express @types/ws @types/cors
-```
-
-### **Build and Start Server**
-```bash
-# Development
-npm run server:dev
-
-# Production build
-npm run server:build
-
-# Start production server
-npm run server:start
-```
-
-### **Server Configuration**
-The collaboration server includes:
-- ✅ **WebSocket connections** for real-time collaboration
-- ✅ **HTTP API endpoints** for room management
-- ✅ **Authentication** with Supabase
-- ✅ **Session tracking** for active users
-- ✅ **Health checks** for monitoring
-
-## 🌐 **4. Frontend Deployment**
-
-### **Build for Production**
-```bash
-# Install dependencies
-npm install
-
-# Build the application
-npm run build
-
-# Preview the build
+# Test preview
 npm run preview
+
+# Verify no Playwright errors
+npm install --production
+
+# Check environment variable loading
+echo "Verify env.template exists and is documented"
 ```
 
-### **Deploy to Vercel/Netlify**
-```bash
-# Vercel
-vercel --prod
+## Post-Deployment
 
-# Netlify
-netlify deploy --prod
-```
+### Verification Checklist
 
-## 🔐 **5. Authentication Setup**
+- [ ] Application loads without errors
+- [ ] Authentication works with Supabase
+- [ ] AI features are functional
+- [ ] Image generation works
+- [ ] Responsive design is correct
+- [ ] Performance metrics are acceptable
 
-### **Supabase Auth Configuration**
-1. Go to your Supabase dashboard
-2. Navigate to Authentication > Settings
-3. Configure your site URL and redirect URLs
-4. Set up email templates
+### Monitoring
 
-### **User Registration Flow**
-```typescript
-// Example user registration
-const { data, error } = await supabase.auth.signUp({
-  email: 'user@example.com',
-  password: 'secure-password',
-  options: {
-    data: {
-      full_name: 'John Doe'
-    }
-  }
-})
-```
+- Set up Vercel Analytics
+- Monitor Core Web Vitals
+- Track error rates and performance
 
-## 📊 **6. Monitoring & Analytics**
+## Advanced Configuration
 
-### **Health Checks**
-```bash
-# Check server health
-curl http://localhost:1234/health
+### Custom Domains
 
-# Check room users
-curl http://localhost:1234/api/rooms/room-id/users
-```
+1. Add custom domain in Vercel dashboard
+2. Configure DNS records
+3. Enable HTTPS
 
-### **Logging Setup**
-```typescript
-// Add to collaboration server
-import winston from 'winston'
+### Environment-Specific Deployments
 
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.json(),
-  transports: [
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' })
-  ]
-})
-```
+- Production: Main branch
+- Preview: Pull requests
+- Development: Feature branches
 
-## 🔒 **7. Security Considerations**
+### CI/CD Integration
 
-### **CORS Configuration**
-```typescript
-// In collaboration server
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5174',
-  credentials: true
-}))
-```
+- Automatic deployments on push to main
+- Preview deployments for pull requests
+- Environment-specific builds
 
-### **Rate Limiting**
-```bash
-npm install express-rate-limit
-```
+## Support
 
-```typescript
-import rateLimit from 'express-rate-limit'
+For deployment issues:
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-})
+1. Check Vercel build logs
+2. Review TypeScript compilation output
+3. Verify environment variable configuration
+4. Check browser console for runtime errors
 
-app.use(limiter)
-```
+## Notes
 
-### **WebSocket Security**
-```typescript
-// Validate WebSocket connections
-wss.on('connection', (ws, req) => {
-  const token = req.headers.authorization?.replace('Bearer ', '')
-  if (!token) {
-    ws.close(1008, 'Unauthorized')
-    return
-  }
-  
-  // Verify JWT token with Supabase
-  // ... token verification logic
-})
-```
-
-## 📈 **8. Performance Optimization**
-
-### **Database Indexes**
-```sql
--- Ensure indexes are created
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_documents_owner_id ON documents(owner_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_collaboration_sessions_room_id ON collaboration_sessions(room_id);
-```
-
-### **Caching Strategy**
-```typescript
-// Add Redis for session caching
-import Redis from 'ioredis'
-
-const redis = new Redis(process.env.REDIS_URL)
-
-// Cache user sessions
-await redis.setex(`session:${userId}`, 3600, JSON.stringify(sessionData))
-```
-
-## 🚨 **9. Troubleshooting**
-
-### **Common Issues**
-
-#### **WebSocket Connection Failed**
-```bash
-# Check if server is running
-netstat -an | grep 1234
-
-# Check firewall settings
-sudo ufw allow 1234
-```
-
-#### **Database Connection Issues**
-```bash
-# Test Supabase connection
-curl -X GET "https://your-project.supabase.co/rest/v1/profiles" \
-  -H "apikey: your-anon-key"
-```
-
-#### **Collaboration Not Working**
-1. Check browser console for WebSocket errors
-2. Verify environment variables are set correctly
-3. Ensure user is authenticated
-4. Check if collaboration is enabled for user tier
-
-### **Debug Commands**
-```bash
-# Check server logs
-tail -f logs/collaboration-server.log
-
-# Monitor WebSocket connections
-netstat -an | grep :1234 | wc -l
-
-# Check database connections
-psql -h your-db-host -U postgres -d postgres -c "SELECT count(*) FROM pg_stat_activity;"
-```
-
-## 🎯 **10. Production Checklist**
-
-- ✅ **Environment variables** configured
-- ✅ **Database schema** migrated
-- ✅ **Authentication** working
-- ✅ **Collaboration server** running
-- ✅ **Frontend** deployed
-- ✅ **SSL certificates** installed
-- ✅ **Monitoring** set up
-- ✅ **Backup strategy** implemented
-- ✅ **Error tracking** configured
-- ✅ **Performance monitoring** active
-
-## 📞 **11. Support**
-
-For issues or questions:
-- Check the troubleshooting section above
-- Review server logs for errors
-- Verify all environment variables are set
-- Ensure database permissions are correct
-- Test with a fresh browser session
-
----
-
-**🎉 Your DocCraft AI collaboration system is now production-ready!** 
+- Server-side features (collaboration, real-time) are excluded from static deployment
+- Advanced features can be added in subsequent deployment phases
+- The application is optimized for frontend-only deployment on Vercel

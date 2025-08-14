@@ -27,6 +27,8 @@ export interface AccessEvent {
   success: boolean;
   ipAddress: string;
   userAgent: string;
+  userId: string;
+  accessType: 'read' | 'write' | 'delete' | 'create';
   metadata: Record<string, unknown>;
 }
 
@@ -218,6 +220,7 @@ export interface ModuleName {
   plotStructure: 'plotStructure';
   styleProfile: 'styleProfile';
   themeAnalysis: 'themeAnalysis';
+  system: 'system';
 }
 
 export type ModuleNameType = keyof ModuleName;

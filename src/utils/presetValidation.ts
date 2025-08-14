@@ -35,6 +35,16 @@ export const VALID_PRESET_VALUES: Record<
   lockedFields: [], // Not used in presets
   memory: [true, false],
   copilot: [true, false],
+  systemMode: ['FULLY_AUTO', 'HYBRID', 'MANUAL'],
+  modeConfiguration: [],
+  modeCustomizations: [],
+  autoModeSwitch: [true, false],
+  modeTransitionPreferences: [],
+  lastModeChange: [],
+  modeChangeHistory: [],
+  hasSeenModeOnboarding: [true, false],
+  writingStyle: ['collaborative', 'independent', 'assisted'],
+  collaborationLevel: ['low', 'medium', 'high', 'very_high'],
 };
 
 /**

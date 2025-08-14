@@ -45,6 +45,13 @@ export class CharacterDataProtection {
           accessLevel: 'private',
           encryptionLevel: 'AES-256',
         },
+        accessControl: {
+          owner: userId,
+          sharedWith: [],
+          permissions: ['read', 'write', 'delete'],
+          accessHistory: [],
+          securityLevel: 'high',
+        },
       };
 
       // Encrypt sensitive fields with field-level encryption
@@ -65,14 +72,7 @@ export class CharacterDataProtection {
         }
       }
 
-      // Add comprehensive access control
-      protectedData.accessControl = {
-        owner: userId,
-        sharedWith: [],
-        permissions: ['read', 'write', 'delete'],
-        accessHistory: [],
-        securityLevel: 'high',
-      };
+      // Access control is already set in the object creation above
 
       // Record protection metrics
       const protectionTime = performance.now() - startTime;
@@ -108,9 +108,10 @@ export class CharacterDataProtection {
 
       const decryptedData: CharacterData = {
         ...protectedData,
-        metadata: undefined,
-        accessControl: undefined,
+        // Remove protected data properties to return to original CharacterData format
       };
+      delete (decryptedData as any).metadata;
+      delete (decryptedData as any).accessControl;
 
       // Decrypt only requested fields or all sensitive fields
       const fieldsToDecrypt = requestedFields || this.sensitiveFields;
@@ -199,11 +200,15 @@ export class CharacterDataProtection {
 
       // Update access history
       updatedData.accessControl.accessHistory.push({
+        id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         userId,
-        resourceId: protectedData.id,
+        resource: protectedData.id,
         accessType: 'write',
         timestamp: new Date(),
         success: true,
+        action: 'update',
+        ipAddress: '127.0.0.1', // Default IP for local operations
+        userAgent: 'DocCraft-AI-System',
         metadata: { operation: 'update', fields: Object.keys(updates) },
       });
 
@@ -256,10 +261,12 @@ export class CharacterDataProtection {
           ...protectedData.accessControl,
           sharedWith: [...protectedData.accessControl.sharedWith, targetUserId],
           permissions: [
-            ...new Set([
-              ...protectedData.accessControl.permissions,
-              ...requestedPermissions,
-            ]),
+            ...Array.from(
+              new Set([
+                ...protectedData.accessControl.permissions,
+                ...requestedPermissions,
+              ])
+            ),
           ],
         },
       };
@@ -358,7 +365,52 @@ export class CharacterDataProtection {
   async validateDataIntegrity(
     protectedData: ProtectedCharacterData
   ): Promise<DataIntegrityReport> {
-    return await this.encryptionService.validateDataIntegrity(protectedData);
+    // This method is implemented in the main class, not in EncryptionService
+    const report: DataIntegrityReport = {
+      characterId: protectedData.id,
+      timestamp: new Date(),
+      integrityChecks: [],
+      overallStatus: 'valid',
+    };
+
+    // Check encryption status
+    for (const field of this.sensitiveFields) {
+      const fieldValue = protectedData[field as keyof CharacterData];
+      const isEncrypted =
+        typeof fieldValue === 'string' && fieldValue.startsWith('encrypted:');
+
+      report.integrityChecks.push({
+        field,
+        status: isEncrypted ? 'encrypted' : 'not_encrypted',
+        encrypted: isEncrypted,
+      });
+
+      if (!isEncrypted && fieldValue !== undefined) {
+        report.overallStatus = 'warning';
+      }
+    }
+
+    // Check metadata integrity
+    if (!protectedData.metadata || !protectedData.metadata.userId) {
+      report.overallStatus = 'invalid';
+      report.integrityChecks.push({
+        field: 'metadata',
+        status: 'missing',
+        encrypted: false,
+      });
+    }
+
+    // Check access control integrity
+    if (!protectedData.accessControl || !protectedData.accessControl.owner) {
+      report.overallStatus = 'invalid';
+      report.integrityChecks.push({
+        field: 'accessControl',
+        status: 'missing',
+        encrypted: false,
+      });
+    }
+
+    return report;
   }
 }
 
@@ -396,7 +448,7 @@ class EncryptionService {
       combined.set(encryptedArray);
 
       // Return base64 encoded encrypted data with prefix
-      return `encrypted:${btoa(String.fromCharCode(...combined))}`;
+      return `encrypted:${btoa(String.fromCharCode(...Array.from(combined)))}`;
     } catch (error) {
       console.error('Encryption failed:', error);
       throw new Error('Failed to encrypt field data');
@@ -480,60 +532,16 @@ class EncryptionService {
     );
   }
 
-  async validateDataIntegrity(
-    protectedData: ProtectedCharacterData
-  ): Promise<DataIntegrityReport> {
-    const report: DataIntegrityReport = {
-      characterId: protectedData.id,
-      timestamp: new Date(),
-      integrityChecks: [],
-      overallStatus: 'valid',
-    };
-
-    // Check encryption status
-    for (const field of this.sensitiveFields) {
-      const fieldValue = protectedData[field as keyof CharacterData];
-      const isEncrypted =
-        typeof fieldValue === 'string' && fieldValue.startsWith('encrypted:');
-
-      report.integrityChecks.push({
-        field,
-        status: isEncrypted ? 'encrypted' : 'not_encrypted',
-        encrypted: isEncrypted,
-      });
-
-      if (!isEncrypted && fieldValue !== undefined) {
-        report.overallStatus = 'warning';
-      }
-    }
-
-    // Check metadata integrity
-    if (!protectedData.metadata || !protectedData.metadata.userId) {
-      report.overallStatus = 'invalid';
-      report.integrityChecks.push({
-        field: 'metadata',
-        status: 'missing',
-        encrypted: false,
-      });
-    }
-
-    // Check access control integrity
-    if (!protectedData.accessControl || !protectedData.accessControl.owner) {
-      report.overallStatus = 'invalid';
-      report.integrityChecks.push({
-        field: 'accessControl',
-        status: 'missing',
-        encrypted: false,
-      });
-    }
-
-    return report;
-  }
+  // Duplicate method removed - implementation is in the main class above
 }
 
 // Access Monitor
 class AccessMonitor {
   private accessEvents: Map<string, AccessEvent[]> = new Map();
+
+  private generateEventId(): string {
+    return `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
 
   async recordProtectionEvent(
     userId: string,
@@ -541,11 +549,15 @@ class AccessMonitor {
     protectionTime: number
   ): Promise<void> {
     const event: AccessEvent = {
+      id: this.generateEventId(),
       userId,
-      resourceId: characterId,
+      resource: characterId,
       accessType: 'create',
       timestamp: new Date(),
       success: true,
+      action: 'encrypt',
+      ipAddress: '127.0.0.1', // Default IP for local operations
+      userAgent: 'DocCraft-AI-System',
       metadata: { protectionTime, operation: 'encrypt' },
     };
 
@@ -558,11 +570,15 @@ class AccessMonitor {
     error: any
   ): Promise<void> {
     const event: AccessEvent = {
+      id: this.generateEventId(),
       userId,
-      resourceId: characterId,
+      resource: characterId,
       accessType: 'create',
       timestamp: new Date(),
       success: false,
+      action: 'encrypt_error',
+      ipAddress: '127.0.0.1', // Default IP for local operations
+      userAgent: 'DocCraft-AI-System',
       metadata: { error: error.message, operation: 'encrypt' },
     };
 
@@ -576,11 +592,15 @@ class AccessMonitor {
     accessTime: number
   ): Promise<void> {
     const event: AccessEvent = {
+      id: this.generateEventId(),
       userId,
-      resourceId: characterId,
+      resource: characterId,
       accessType,
       timestamp: new Date(),
       success: true,
+      action: accessType,
+      ipAddress: '127.0.0.1', // Default IP for local operations
+      userAgent: 'DocCraft-AI-System',
       metadata: { accessTime, operation: accessType },
     };
 
@@ -594,11 +614,15 @@ class AccessMonitor {
     error: any
   ): Promise<void> {
     const event: AccessEvent = {
+      id: this.generateEventId(),
       userId,
-      resourceId: characterId,
+      resource: characterId,
       accessType,
       timestamp: new Date(),
       success: false,
+      action: `${accessType}_error`,
+      ipAddress: '127.0.0.1', // Default IP for local operations
+      userAgent: 'DocCraft-AI-System',
       metadata: { error: error.message, operation: accessType },
     };
 
@@ -612,11 +636,15 @@ class AccessMonitor {
     updatedFields: string[]
   ): Promise<void> {
     const event: AccessEvent = {
+      id: this.generateEventId(),
       userId,
-      resourceId: characterId,
+      resource: characterId,
       accessType: 'write',
       timestamp: new Date(),
       success: true,
+      action: 'update',
+      ipAddress: '127.0.0.1', // Default IP for local operations
+      userAgent: 'DocCraft-AI-System',
       metadata: { updateTime, updatedFields, operation: 'update' },
     };
 
@@ -629,11 +657,15 @@ class AccessMonitor {
     error: any
   ): Promise<void> {
     const event: AccessEvent = {
+      id: this.generateEventId(),
       userId,
-      resourceId: characterId,
+      resource: characterId,
       accessType: 'write',
       timestamp: new Date(),
       success: false,
+      action: 'update_error',
+      ipAddress: '127.0.0.1', // Default IP for local operations
+      userAgent: 'DocCraft-AI-System',
       metadata: { error: error.message, operation: 'update' },
     };
 
@@ -647,11 +679,15 @@ class AccessMonitor {
     permissions: string[]
   ): Promise<void> {
     const event: AccessEvent = {
+      id: this.generateEventId(),
       userId: ownerId,
-      resourceId: characterId,
+      resource: characterId,
       accessType: 'create',
       timestamp: new Date(),
       success: true,
+      action: 'share',
+      ipAddress: '127.0.0.1', // Default IP for local operations
+      userAgent: 'DocCraft-AI-System',
       metadata: {
         operation: 'share',
         targetUserId,
@@ -670,11 +706,15 @@ class AccessMonitor {
     error: any
   ): Promise<void> {
     const event: AccessEvent = {
+      id: this.generateEventId(),
       userId: ownerId,
-      resourceId: characterId,
+      resource: characterId,
       accessType: 'create',
       timestamp: new Date(),
       success: false,
+      action: 'share_error',
+      ipAddress: '127.0.0.1', // Default IP for local operations
+      userAgent: 'DocCraft-AI-System',
       metadata: {
         error: error.message,
         operation: 'share',
@@ -692,11 +732,15 @@ class AccessMonitor {
     targetUserId: string
   ): Promise<void> {
     const event: AccessEvent = {
+      id: this.generateEventId(),
       userId: ownerId,
-      resourceId: characterId,
+      resource: characterId,
       accessType: 'delete',
       timestamp: new Date(),
       success: true,
+      action: 'revoke',
+      ipAddress: '127.0.0.1', // Default IP for local operations
+      userAgent: 'DocCraft-AI-System',
       metadata: {
         operation: 'revoke',
         targetUserId,
@@ -714,11 +758,15 @@ class AccessMonitor {
     error: any
   ): Promise<void> {
     const event: AccessEvent = {
+      id: this.generateEventId(),
       userId: ownerId,
-      resourceId: characterId,
+      resource: characterId,
       accessType: 'delete',
       timestamp: new Date(),
       success: false,
+      action: 'revoke_error',
+      ipAddress: '127.0.0.1', // Default IP for local operations
+      userAgent: 'DocCraft-AI-System',
       metadata: {
         error: error.message,
         operation: 'revoke',

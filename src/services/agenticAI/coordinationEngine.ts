@@ -14,7 +14,7 @@ import { SystemMode, WritingContext } from '../../types/systemModes';
 import { ModuleNameType } from '../../types/security';
 import { IntelligentConflictResolver } from './conflictResolver';
 import { QualityAssuranceCoordinator } from './qualityAssuranceCoordinator';
-import { PerformanceMonitor } from '../cache/performanceMonitor';
+import { PerformanceMonitor } from '../../monitoring';
 
 // ============================================================================
 // CORE INTERFACES
@@ -591,7 +591,7 @@ export class AdvancedCoordinationEngine {
       metadata: {
         createdAt: new Date(),
         lastUpdated: new Date(),
-        userMode: context.currentMode,
+        userMode: 'HYBRID',
         optimizationLevel: 1,
       },
     };
@@ -913,18 +913,21 @@ export class AdvancedCoordinationEngine {
     console.error('Coordination error:', error);
 
     // Record error metrics
-    await this.performanceMonitor.recordErrorMetrics({
-      errorType: 'coordination_failure',
-      errorMessage:
-        error instanceof Error ? error.message : 'Unknown coordination error',
-      context: {
-        goalId: writingGoal.id,
-        userMode: context.currentMode,
-        modulesInvolved: Array.from(this.moduleCapabilities.keys()),
-      },
-      timestamp: Date.now(),
-      severity: 'high',
-    });
+    await this.performanceMonitor.recordErrorMetrics(
+      new Error('Coordination failed'),
+      {
+        errorType: 'coordination_failure',
+        errorMessage:
+          error instanceof Error ? error.message : 'Unknown coordination error',
+        context: {
+          goalId: writingGoal.id,
+          userMode: context.currentMode,
+          modulesInvolved: Array.from(this.moduleCapabilities.keys()),
+        },
+        timestamp: Date.now(),
+        severity: 'high',
+      }
+    );
 
     // Update plan status if applicable
     for (const plan of this.activePlans.values()) {

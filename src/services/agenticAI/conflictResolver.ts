@@ -796,7 +796,8 @@ export class IntelligentConflictResolver {
     }
 
     // Validate each module's resolutions are consistent
-    for (const [module, moduleRes] of moduleResolutions) {
+    const moduleEntries = Array.from(moduleResolutions.entries());
+    for (const [module, moduleRes] of moduleEntries) {
       if (moduleRes.length > 1) {
         const hasConflicts = moduleRes.some((r1, i) =>
           moduleRes.some((r2, j) => i !== j && r1.type !== r2.type)
@@ -963,169 +964,157 @@ export class IntelligentConflictResolver {
   getAvailableStrategies(): ResolutionStrategy[] {
     return Array.from(this.resolutionStrategies.values());
   }
-}
 
-// ============================================================================
-// CONFLICT RESOLUTION STRATEGIES IMPLEMENTATION
-// ============================================================================
+  /**
+   * Resolve emotional vs narrative conflicts
+   */
+  private async resolveEmotionalNarrativeConflict(
+    conflict: InterModuleConflict,
+    context: WritingContext
+  ): Promise<ResolutionDecision> {
+    // Implementation would analyze emotional states and narrative flow
+    // to find the best reconciliation approach
+    return {
+      type: 'reconcile',
+      primaryModule: 'emotionArc',
+      secondaryModules: ['narrativeDashboard'],
+      decision: 'Reconcile emotional states with narrative progression',
+      reasoning:
+        'Emotional states should align with narrative flow for coherence',
+      confidence: 0.85,
+    };
+  }
 
-/**
- * Implementation of specific conflict resolution strategies
- * These methods are bound to the IntelligentConflictResolver instance
- */
+  /**
+   * Resolve plot vs theme conflicts
+   */
+  private async resolvePlotThemeConflict(
+    conflict: InterModuleConflict,
+    context: WritingContext
+  ): Promise<ResolutionDecision> {
+    // Implementation would analyze plot structure and thematic elements
+    // to ensure they support each other
+    return {
+      type: 'merge',
+      primaryModule: 'plotStructure',
+      secondaryModules: ['themeAnalysis'],
+      decision: 'Merge plot structure with thematic elements',
+      reasoning:
+        'Plot and themes should work together to create meaningful narrative',
+      confidence: 0.8,
+    };
+  }
 
-// Note: These methods would be implemented as instance methods in the actual class
-// For now, they're documented as the expected interface
+  /**
+   * Resolve style vs voice conflicts
+   */
+  private async resolveStyleVoiceConflict(
+    conflict: InterModuleConflict,
+    context: WritingContext
+  ): Promise<ResolutionDecision> {
+    // Implementation would analyze style choices and character voice
+    // to ensure consistency
+    return {
+      type: 'prioritize',
+      primaryModule: 'styleProfile',
+      secondaryModules: ['emotionArc'],
+      decision: 'Prioritize character voice over style preferences',
+      reasoning:
+        'Character authenticity is more important than style consistency',
+      confidence: 0.75,
+    };
+  }
 
-/**
- * Resolve emotional vs narrative conflicts
- */
-async function resolveEmotionalNarrativeConflict(
-  conflict: InterModuleConflict,
-  context: WritingContext
-): Promise<ResolutionDecision> {
-  // Implementation would analyze emotional states and narrative flow
-  // to find the best reconciliation approach
-  return {
-    type: 'reconcile',
-    primaryModule: 'emotionArc',
-    secondaryModules: ['narrativeDashboard'],
-    decision: 'Reconcile emotional states with narrative progression',
-    reasoning:
-      'Emotional states should align with narrative flow for coherence',
-    confidence: 0.85,
-  };
-}
+  /**
+   * Resolve character arc conflicts
+   */
+  private async resolveCharacterArcConflict(
+    conflict: InterModuleConflict,
+    context: WritingContext
+  ): Promise<ResolutionDecision> {
+    // Implementation would analyze character development progression
+    // to ensure logical consistency
+    return {
+      type: 'reconcile',
+      primaryModule: 'emotionArc',
+      secondaryModules: ['narrativeDashboard'],
+      decision: 'Reconcile character arc with narrative progression',
+      reasoning: 'Character development must align with story progression',
+      confidence: 0.9,
+    };
+  }
 
-/**
- * Resolve plot vs theme conflicts
- */
-async function resolvePlotThemeConflict(
-  conflict: InterModuleConflict,
-  context: WritingContext
-): Promise<ResolutionDecision> {
-  // Implementation would analyze plot structure and thematic elements
-  // to ensure they support each other
-  return {
-    type: 'merge',
-    primaryModule: 'plotStructure',
-    secondaryModules: ['themeAnalysis'],
-    decision: 'Merge plot structure with thematic elements',
-    reasoning:
-      'Plot and themes should work together to create meaningful narrative',
-    confidence: 0.8,
-  };
-}
+  /**
+   * Resolve thematic coherence conflicts
+   */
+  private async resolveThematicCoherenceConflict(
+    conflict: InterModuleConflict,
+    context: WritingContext
+  ): Promise<ResolutionDecision> {
+    // Implementation would analyze thematic elements across the narrative
+    // to restore coherence
+    return {
+      type: 'merge',
+      primaryModule: 'themeAnalysis',
+      secondaryModules: ['emotionArc', 'plotStructure'],
+      decision: 'Merge thematic elements for coherence',
+      reasoning: 'Themes should be consistent across all narrative elements',
+      confidence: 0.8,
+    };
+  }
 
-/**
- * Resolve style vs voice conflicts
- */
-async function resolveStyleVoiceConflict(
-  conflict: InterModuleConflict,
-  context: WritingContext
-): Promise<ResolutionDecision> {
-  // Implementation would analyze style choices and character voice
-  // to ensure consistency
-  return {
-    type: 'prioritize',
-    primaryModule: 'styleProfile',
-    secondaryModules: ['emotionArc'],
-    decision: 'Prioritize character voice over style preferences',
-    reasoning:
-      'Character authenticity is more important than style consistency',
-    confidence: 0.75,
-  };
-}
+  /**
+   * Resolve structural timing conflicts
+   */
+  private async resolveStructuralTimingConflict(
+    conflict: InterModuleConflict,
+    context: WritingContext
+  ): Promise<ResolutionDecision> {
+    // Implementation would analyze structural timing and pacing
+    // to optimize narrative flow
+    return {
+      type: 'reconcile',
+      primaryModule: 'plotStructure',
+      secondaryModules: ['narrativeDashboard'],
+      decision: 'Reconcile structural timing with narrative flow',
+      reasoning: 'Structural elements must support optimal pacing',
+      confidence: 0.75,
+    };
+  }
 
-/**
- * Resolve character arc conflicts
- */
-async function resolveCharacterArcConflict(
-  conflict: InterModuleConflict,
-  context: WritingContext
-): Promise<ResolutionDecision> {
-  // Implementation would analyze character development progression
-  // to ensure logical consistency
-  return {
-    type: 'reconcile',
-    primaryModule: 'emotionArc',
-    secondaryModules: ['narrativeDashboard'],
-    decision: 'Reconcile character arc with narrative progression',
-    reasoning: 'Character development must align with story progression',
-    confidence: 0.9,
-  };
-}
+  /**
+   * Resolve genre convention conflicts
+   */
+  private async resolveGenreConventionConflict(
+    conflict: InterModuleConflict,
+    context: WritingContext
+  ): Promise<ResolutionDecision> {
+    // Implementation would analyze genre conventions and ensure compliance
+    return {
+      type: 'prioritize',
+      primaryModule: 'styleProfile',
+      secondaryModules: ['themeAnalysis'],
+      decision: 'Prioritize genre convention compliance',
+      reasoning: 'Genre conventions are critical for audience expectations',
+      confidence: 0.85,
+    };
+  }
 
-/**
- * Resolve thematic coherence conflicts
- */
-async function resolveThematicCoherenceConflict(
-  conflict: InterModuleConflict,
-  context: WritingContext
-): Promise<ResolutionDecision> {
-  // Implementation would analyze thematic elements across the narrative
-  // to restore coherence
-  return {
-    type: 'merge',
-    primaryModule: 'themeAnalysis',
-    secondaryModules: ['emotionArc', 'plotStructure'],
-    decision: 'Merge thematic elements for coherence',
-    reasoning: 'Themes should be consistent across all narrative elements',
-    confidence: 0.8,
-  };
-}
-
-/**
- * Resolve structural timing conflicts
- */
-async function resolveStructuralTimingConflict(
-  conflict: InterModuleConflict,
-  context: WritingContext
-): Promise<ResolutionDecision> {
-  // Implementation would analyze structural timing and pacing
-  // to optimize narrative flow
-  return {
-    type: 'reconcile',
-    primaryModule: 'plotStructure',
-    secondaryModules: ['narrativeDashboard'],
-    decision: 'Reconcile structural timing with narrative flow',
-    reasoning: 'Structural elements must support optimal pacing',
-    confidence: 0.75,
-  };
-}
-
-/**
- * Resolve genre convention conflicts
- */
-async function resolveGenreConventionConflict(
-  conflict: InterModuleConflict,
-  context: WritingContext
-): Promise<ResolutionDecision> {
-  // Implementation would analyze genre conventions and ensure compliance
-  return {
-    type: 'prioritize',
-    primaryModule: 'styleProfile',
-    secondaryModules: ['themeAnalysis'],
-    decision: 'Prioritize genre convention compliance',
-    reasoning: 'Genre conventions are critical for audience expectations',
-    confidence: 0.85,
-  };
-}
-
-/**
- * Resolve audience expectation conflicts
- */
-async function resolveAudienceExpectationConflict(
-  conflict: InterModuleConflict,
-  context: WritingContext
-): Promise<ResolutionDecision> {
-  // Implementation would analyze audience expectations and content alignment
-  return {
-    type: 'reconcile',
-    primaryModule: 'styleProfile',
-    secondaryModules: ['themeAnalysis', 'emotionArc'],
-    decision: 'Reconcile content with audience expectations',
-    reasoning: 'Content must meet audience expectations for engagement',
-    confidence: 0.8,
-  };
+  /**
+   * Resolve audience expectation conflicts
+   */
+  private async resolveAudienceExpectationConflict(
+    conflict: InterModuleConflict,
+    context: WritingContext
+  ): Promise<ResolutionDecision> {
+    // Implementation would analyze audience expectations and content alignment
+    return {
+      type: 'reconcile',
+      primaryModule: 'styleProfile',
+      secondaryModules: ['themeAnalysis', 'emotionArc'],
+      decision: 'Reconcile content with audience expectations',
+      reasoning: 'Content must meet audience expectations for engagement',
+      confidence: 0.8,
+    };
+  }
 }

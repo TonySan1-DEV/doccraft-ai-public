@@ -214,7 +214,6 @@ export class PerformanceMonitor {
       success: true,
       requestSize: 0,
       responseSize: 0,
-      timestamp: Date.now(),
     });
   }
 
@@ -675,7 +674,7 @@ export class PerformanceMonitor {
         issue,
         count: data.count,
         impact: data.impact,
-        recommendation: this.getIssueRecommendation(issue, data.impact),
+        recommendation: this.getIssueRecommendation(issue),
       }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5); // Top 5 issues
@@ -684,10 +683,7 @@ export class PerformanceMonitor {
   /**
    * Get recommendation for specific issue
    */
-  private getIssueRecommendation(
-    issue: string,
-    impact: 'low' | 'medium' | 'high'
-  ): string {
+  private getIssueRecommendation(issue: string): string {
     switch (issue) {
       case 'High Response Time':
         return 'Optimize AI model selection and implement request batching';

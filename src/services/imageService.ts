@@ -233,7 +233,7 @@ export async function getImagesFromStorage(folder: string = ''): Promise<string[
       throw error
     }
 
-    return data.map(file => {
+    return data.map((file: any) => {
       const { data: { publicUrl } } = supabase.storage
         .from('images')
         .getPublicUrl(`${folder}/${file.name}`)

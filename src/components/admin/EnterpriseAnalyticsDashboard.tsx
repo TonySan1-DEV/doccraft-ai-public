@@ -38,6 +38,7 @@ import {
   BarChart,
   Bar,
   PieChart as RechartsPieChart,
+  Pie,
   Cell,
   XAxis,
   YAxis,
@@ -59,7 +60,6 @@ import {
   ModulePerformanceReport,
   BusinessRecommendation,
   AlertData,
-  PerformanceMetricCard,
   ModuleAnalysis,
   OptimizationOpportunity,
 } from '../../types/analytics';
@@ -225,7 +225,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
         <div className="text-center">
           <div className="text-2xl font-bold text-green-600">
-            ${insights.revenue?.total?.toLocaleString() || '0'}
+            ${insights.revenue?.totalRevenue?.toLocaleString() || '0'}
           </div>
           <div className="text-sm text-gray-600">Total Revenue</div>
         </div>
@@ -312,7 +312,7 @@ const BusinessIntelligencePanel: React.FC<BusinessIntelligencePanelProps> = ({
                 cy="50%"
                 labelLine={false}
                 label={({ name, percent }) =>
-                  `${name} ${(percent * 100).toFixed(0)}%`
+                  `${name} ${((percent || 0) * 100).toFixed(0)}%`
                 }
                 outerRadius={80}
                 fill="#8884d8"
@@ -1009,6 +1009,7 @@ export const EnterpriseAnalyticsDashboard: React.FC = () => {
           ltv: 312500,
           mrr: 10416.67,
           growth: 11.1,
+          current: 125000,
           revenueByModule: {
             'AI Character Chat': 45000,
             'Plot Structure': 32000,

@@ -255,7 +255,7 @@ export class FeedbackService {
       // Aggregate statistics
       const statsMap = new Map<string, FeedbackStats>();
 
-      data?.forEach(event => {
+      data?.forEach((event: any) => {
         const pattern = event.pattern_used;
         if (!statsMap.has(pattern)) {
           statsMap.set(pattern, {

@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, User, LogOut, LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { AuthModal } from './AuthModal';
 import { useMCP } from '../useMCP';
+import { AuthModal } from './AuthModal';
 import ThemeToggle from './ThemeToggle';
 
 export default function Header() {
@@ -33,17 +33,17 @@ export default function Header() {
           <div className="flex items-center justify-between">
             <Link
               to="/"
-              className="flex items-center gap-2 sm:gap-3 text-xl sm:text-2xl font-bold text-gray-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
+              className="flex items-center gap-2 sm:gap-3 text-xl sm:text-2xl font-bold text-gray-800 dark:text-white hover:text-blue-600 transition-colors group"
               onClick={
                 ctx.role === 'viewer' ? e => e.preventDefault() : undefined
               }
             >
-              <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform duration-200 animate-logoFloat animate-logoGlow" />
+              <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600 group-hover:scale-110 transition-transform duration-200 animate-logoFloat animate-logoGlow" />
               <div className="flex flex-col">
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent group-hover:from-blue-700 group-hover:to-purple-700 transition-all duration-300">
+                <span className="text-gradient-primary group-hover:from-blue-600 group-hover:to-purple-600 transition-all duration-300 font-bold">
                   DocCraft-AI
                 </span>
-                <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-normal -mt-1 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300 animate-pulse hidden sm:block">
+                <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-normal -mt-1 group-hover:text-blue-600 transition-colors duration-300 animate-pulse hidden sm:block">
                   AI-Powered Writing Assistant
                 </span>
               </div>
@@ -62,7 +62,7 @@ export default function Header() {
                   ) : (
                     <Link
                       to="/process"
-                      className="btn btn-primary hidden sm:inline-flex"
+                      className="hidden sm:inline-flex px-4 py-2 rounded-lg font-medium bg-blue-600 hover:bg-blue-700 text-white border-none transition-all duration-300"
                     >
                       New Document
                     </Link>
@@ -74,7 +74,7 @@ export default function Header() {
                     </span>
 
                     {/* Role Badge - only show on authenticated user pages */}
-                    <span className="text-xs text-blue-600 dark:text-blue-400 font-bold bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded hidden sm:inline-block">
+                    <span className="text-xs text-blue-600 font-bold bg-blue-100 px-2 py-1 rounded hidden sm:inline-block">
                       Role: {ctx.role}
                     </span>
 
@@ -102,9 +102,9 @@ export default function Header() {
                   ) : (
                     <button
                       onClick={() => setShowAuthModal(true)}
-                      className="btn btn-primary text-base sm:text-lg px-6 sm:px-8 py-3 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium shadow-md transform hover:-translate-y-1 transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white border-none"
                     >
-                      <LogIn className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                      <LogIn className="w-4 h-4" />
                       <span className="hidden sm:inline">Sign In</span>
                       <span className="sm:hidden">Login</span>
                     </button>

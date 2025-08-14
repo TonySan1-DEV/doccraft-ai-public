@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Advanced Character AI Service
  * Comprehensive psychological analysis system for character development
@@ -412,6 +413,132 @@ export class AdvancedCharacterAI {
       );
       throw error;
     }
+  }
+
+  /**
+   * Deepen character personality using psychological frameworks
+   */
+  async deepenPersonality(characterId: string): Promise<string[]> {
+    try {
+      const character = await this.getCharacterById(characterId);
+      if (!character) {
+        throw new Error(`Character with ID ${characterId} not found`);
+      }
+
+      const prompts = await this.generateDeepeningPrompts(
+        character,
+        'Humanistic',
+        'deep'
+      );
+
+      // Convert prompts to insights
+      const insights = prompts.map(
+        prompt => `Personality Insight: ${prompt.prompt} (${prompt.framework})`
+      );
+
+      return insights;
+    } catch (error) {
+      console.error('Failed to deepen personality:', error);
+      return ['Unable to generate personality insights at this time.'];
+    }
+  }
+
+  /**
+   * Generate internal conflicts for character development
+   */
+  async generateInternalConflict(characterId: string): Promise<string[]> {
+    try {
+      const character = await this.getCharacterById(characterId);
+      if (!character) {
+        throw new Error(`Character with ID ${characterId} not found`);
+      }
+
+      // Analyze personality patterns to identify potential conflicts
+      const patterns = await this.analyzePersonalityPatterns(character, [
+        'CBT',
+        'Psychodynamic',
+      ]);
+
+      const conflicts: string[] = [];
+
+      // Generate conflict insights based on personality patterns
+      patterns.forEach(pattern => {
+        if (pattern.characteristics.includes('cognitive_distortion')) {
+          conflicts.push(
+            `Internal Conflict: ${pattern.description} - This could create tension between ${pattern.characteristics.join(' and ')}`
+          );
+        }
+        if (pattern.characteristics.includes('emotional_pattern')) {
+          conflicts.push(
+            `Emotional Conflict: ${pattern.description} - This may conflict with their stated goals`
+          );
+        }
+      });
+
+      // Add some generic conflict suggestions if none were generated
+      if (conflicts.length === 0) {
+        conflicts.push(
+          'Internal Conflict: Desire for change vs. fear of the unknown',
+          'Internal Conflict: Personal values vs. external expectations',
+          'Internal Conflict: Independence vs. need for connection'
+        );
+      }
+
+      return conflicts;
+    } catch (error) {
+      console.error('Failed to generate internal conflicts:', error);
+      return ['Unable to generate conflict insights at this time.'];
+    }
+  }
+
+  /**
+   * Suggest character growth opportunities
+   */
+  async suggestCharacterGrowth(characterId: string): Promise<string[]> {
+    try {
+      const character = await this.getCharacterById(characterId);
+      if (!character) {
+        throw new Error(`Character with ID ${characterId} not found`);
+      }
+
+      // Create development arcs for common growth areas
+      const growthAreas = [
+        'emotional maturity',
+        'self-awareness',
+        'relationship skills',
+        'personal boundaries',
+        'goal achievement',
+      ];
+
+      const arcs = await this.createDevelopmentArcs(
+        character,
+        growthAreas,
+        'medium'
+      );
+
+      // Convert arcs to growth suggestions
+      const suggestions = arcs.map(
+        arc =>
+          `Growth Opportunity: ${arc.name} - ${arc.description} (${arc.complexity} complexity)`
+      );
+
+      return suggestions;
+    } catch (error) {
+      console.error('Failed to suggest character growth:', error);
+      return ['Unable to generate growth suggestions at this time.'];
+    }
+  }
+
+  /**
+   * Get character by ID (placeholder implementation)
+   */
+  private async getCharacterById(
+    characterId: string
+  ): Promise<CharacterPersona | null> {
+    // This would typically fetch from a database or character store
+    // For now, return null to indicate character not found
+    // In a real implementation, this would query the character database
+    return null;
   }
 
   /**

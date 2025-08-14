@@ -1,0 +1,45 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "noEmit": true,
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@modules/*": ["modules/*"]
+    }
+  },
+  "include": ["src/**/*", "modules/**/*", "vite.config.ts"],
+  "exclude": [
+    "server/**/*",
+    "**/*.server.ts",
+    "**/*.server.js",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/__tests__/**",
+    "**/__stories__/**",
+    "**/__mocks__/**",
+    "tests/**",
+    "playwright.config.ts",
+    "jest.config.*",
+    "**/*.cjs",
+    "scripts/**/*",
+    "mcp/**/*",
+    "supabase/**/*",
+    "k8s/**/*",
+    "deploy/**/*",
+    "monitoring/**/*",
+    "tools/**/*",
+    "examples/**/*"
+  ]
+}

@@ -1,5 +1,5 @@
 // Export all monitoring systems
-export { performanceMonitor } from './performanceMonitor';
+export { performanceMonitor, PerformanceMonitor } from './performanceMonitor';
 export { alertSystem } from './alertSystem';
 export { characterAnalysisMonitor } from './characterAnalysisMonitor';
 

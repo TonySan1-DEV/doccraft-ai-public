@@ -1,30 +1,65 @@
-import React, { useState } from 'react'
-import { useTheme } from '../contexts/ThemeContext'
-import { COLOR_THEMES, ColorTheme } from '../configs/colorThemes'
-import { Palette, Moon, Sun, Check } from 'lucide-react'
-import toast from 'react-hot-toast'
+import React, { useState } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
+import { COLOR_THEMES, ColorTheme } from '../configs/colorThemes';
+import { Palette, Moon, Sun, Check } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface ThemeSelectorProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ isOpen, onClose }) => {
-  const { theme, colorTheme, toggleTheme, setColorTheme } = useTheme()
-  const [selectedColorTheme, setSelectedColorTheme] = useState<ColorTheme>(colorTheme)
+export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
+  isOpen,
+  onClose,
+}) => {
+  const { theme, colorTheme, toggleTheme, setColorTheme } = useTheme();
+  const [selectedColorTheme, setSelectedColorTheme] =
+    useState<ColorTheme>(colorTheme);
 
   const handleColorThemeChange = (newColorTheme: ColorTheme) => {
-    setSelectedColorTheme(newColorTheme)
-    setColorTheme(newColorTheme)
-    toast.success(`Theme changed to ${COLOR_THEMES[newColorTheme].name}`)
-  }
+    setSelectedColorTheme(newColorTheme);
+    setColorTheme(newColorTheme);
+
+    // Force a re-render of the document to ensure theme changes are applied
+    document.documentElement.style.setProperty(
+      '--color-primary',
+      COLOR_THEMES[newColorTheme].primary[theme]
+    );
+    document.documentElement.style.setProperty(
+      '--color-secondary',
+      COLOR_THEMES[newColorTheme].secondary[theme]
+    );
+    document.documentElement.style.setProperty(
+      '--color-accent',
+      COLOR_THEMES[newColorTheme].accent[theme]
+    );
+    document.documentElement.style.setProperty(
+      '--color-background',
+      COLOR_THEMES[newColorTheme].background[theme]
+    );
+    document.documentElement.style.setProperty(
+      '--color-surface',
+      COLOR_THEMES[newColorTheme].surface[theme]
+    );
+    document.documentElement.style.setProperty(
+      '--color-text',
+      COLOR_THEMES[newColorTheme].text[theme]
+    );
+    document.documentElement.style.setProperty(
+      '--color-border',
+      COLOR_THEMES[newColorTheme].border[theme]
+    );
+
+    toast.success(`Theme changed to ${COLOR_THEMES[newColorTheme].name}`);
+  };
 
   const handleThemeModeToggle = () => {
-    toggleTheme()
-    toast.success(`Switched to ${theme === 'light' ? 'dark' : 'light'} mode`)
-  }
+    toggleTheme();
+    toast.success(`Switched to ${theme === 'light' ? 'dark' : 'light'} mode`);
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -82,9 +117,9 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ isOpen, onClose })
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Object.entries(COLOR_THEMES).map(([key, themeConfig]) => {
-                const isSelected = selectedColorTheme === key
-                const colors = themeConfig.primary[theme]
-                
+                const isSelected = selectedColorTheme === key;
+                const colors = themeConfig.primary[theme];
+
                 return (
                   <button
                     key={key}
@@ -100,9 +135,9 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ isOpen, onClose })
                         <Check className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                       </div>
                     )}
-                    
+
                     <div className="flex items-center gap-3 mb-3">
-                      <div 
+                      <div
                         className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800 shadow-sm"
                         style={{ backgroundColor: colors }}
                       />
@@ -118,25 +153,27 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ isOpen, onClose })
 
                     {/* Color Preview */}
                     <div className="flex gap-1">
-                      <div 
+                      <div
                         className="w-4 h-4 rounded border border-white dark:border-gray-800"
                         style={{ backgroundColor: themeConfig.primary[theme] }}
                       />
-                      <div 
+                      <div
                         className="w-4 h-4 rounded border border-white dark:border-gray-800"
-                        style={{ backgroundColor: themeConfig.secondary[theme] }}
+                        style={{
+                          backgroundColor: themeConfig.secondary[theme],
+                        }}
                       />
-                      <div 
+                      <div
                         className="w-4 h-4 rounded border border-white dark:border-gray-800"
                         style={{ backgroundColor: themeConfig.accent[theme] }}
                       />
-                      <div 
+                      <div
                         className="w-4 h-4 rounded border border-white dark:border-gray-800"
                         style={{ backgroundColor: themeConfig.surface[theme] }}
                       />
                     </div>
                   </button>
-                )
+                );
               })}
             </div>
           </div>
@@ -153,15 +190,23 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ isOpen, onClose })
                   Buttons
                 </h4>
                 <div className="flex gap-2">
-                  <button className="px-4 py-2 rounded-lg text-white font-medium transition-colors duration-200"
-                    style={{ backgroundColor: COLOR_THEMES[selectedColorTheme].primary[theme] }}>
+                  <button
+                    className="px-4 py-2 rounded-lg text-white font-medium transition-colors duration-200"
+                    style={{
+                      backgroundColor:
+                        COLOR_THEMES[selectedColorTheme].primary[theme],
+                    }}
+                  >
                     Primary
                   </button>
-                  <button className="px-4 py-2 rounded-lg border font-medium transition-colors duration-200"
-                    style={{ 
-                      borderColor: COLOR_THEMES[selectedColorTheme].border[theme],
-                      color: COLOR_THEMES[selectedColorTheme].text[theme]
-                    }}>
+                  <button
+                    className="px-4 py-2 rounded-lg border font-medium transition-colors duration-200"
+                    style={{
+                      borderColor:
+                        COLOR_THEMES[selectedColorTheme].border[theme],
+                      color: COLOR_THEMES[selectedColorTheme].text[theme],
+                    }}
+                  >
                     Secondary
                   </button>
                 </div>
@@ -172,12 +217,15 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ isOpen, onClose })
                 <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Cards
                 </h4>
-                <div className="p-3 rounded-lg border transition-colors duration-200"
-                  style={{ 
-                    backgroundColor: COLOR_THEMES[selectedColorTheme].surface[theme],
+                <div
+                  className="p-3 rounded-lg border transition-colors duration-200"
+                  style={{
+                    backgroundColor:
+                      COLOR_THEMES[selectedColorTheme].surface[theme],
                     borderColor: COLOR_THEMES[selectedColorTheme].border[theme],
-                    color: COLOR_THEMES[selectedColorTheme].text[theme]
-                  }}>
+                    color: COLOR_THEMES[selectedColorTheme].text[theme],
+                  }}
+                >
                   <div className="text-sm">Sample card content</div>
                 </div>
               </div>
@@ -195,7 +243,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ isOpen, onClose })
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ThemeSelector 
+export default ThemeSelector;

@@ -66,13 +66,7 @@ const getTrend = (
   return trend > 0 ? 'up' : 'down';
 };
 
-const ResponsiveContainer: React.FC<{
-  width: string;
-  height: number;
-  children: React.ReactNode;
-}> = ({ width, height, children }) => (
-  <div style={{ width, height }}>{children}</div>
-);
+
 
 export const MonitoringDashboard: React.FC = () => {
   const [dashboardData, setDashboardData] = useState<any>(null);
@@ -294,7 +288,6 @@ export const MonitoringDashboard: React.FC = () => {
           </h3>
           <ResponsiveContainer width="100%" height={200}>
             <Bar
-              data={trends['error_rate'] || []}
               dataKey="value"
               fill="#EF4444"
             />
@@ -315,7 +308,7 @@ export const MonitoringDashboard: React.FC = () => {
             </h3>
           </div>
           <div className="divide-y divide-gray-200">
-            {alerts.map((alert, index) => (
+            {alerts.map((alert: any, index: number) => (
               <div
                 key={index}
                 className="px-6 py-4 flex items-center justify-between"

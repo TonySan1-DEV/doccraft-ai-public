@@ -54,7 +54,7 @@ export const ModeCustomization: React.FC<ModeCustomizationProps> = ({
    * Get default configuration for a mode
    */
   const getDefaultConfig = (mode: SystemMode): ModeConfiguration => {
-    const defaults = {
+    const defaults: Record<SystemMode, ModeConfiguration> = {
       MANUAL: {
         mode: 'MANUAL',
         aiInitiativeLevel: 'MINIMAL',
@@ -115,13 +115,14 @@ export const ModeCustomization: React.FC<ModeCustomizationProps> = ({
         <div className="mode-customization__content">
           {/* AI Initiative Level */}
           <div className="config-group">
-            <label className="config-label">
+            <label htmlFor="ai-initiative-level" className="config-label">
               AI Initiative Level
               <span className="config-description">
                 How proactive the AI should be in offering assistance
               </span>
             </label>
             <select
+              id="ai-initiative-level"
               value={localConfig.aiInitiativeLevel}
               onChange={e =>
                 handleConfigChange('aiInitiativeLevel', e.target.value)
@@ -140,13 +141,14 @@ export const ModeCustomization: React.FC<ModeCustomizationProps> = ({
 
           {/* Suggestion Frequency */}
           <div className="config-group">
-            <label className="config-label">
+            <label htmlFor="suggestion-frequency" className="config-label">
               Suggestion Frequency
               <span className="config-description">
                 How often the AI provides suggestions and insights
               </span>
             </label>
             <select
+              id="suggestion-frequency"
               value={localConfig.suggestionFrequency}
               onChange={e =>
                 handleConfigChange('suggestionFrequency', e.target.value)
@@ -166,7 +168,7 @@ export const ModeCustomization: React.FC<ModeCustomizationProps> = ({
 
           {/* User Control Level */}
           <div className="config-group">
-            <label className="config-label">
+            <label htmlFor="user-control-level" className="config-label">
               User Control Level
               <span className="config-description">
                 How much control you maintain over AI actions (0-100%)
@@ -174,6 +176,7 @@ export const ModeCustomization: React.FC<ModeCustomizationProps> = ({
             </label>
             <div className="slider-container">
               <input
+                id="user-control-level"
                 type="range"
                 min="0"
                 max="100"
@@ -194,13 +197,14 @@ export const ModeCustomization: React.FC<ModeCustomizationProps> = ({
 
           {/* Intervention Style */}
           <div className="config-group">
-            <label className="config-label">
+            <label htmlFor="intervention-style" className="config-label">
               Intervention Style
               <span className="config-description">
                 How AI suggestions and interventions are presented
               </span>
             </label>
             <select
+              id="intervention-style"
               value={localConfig.interventionStyle}
               onChange={e =>
                 handleConfigChange('interventionStyle', e.target.value)

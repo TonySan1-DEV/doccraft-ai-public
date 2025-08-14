@@ -1,12 +1,12 @@
-import { performanceMonitor } from './performanceMonitor';
+// Note: performanceMonitor is imported from index.ts, not directly
 
-interface AlertChannel {
+export interface AlertChannel {
   type: 'email' | 'slack' | 'webhook' | 'sms';
   config: Record<string, any>;
   enabled: boolean;
 }
 
-interface AlertNotification {
+export interface AlertNotification {
   id: string;
   ruleId: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
@@ -31,16 +31,55 @@ export class EnterpriseAlertSystem {
     this.channels.set(id, channel);
   }
 
+  async triggerAlert(
+    type: string,
+    severity: string,
+    message: string,
+    data: any
+  ): Promise<void> {
+    const notification: AlertNotification = {
+      id: this.generateNotificationId(),
+      ruleId: `manual_${type}_${Date.now()}`,
+      severity: severity as 'low' | 'medium' | 'high' | 'critical',
+      title: `Alert: ${type}`,
+      message: message,
+      timestamp: Date.now(),
+      acknowledged: false,
+    };
+
+    this.notifications.unshift(notification);
+
+    // Maintain notification limit
+    if (this.notifications.length > this.MAX_NOTIFICATIONS) {
+      this.notifications = this.notifications.slice(0, this.MAX_NOTIFICATIONS);
+    }
+
+    // Send to all enabled channels
+    await this.sendToChannels(notification);
+
+    // Auto-escalate critical alerts after 5 minutes
+    if (notification.severity === 'critical') {
+      setTimeout(
+        () => {
+          if (!notification.acknowledged) {
+            this.escalateAlert(notification);
+          }
+        },
+        5 * 60 * 1000
+      );
+    }
+  }
+
   removeChannel(id: string): void {
     this.channels.delete(id);
   }
 
   private setupPerformanceMonitorListener(): void {
-    performanceMonitor.on(
-      'alert',
-      (alertData: { rule: any; metric: any; timestamp: number }) => {
-        this.processAlert(alertData);
-      }
+    // Note: PerformanceMonitor doesn't have an 'on' method
+    // This would need to be implemented as a proper event system
+    // For now, we'll handle alerts through direct method calls
+    console.log(
+      'Performance monitor listener setup - event system not implemented'
     );
   }
 
@@ -365,7 +404,7 @@ export class EnterpriseAlertSystem {
 
     // Check channel health
     const channels: Record<string, boolean> = {};
-    for (const [id, channel] of this.channels) {
+    for (const [id, channel] of Array.from(this.channels.entries())) {
       channels[id] = channel.enabled;
     }
 

@@ -589,16 +589,28 @@ export class ModeAwareAIService {
         this.performanceMonitor.recordRequest(duration, true, userMode);
 
         // Record comprehensive performance metrics for cache hit
-        performanceMonitor.recordAIPerformance({
-          mode: userMode,
-          operation: request.type,
-          duration,
-          cacheHit: true,
-          success: true,
-          requestSize,
-          responseSize: JSON.stringify(cachedResponse).length,
-          userId: context.documentType, // Using documentType as identifier
-        });
+        performanceMonitor.recordAIPerformance(
+          {
+            type: request.type,
+            module: 'modeAwareAI',
+            userId: context.documentType || 'unknown',
+            timestamp: new Date(),
+            metadata: { mode: userMode, requestSize, responseSize: JSON.stringify(cachedResponse).length }
+          },
+          {
+            content: JSON.stringify(cachedResponse),
+            qualityScore: 1.0,
+            metadata: { cacheHit: true, success: true }
+          },
+          {
+            responseTime: duration,
+            cacheHit: true,
+            tokenUsage: 0,
+            securityLevel: 'safe',
+            threatScore: 0,
+            metadata: { mode: userMode, requestSize, responseSize: JSON.stringify(cachedResponse).length }
+          }
+        );
 
         return cachedResponse;
       }
@@ -645,35 +657,50 @@ export class ModeAwareAIService {
       const duration = performance.now() - startTime;
 
       // Record comprehensive performance metrics
-      performanceMonitor.recordAIPerformance({
-        mode: userMode,
-        operation: request.type,
-        duration,
-        cacheHit: this.wasCacheHit(request),
-        success,
-        requestSize,
-        responseSize,
-        userId: context.documentType, // Using documentType as identifier
-      });
+      performanceMonitor.recordAIPerformance(
+        {
+          type: request.type,
+          module: 'modeAwareAI',
+          userId: context.documentType || 'unknown',
+          timestamp: new Date(),
+          metadata: { mode: userMode, requestSize, responseSize }
+        },
+        {
+          content: 'AI request processed',
+          qualityScore: success ? 1.0 : 0.0,
+          metadata: { cacheHit: this.wasCacheHit(request), success }
+        },
+        {
+          responseTime: duration,
+          cacheHit: this.wasCacheHit(request),
+          tokenUsage: 0,
+          securityLevel: 'safe',
+          threatScore: 0,
+          metadata: { mode: userMode, requestSize, responseSize }
+        }
+      );
 
       // Record user experience metrics
       performanceMonitor.recordUserExperience({
-        action: `ai_${request.type}`,
-        duration,
-        success,
-        errorType: success ? undefined : 'ai_processing_error',
-        userId: context.documentType, // Using documentType as identifier
-        sessionId: context.documentType, // Using documentType as session identifier
+        userId: context.documentType || 'unknown', // Using documentType as identifier
+        sessionId: context.documentType || 'unknown', // Using documentType as session identifier
+        pageLoadTime: duration,
+        interactionResponseTime: duration,
+        satisfaction: success ? 5 : 1,
+        errors: success ? [] : ['ai_processing_error']
       });
 
       // Record business metrics
       if (success) {
         performanceMonitor.recordBusinessMetric({
-          metric: 'ai_request_completed',
+          name: 'ai_request_completed',
           value: 1,
-          userId: context.documentType, // Using documentType as identifier
-          tier: context.userExperience, // Using userExperience as tier
-          feature: request.type,
+          category: 'ai_operations',
+          metadata: { 
+            userId: context.documentType, // Using documentType as identifier
+            tier: context.userExperience, // Using userExperience as tier
+            feature: request.type 
+          }
         });
       }
     }

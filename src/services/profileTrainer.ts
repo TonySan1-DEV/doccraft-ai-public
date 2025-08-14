@@ -210,13 +210,13 @@ export async function analyzeWriterProfile(
     const avgQualityScore =
       outlines?.length > 0
         ? outlines.reduce(
-            (sum, outline) => sum + (outline.quality_score || 7),
+            (sum: any, outline: any) => sum + (outline.quality_score || 7),
             0
           ) / outlines.length
         : 7;
 
     const genreCounts: Record<string, number> = {};
-    outlines?.forEach(outline => {
+    outlines?.forEach((outline: any) => {
       const genre = outline.genre || 'unknown';
       genreCounts[genre] = (genreCounts[genre] || 0) + 1;
     });

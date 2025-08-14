@@ -796,7 +796,7 @@ export class QualityAssuranceCoordinator {
       if (standard && result.qualityMetrics) {
         const moduleScore =
           Object.values(result.qualityMetrics).reduce(
-            (sum, value) => sum + (value || 0),
+            (sum: number, value: unknown) => sum + (typeof value === 'number' ? value : 0),
             0
           ) / Object.keys(result.qualityMetrics).length;
         overallScore += moduleScore;

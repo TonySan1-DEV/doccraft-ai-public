@@ -10,6 +10,21 @@
 }
 */
 
+// Global type declarations for browser APIs
+declare global {
+  interface Window {
+    ErrorEvent: {
+      new (type: string, eventInitDict?: ErrorEventInit): ErrorEvent;
+    };
+    PromiseRejectionEvent: {
+      new (
+        type: string,
+        eventInitDict?: PromiseRejectionEventInit
+      ): PromiseRejectionEvent;
+    };
+  }
+}
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import {
   AlertTriangle,
@@ -128,7 +143,9 @@ export class ModeErrorBoundary extends Component<
     }, this.MEMORY_CLEANUP_INTERVAL);
 
     // Add window error listener for unhandled errors
-    const windowErrorHandler = this.handleWindowError.bind(this);
+    const windowErrorHandler = (event: Event): void => {
+      this.handleWindowError(event as ErrorEvent);
+    };
     window.addEventListener('error', windowErrorHandler);
     this.memoryTracker.eventListeners.push({
       element: window,
@@ -137,7 +154,9 @@ export class ModeErrorBoundary extends Component<
     });
 
     // Add unhandled promise rejection listener
-    const unhandledRejectionHandler = this.handleUnhandledRejection.bind(this);
+    const unhandledRejectionHandler = (event: Event): void => {
+      this.handleUnhandledRejection(event as PromiseRejectionEvent);
+    };
     window.addEventListener('unhandledrejection', unhandledRejectionHandler);
     this.memoryTracker.eventListeners.push({
       element: window,
@@ -150,7 +169,8 @@ export class ModeErrorBoundary extends Component<
     console.error('🚨 ModeErrorBoundary caught an error:', error, errorInfo);
 
     // Extract mode-specific error information
-    const modeValidationError = this.extractModeValidationError(error);
+    const modeValidationError =
+      ModeErrorBoundary.extractModeValidationError(error);
 
     this.setState({
       error,
@@ -226,7 +246,9 @@ export class ModeErrorBoundary extends Component<
         message: error.message,
         code: MODE_ERROR_CODES.SYSTEM_ERROR,
         recoverable: true,
-        recoveryActions: MODE_RECOVERY_ACTIONS[MODE_ERROR_CODES.SYSTEM_ERROR],
+        recoveryActions: Array.from(
+          MODE_RECOVERY_ACTIONS[MODE_ERROR_CODES.SYSTEM_ERROR]
+        ),
       };
     }
 
@@ -271,7 +293,7 @@ export class ModeErrorBoundary extends Component<
   }
 
   private createManagedTimeout(
-    callback: () => void,
+    callback: (...args: any[]) => void,
     delay: number
   ): NodeJS.Timeout {
     const timeout = setTimeout(() => {

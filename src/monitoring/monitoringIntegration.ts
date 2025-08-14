@@ -57,8 +57,8 @@ export class MonitoringIntegration {
       cacheKey?: string;
       additionalTags?: Record<string, string>;
     }
-  ): (...args: T) => Promise<R> | R {
-    return async (...args: T): Promise<R> | R => {
+  ): (...args: T) => Promise<R> {
+    return async (...args: T): Promise<R> => {
       const startTime = Date.now();
       const cacheKey =
         options?.cacheKey ||
@@ -69,16 +69,29 @@ export class MonitoringIntegration {
         const cachedResult = this.getCachedResult(cacheKey);
         if (cachedResult) {
           // Record cache hit
-          performanceMonitor.recordAIPerformance({
-            mode: serviceName,
-            operation: operationName,
-            duration: Date.now() - startTime,
-            cacheHit: true,
-            success: true,
-            userId: options?.userId,
-            requestSize: JSON.stringify(args).length,
-            responseSize: JSON.stringify(cachedResult).length,
-          });
+          performanceMonitor.recordAIPerformance(
+            {
+              type: operationName,
+              module: serviceName,
+              userId: options?.userId || 'anonymous',
+              timestamp: new Date(),
+              metadata: { cacheHit: true, serviceName, operationName },
+            },
+            {
+              content: `Cached result for ${operationName}`,
+              qualityScore: 1.0,
+              userFeedback: { rating: 5 },
+              metadata: { cacheHit: true, serviceName, operationName },
+            },
+            {
+              responseTime: Date.now() - startTime,
+              cacheHit: true,
+              tokenUsage: 0,
+              securityLevel: 'high',
+              threatScore: 0,
+              metadata: { cacheHit: true, serviceName, operationName },
+            }
+          );
           return cachedResult;
         }
 
@@ -89,43 +102,83 @@ export class MonitoringIntegration {
         this.cacheResult(cacheKey, result);
 
         // Record successful execution
-        performanceMonitor.recordAIPerformance({
-          mode: serviceName,
-          operation: operationName,
-          duration: Date.now() - startTime,
-          cacheHit: false,
-          success: true,
-          userId: options?.userId,
-          requestSize: JSON.stringify(args).length,
-          responseSize: JSON.stringify(result).length,
-        });
+        performanceMonitor.recordAIPerformance(
+          {
+            type: operationName,
+            module: serviceName,
+            userId: options?.userId || 'anonymous',
+            timestamp: new Date(),
+            metadata: { cacheHit: false, serviceName, operationName },
+          },
+          {
+            content: `Successful execution of ${operationName}`,
+            qualityScore: 1.0,
+            userFeedback: { rating: 5 },
+            metadata: { cacheHit: false, serviceName, operationName },
+          },
+          {
+            responseTime: Date.now() - startTime,
+            cacheHit: false,
+            tokenUsage: 0,
+            securityLevel: 'high',
+            threatScore: 0,
+            metadata: { cacheHit: false, serviceName, operationName },
+          }
+        );
 
         return result;
       } catch (error) {
         // Record failed execution
-        performanceMonitor.recordAIPerformance({
-          mode: serviceName,
-          operation: operationName,
-          duration: Date.now() - startTime,
-          cacheHit: false,
-          success: false,
-          userId: options?.userId,
-          requestSize: JSON.stringify(args).length,
-          responseSize: 0,
-        });
+        performanceMonitor.recordAIPerformance(
+          {
+            type: operationName,
+            module: serviceName,
+            userId: options?.userId || 'anonymous',
+            timestamp: new Date(),
+            metadata: {
+              cacheHit: false,
+              serviceName,
+              operationName,
+              error: true,
+            },
+          },
+          {
+            content: `Failed execution of ${operationName}`,
+            qualityScore: 0.0,
+            userFeedback: { rating: 1 },
+            metadata: {
+              cacheHit: false,
+              serviceName,
+              operationName,
+              error: true,
+            },
+          },
+          {
+            responseTime: Date.now() - startTime,
+            cacheHit: false,
+            tokenUsage: 0,
+            securityLevel: 'low',
+            threatScore: 0.5,
+            metadata: {
+              cacheHit: false,
+              serviceName,
+              operationName,
+              error: true,
+            },
+          }
+        );
 
         // Record error metric
         performanceMonitor.recordMetric({
           name: 'service.error',
           value: 1,
-          timestamp: Date.now(),
-          tags: {
+          unit: 'count',
+          metadata: {
             service: serviceName,
             operation: operationName,
-            error_type: error.constructor.name,
-            error_message: error.message?.substring(0, 100) || 'Unknown error',
+            error_type: (error as Error).constructor.name,
+            error_message: (error as Error).message?.substring(0, 100) || 'Unknown error',
           },
-          unit: 'count',
         });
 
         throw error;
@@ -145,7 +198,14 @@ export class MonitoringIntegration {
     userId?: string;
     sessionId: string;
   }): void {
-    performanceMonitor.recordUserExperience(data);
+    performanceMonitor.recordUserExperience({
+      userId: data.userId || 'anonymous',
+      sessionId: data.sessionId,
+      pageLoadTime: data.action === 'page_load' ? data.duration : 0,
+      interactionResponseTime: data.action !== 'page_load' ? data.duration : 0,
+      satisfaction: data.success ? 5 : 1,
+      errors: data.success ? [] : [data.errorType || 'unknown'],
+    });
   }
 
   /**
@@ -159,7 +219,12 @@ export class MonitoringIntegration {
     tier?: string;
     feature?: string;
   }): void {
-    performanceMonitor.recordBusinessMetric(data);
+    performanceMonitor.recordBusinessMetric({
+      name: data.metric,
+      value: data.value,
+      category: data.tier || 'general',
+      metadata: { userId: data.userId, feature: data.feature },
+    });
   }
 
   /**
@@ -174,7 +239,10 @@ export class MonitoringIntegration {
    * Get metrics summary for a specific metric
    * Returns statistical summary over a specified time range
    */
-  getMetricsSummary(metricName: string, timeRange: number = 3600000) {
+  getMetricsSummary(
+    metricName: string,
+    timeRange: '1h' | '24h' | '7d' = '24h'
+  ) {
     return performanceMonitor.getMetricsSummary(metricName, timeRange);
   }
 
@@ -214,12 +282,11 @@ export class MonitoringIntegration {
       performanceMonitor.recordMetric({
         name: 'system.unhandled_rejection',
         value: 1,
-        timestamp: Date.now(),
-        tags: {
+        unit: 'count',
+        metadata: {
           reason: reason?.toString() || 'Unknown',
           promise_id: promise.toString(),
         },
-        unit: 'count',
       });
     });
 
@@ -228,12 +295,11 @@ export class MonitoringIntegration {
       performanceMonitor.recordMetric({
         name: 'system.uncaught_exception',
         value: 1,
-        timestamp: Date.now(),
-        tags: {
+        unit: 'count',
+        metadata: {
           error_type: error.constructor.name,
           error_message: error.message?.substring(0, 100) || 'Unknown error',
         },
-        unit: 'count',
       });
     });
 
@@ -243,14 +309,13 @@ export class MonitoringIntegration {
         performanceMonitor.recordMetric({
           name: 'browser.error',
           value: 1,
-          timestamp: Date.now(),
-          tags: {
+          unit: 'count',
+          metadata: {
             error_type: 'javascript_error',
             error_message: event.message?.substring(0, 100) || 'Unknown error',
             filename: event.filename || 'unknown',
             lineno: event.lineno?.toString() || 'unknown',
           },
-          unit: 'count',
         });
       });
 
@@ -258,11 +323,10 @@ export class MonitoringIntegration {
         performanceMonitor.recordMetric({
           name: 'browser.unhandled_rejection',
           value: 1,
-          timestamp: Date.now(),
-          tags: {
+          unit: 'count',
+          metadata: {
             reason: event.reason?.toString()?.substring(0, 100) || 'Unknown',
           },
-          unit: 'count',
         });
       });
     }
@@ -283,9 +347,8 @@ export class MonitoringIntegration {
           performanceMonitor.recordMetric({
             name: 'page.load_time',
             value: navigation.loadEventEnd - navigation.loadEventStart,
-            timestamp: Date.now(),
-            tags: { page: window.location.pathname },
             unit: 'ms',
+            metadata: { page: window.location.pathname },
           });
 
           performanceMonitor.recordMetric({
@@ -293,9 +356,8 @@ export class MonitoringIntegration {
             value:
               navigation.domContentLoadedEventEnd -
               navigation.domContentLoadedEventStart,
-            timestamp: Date.now(),
-            tags: { page: window.location.pathname },
             unit: 'ms',
+            metadata: { page: window.location.pathname },
           });
         }
       });
@@ -310,12 +372,11 @@ export class MonitoringIntegration {
                 performanceMonitor.recordMetric({
                   name: 'performance.long_task',
                   value: entry.duration,
-                  timestamp: Date.now(),
-                  tags: {
+                  unit: 'ms',
+                  metadata: {
                     task_name: entry.name || 'unknown',
                     start_time: entry.startTime.toString(),
                   },
-                  unit: 'ms',
                 });
               }
             }
@@ -356,7 +417,9 @@ export class MonitoringIntegration {
     // Clean up old cache entries
     if (this.cache.size > 1000) {
       const oldestKey = this.cache.keys().next().value;
-      this.cache.delete(oldestKey);
+      if (oldestKey) {
+        this.cache.delete(oldestKey);
+      }
     }
   }
 

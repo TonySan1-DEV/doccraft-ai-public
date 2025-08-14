@@ -370,7 +370,7 @@ export class PreferenceVersionService {
       }
 
       const versions = data || [];
-      const currentVersion = versions.find(v => v.is_current)?.version_number || null;
+      const currentVersion = versions.find((v: any) => v.is_current)?.version_number || null;
       const oldestVersion = versions.length > 0 ? versions[0].version_number : null;
       const newestVersion = versions.length > 0 ? versions[versions.length - 1].version_number : null;
 

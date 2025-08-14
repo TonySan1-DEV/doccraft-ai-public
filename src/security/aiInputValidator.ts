@@ -175,7 +175,7 @@ export class AIInputValidator {
 
       // Path Traversal
       /\.\.\//g,
-      /\.\.\\/g,
+      /\.\.\//g,
       /\/etc\/passwd/gi,
       /\/proc\/version/gi,
       /\/sys\/class/gi,
@@ -263,9 +263,9 @@ export class AIInputValidator {
               this.getSeverityScore(check.severity) > this.getSeverityScore(max)
                 ? check.severity
                 : max,
-            'low'
+            'low' as 'low' | 'medium' | 'high' | 'critical'
           )
-        : 'low';
+        : ('low' as 'low' | 'medium' | 'high' | 'critical');
 
     return {
       type: 'data_integrity',
@@ -326,7 +326,7 @@ export class AIInputValidator {
         this.getSeverityScore(check.severity) > this.getSeverityScore(max)
           ? check.severity
           : max,
-      'low'
+      'low' as 'low' | 'medium' | 'high' | 'critical'
     );
 
     return {
@@ -382,7 +382,7 @@ export class AIInputValidator {
       }
     }
 
-    return [...new Set(matches)]; // Remove duplicates
+    return Array.from(new Set(matches)); // Remove duplicates
   }
 
   private checkSuspiciousMetadata(metadata: Record<string, unknown>): string[] {
@@ -536,9 +536,9 @@ export class AIInputValidator {
               this.getSeverityScore(max)
                 ? violation.severity
                 : max,
-            'low'
+            'low' as 'low' | 'medium' | 'high' | 'critical'
           )
-        : 'low';
+        : ('low' as 'low' | 'medium' | 'high' | 'critical');
 
     const recommendations = this.generateRecommendations(violations);
 
@@ -610,9 +610,9 @@ export class AIInputValidator {
   private sanitizeHTML(content: string): string {
     // Basic HTML sanitization
     return content
-      .replace(/<script[^>]*>.*?<\/script>/gis, '')
-      .replace(/<iframe[^>]*>.*?<\/iframe>/gis, '')
-      .replace(/<object[^>]*>.*?<\/object>/gis, '')
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<iframe[^>]*>[\s\S]*?<\/iframe>/gi, '')
+      .replace(/<object[^>]*>[\s\S]*?<\/object>/gi, '')
       .replace(/<embed[^>]*>/gi, '')
       .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
       .replace(/javascript:/gi, '');

@@ -1,7 +1,19 @@
 // Enterprise Analytics and Business Intelligence Types
 // Comprehensive type definitions for real-time performance monitoring and business insights
 
-export type TimeFrame = '1h' | '6h' | '24h' | '7d' | '30d' | '90d' | '1y';
+export type TimeFrame =
+  | '1h'
+  | '6h'
+  | '24h'
+  | '7d'
+  | '30d'
+  | '90d'
+  | '1y'
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'quarterly'
+  | 'yearly';
 
 export interface DashboardData {
   modulePerformance: ModulePerformanceReport;
@@ -50,6 +62,7 @@ export interface RevenueMetrics {
   ltv: number; // Lifetime Value
   mrr: number; // Monthly Recurring Revenue
   growth: number;
+  current: number; // Current revenue
   revenueByModule: Record<string, number>;
   revenueByUserSegment: Record<string, number>;
 }
@@ -405,4 +418,19 @@ export interface CompetitorBenchmark {
   ourValue: number;
   difference: number;
   advantage: 'us' | 'them' | 'neutral';
+}
+
+// Dashboard Component Types
+export interface PerformanceMetricCard {
+  title: string;
+  value: number;
+  target: number;
+  unit: string;
+  trend: {
+    changePercent?: number;
+    direction?: 'up' | 'down' | 'stable';
+  };
+  critical?: boolean;
+  drill?: () => void;
+  icon?: React.ReactNode;
 }

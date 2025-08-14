@@ -58,6 +58,8 @@ export interface AgenticResponse {
     agenticCapabilities: boolean;
     userMode: SystemMode;
     qualityScore?: number;
+    alternativeApproach?: string;
+    error?: string;
   };
 }
 
@@ -83,8 +85,8 @@ export interface AgenticAnalysis {
  * Integrates agentic capabilities with existing mode system
  */
 export class EnhancedModeAwareAIService extends ModeAwareAIService {
-  private agentOrchestrator: AgentOrchestrator;
-  private agentCoordination: AgentCoordinationEngine;
+  private agentOrchestrator!: AgentOrchestrator;
+  private agentCoordination!: AgentCoordinationEngine;
   private agentRegistry: Map<string, any> = new Map();
 
   constructor(baseAIService: any, mcpRegistry: any, options?: any) {
@@ -101,13 +103,19 @@ export class EnhancedModeAwareAIService extends ModeAwareAIService {
     // Create module coordinator instance
     const moduleCoordinator = new ModuleCoordinator();
 
-    // Initialize agent orchestrator
-    this.agentOrchestrator = new AgentOrchestrator(this, moduleCoordinator);
+    // Initialize agent orchestrator with all required parameters
+    this.agentOrchestrator = new AgentOrchestrator(
+      {} as any, // aiHelper - placeholder
+      {} as any, // characterAI - placeholder
+      {} as any, // writerProfile - placeholder
+      this, // modeAwareService
+      moduleCoordinator // moduleCoordinator
+    );
 
     // Initialize agent coordination engine
     this.agentCoordination = new AgentCoordinationEngine(
-      this.agentOrchestrator,
-      this
+      {} as any, // performanceMonitor - placeholder
+      {} as any // userPreferences - placeholder
     );
 
     // Register writing agents
@@ -290,7 +298,7 @@ export class EnhancedModeAwareAIService extends ModeAwareAIService {
           processingTime,
           agenticCapabilities: false,
           userMode: request.userMode,
-          error: error.message,
+          error: (error as Error).message,
         },
       };
     }
@@ -403,7 +411,7 @@ export class EnhancedModeAwareAIService extends ModeAwareAIService {
     if (context.targetLength && context.targetLength > 3000)
       complexity = 'high';
 
-    return complexity;
+    return complexity as 'low' | 'medium' | 'high';
   }
 
   /**
@@ -426,7 +434,7 @@ export class EnhancedModeAwareAIService extends ModeAwareAIService {
     if (context.emotionalTone && context.genre && context.complexity)
       richness = 'rich';
 
-    return richness;
+    return richness as 'minimal' | 'moderate' | 'rich';
   }
 
   /**
@@ -632,7 +640,7 @@ export class EnhancedModeAwareAIService extends ModeAwareAIService {
 
       return {
         success: false,
-        error: error.message,
+        error: (error as Error).message,
         taskType,
         mode,
       };

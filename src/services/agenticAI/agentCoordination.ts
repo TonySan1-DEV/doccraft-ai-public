@@ -368,7 +368,8 @@ export class AgentCoordinationEngine {
     }
 
     // Create team members for each agent type
-    for (const [agentType, tasks] of agentGroups) {
+    const agentGroupEntries = Array.from(agentGroups.entries());
+    for (const [agentType, tasks] of agentGroupEntries) {
       const totalWorkload = tasks.reduce(
         (sum, task) => sum + task.estimatedWorkload,
         0

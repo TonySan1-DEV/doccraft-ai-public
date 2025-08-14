@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           tier: 'Pro', // Demo tier
         } as ExtendedUser;
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('🔐 Error loading user profile:', error);
       return {
         ...supabaseUser,
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Get initial session
       supabase.auth
         .getSession()
-        .then(async ({ data: { session } }) => {
+        .then(async ({ data: { session } }: { data: { session: any } }) => {
           console.log(
             '🔐 Session loaded:',
             session ? 'User logged in' : 'No session'
@@ -104,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(false);
           clearTimeout(timeout);
         })
-        .catch(error => {
+        .catch((error: unknown) => {
           console.error('🔐 Error loading session:', error);
           setLoading(false);
           clearTimeout(timeout);
@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Listen for auth changes
       const {
         data: { subscription },
-      } = supabase.auth.onAuthStateChange(async (event, session) => {
+      } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
         console.log(
           '🔐 Auth state changed:',
           session ? 'User logged in' : 'User logged out'
@@ -160,7 +160,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } as ExtendedUser;
         setUser(mockUser);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('🔐 Sign in error:', error);
       throw error;
     }
@@ -181,7 +181,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } as ExtendedUser;
         setUser(mockUser);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('🔐 Sign up error:', error);
       throw error;
     }
@@ -194,7 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error) throw error;
       }
       setUser(null);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('🔐 Sign out error:', error);
       throw error;
     }

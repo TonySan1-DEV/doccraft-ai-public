@@ -1,89 +1,108 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { ColorTheme, ThemeMode, COLOR_THEMES, getThemeCSSVariables } from '../configs/colorThemes'
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
+import {
+  ColorTheme,
+  ThemeMode,
+  COLOR_THEMES,
+  getThemeCSSVariables,
+} from '../configs/colorThemes';
 
 interface ThemeContextType {
-  theme: ThemeMode
-  colorTheme: ColorTheme
-  toggleTheme: () => void
-  setColorTheme: (colorTheme: ColorTheme) => void
-  getCurrentThemeColors: () => ReturnType<typeof getThemeCSSVariables>
+  theme: ThemeMode;
+  colorTheme: ColorTheme;
+  toggleTheme: () => void;
+  setColorTheme: (colorTheme: ColorTheme) => void;
+  getCurrentThemeColors: () => ReturnType<typeof getThemeCSSVariables>;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const useTheme = () => {
-  const context = useContext(ThemeContext)
+  const context = useContext(ThemeContext);
   if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider')
+    throw new Error('useTheme must be used within a ThemeProvider');
   }
-  return context
-}
+  return context;
+};
 
 interface ThemeProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [theme, setTheme] = useState<ThemeMode>(() => {
     // Check localStorage for saved theme preference
-    const savedTheme = localStorage.getItem('theme') as ThemeMode
+    const savedTheme = localStorage.getItem('theme') as ThemeMode;
     if (savedTheme) {
-      return savedTheme
+      return savedTheme;
     }
     // Check system preference
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark'
+      return 'dark';
     }
-    return 'light'
-  })
+    return 'light';
+  });
 
   const [colorTheme, setColorTheme] = useState<ColorTheme>(() => {
     // Check localStorage for saved color theme preference
-    const savedColorTheme = localStorage.getItem('colorTheme') as ColorTheme
+    const savedColorTheme = localStorage.getItem('colorTheme') as ColorTheme;
     if (savedColorTheme && savedColorTheme in COLOR_THEMES) {
-      return savedColorTheme
+      return savedColorTheme;
     }
-    return 'blue' // Default color theme
-  })
+    return 'blue'; // Default color theme
+  });
 
   useEffect(() => {
     // Save theme preference to localStorage
-    localStorage.setItem('theme', theme)
-    localStorage.setItem('colorTheme', colorTheme)
-    
+    localStorage.setItem('theme', theme);
+    localStorage.setItem('colorTheme', colorTheme);
+
     // Apply theme to document
-    const root = document.documentElement
-    root.classList.remove('light', 'dark')
-    root.classList.add(theme)
-    
+    const root = document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+
     // Apply color theme CSS variables
-    const cssVariables = getThemeCSSVariables(colorTheme, theme)
+    const cssVariables = getThemeCSSVariables(colorTheme, theme);
     Object.entries(cssVariables).forEach(([property, value]) => {
-      root.style.setProperty(property, value)
-    })
-  }, [theme, colorTheme])
+      root.style.setProperty(property, value);
+    });
+
+    // Force a re-render to ensure all elements update
+    const event = new CustomEvent('themeChanged', {
+      detail: { theme, colorTheme },
+    });
+    window.dispatchEvent(event);
+  }, [theme, colorTheme]);
 
   const toggleTheme = () => {
-    setTheme((prev: ThemeMode) => prev === 'light' ? 'dark' : 'light')
-  }
+    setTheme((prev: ThemeMode) => (prev === 'light' ? 'dark' : 'light'));
+  };
 
   const handleSetColorTheme = (newColorTheme: ColorTheme) => {
-    setColorTheme(newColorTheme)
-  }
+    setColorTheme(newColorTheme);
+  };
 
   const getCurrentThemeColors = () => {
-    return getThemeCSSVariables(colorTheme, theme)
-  }
+    return getThemeCSSVariables(colorTheme, theme);
+  };
 
   return (
-    <ThemeContext.Provider value={{ 
-      theme, 
-      colorTheme, 
-      toggleTheme, 
-      setColorTheme: handleSetColorTheme,
-      getCurrentThemeColors 
-    }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        colorTheme,
+        toggleTheme,
+        setColorTheme: handleSetColorTheme,
+        getCurrentThemeColors,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
-  )
-} 
+  );
+};

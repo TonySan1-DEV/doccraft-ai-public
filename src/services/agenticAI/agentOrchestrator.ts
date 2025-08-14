@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // MCP Context Block
 /*
 {
@@ -14,7 +15,7 @@ import { SystemMode, WritingContext } from '../../types/systemModes';
 import { ModeAwareAIService } from '../modeAwareAIService';
 import { ModuleCoordinator } from '../moduleCoordinator';
 import { AICacheService } from '../cache/aiCacheService';
-import { PerformanceMonitor } from '../cache/performanceMonitor';
+import { PerformanceMonitor, performanceMonitor } from '../../monitoring';
 
 /**
  * Writing Task Interface
@@ -194,6 +195,7 @@ export interface AgentGoal {
   tasks: AgentTask[];
   progress: number;
   status: 'planning' | 'executing' | 'completed' | 'paused' | 'failed';
+  context: WritingContext;
   metadata?: {
     createdAt: Date;
     lastUpdated: Date;
@@ -442,8 +444,8 @@ export class AgentOrchestrator {
     private modeAwareService: ModeAwareAIService,
     private moduleCoordinator: ModuleCoordinator
   ) {
-    this.cacheService = new AICacheService(writerProfile);
-    this.performanceMonitor = new PerformanceMonitor();
+    this.cacheService = new AICacheService();
+    this.performanceMonitor = performanceMonitor;
     this.initializeAgents();
   }
 
@@ -682,10 +684,8 @@ export class AgentOrchestrator {
     ];
 
     return (
-      complexityFactors.reduce(
-        (sum: number, factor: number) => sum + factor,
-        0
-      ) / complexityFactors.length
+      complexityFactors.reduce((sum: any, factor: number) => sum + factor, 0) /
+      complexityFactors.length
     );
   }
 
@@ -1102,7 +1102,7 @@ export class AgentOrchestrator {
         const currentPriority = modulePriority.get(resource) || 0;
         modulePriority.set(
           resource,
-          currentPriority + task.metadata?.complexity || 1
+          currentPriority + (task.metadata?.complexity || 1)
         );
       }
     }
@@ -1140,8 +1140,14 @@ export class AgentOrchestrator {
         return { taskId: task.id, success: true, result };
       } catch (error) {
         console.error(`Task execution failed: ${task.id}`, error);
-        results.set(task.id, { error: error.message });
-        return { taskId: task.id, success: false, error: error.message };
+        results.set(task.id, {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return {
+          taskId: task.id,
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
       }
     });
 
@@ -1287,6 +1293,7 @@ export class AgentOrchestrator {
       tasks: optimizedTasks,
       progress: 0,
       status: 'planning',
+      context,
       metadata: {
         createdAt: new Date(),
         lastUpdated: new Date(),
@@ -1411,7 +1418,7 @@ export class AgentOrchestrator {
 
     // Calculate total estimated time
     enhancedPlan.estimatedTotalTime = enhancedPlan.tasks.reduce(
-      (sum, task) => sum + task.estimatedTime,
+      (sum: any, task: any) => sum + task.estimatedTime,
       0
     );
 
@@ -1585,12 +1592,18 @@ export class AgentOrchestrator {
     const goal = this.activeGoals.get(goalId);
     if (!goal) return;
 
+    // Check if goal should be executed
+    if (goal.status === 'paused' || goal.status === 'failed') {
+      return;
+    }
+
     goal.status = 'executing';
     goal.metadata!.lastUpdated = new Date();
 
     // Execute tasks in sequence
     for (const task of goal.tasks) {
-      if (goal.status === 'paused' || goal.status === 'failed') {
+      // Check if goal was paused or failed during execution
+      if (goal.status !== 'executing') {
         break;
       }
 
@@ -1607,7 +1620,12 @@ export class AgentOrchestrator {
         console.error(`Task execution failed: ${task.id}`, error);
         await this.handleTaskFailure(
           task,
-          { success: false, error: error.message },
+          {
+            taskId: task.id,
+            success: false,
+            error: error instanceof Error ? error.message : String(error),
+            executionTime: 0,
+          },
           goal
         );
       }
@@ -1711,8 +1729,9 @@ export class AgentOrchestrator {
       return {
         taskId,
         success: false,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         recoveryPlan,
+        executionTime: 0,
       };
     }
   }
@@ -1721,7 +1740,8 @@ export class AgentOrchestrator {
    * Find task by ID across all active goals
    */
   private findTaskById(taskId: string): AgentTask | null {
-    for (const goal of this.activeGoals.values()) {
+    const goals = Array.from(this.activeGoals.values());
+    for (const goal of goals) {
       const task = goal.tasks.find(t => t.id === taskId);
       if (task) return task;
     }
@@ -1825,7 +1845,8 @@ export class AgentOrchestrator {
     completedTask: AgentTask
   ): Promise<void> {
     // Find tasks that depend on the completed task
-    for (const goal of this.activeGoals.values()) {
+    const goals = Array.from(this.activeGoals.values());
+    for (const goal of goals) {
       for (const task of goal.tasks) {
         if (
           task.dependencies.includes(completedTask.id) &&

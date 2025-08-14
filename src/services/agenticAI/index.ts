@@ -111,7 +111,6 @@ export type {
   GeneratedContent,
   SectionContent,
   QualityMetrics,
-  ImprovementSuggestion,
 } from './writingAgents';
 
 // Default export for the main service

@@ -54,7 +54,7 @@ export async function analyzeEngagement(
       // Use OpenAI SDK (Node.js)
 
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { OpenAI } = require('openai');
+      const { OpenAI } = await import('openai');
       const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
       const completion = await openai.chat.completions.create({
         model: 'gpt-4',
