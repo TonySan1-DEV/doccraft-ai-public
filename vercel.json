@@ -1,4 +1,4 @@
-{
+﻿{
   "buildCommand": "npm run build:vercel",
   "outputDirectory": "dist",
   "installCommand": "npm ci --ignore-scripts",
@@ -25,14 +25,6 @@
       "destination": "/index.html"
     }
   ],
-  "env": {
-    "VITE_SUPABASE_URL": "@vite_supabase_url",
-    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key",
-    "VITE_UNSPLASH_ACCESS_KEY": "@vite_unsplash_access_key",
-    "OPENAI_API_KEY": "@openai_api_key",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
-    "NODE_OPTIONS": "--max-old-space-size=6144"
-  },
   "headers": [
     {
       "source": "/(.*)",

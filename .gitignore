@@ -122,3 +122,4 @@ playwright-report/data/
 # Lock files (force npm usage)
 pnpm-lock.yaml
 yarn.lock 
+.vercel
