@@ -27,10 +27,7 @@
       "@modules/*": ["modules/*"]
     }
   },
-  "include": [
-    "src/**/*",
-    "modules/**/*"
-  ],
+  "include": ["src/**/*", "modules/**/*"],
   "exclude": [
     "node_modules",
     "dist",

@@ -3,12 +3,36 @@
   "outputDirectory": "dist",
   "installCommand": "npm ci --ignore-scripts",
   "framework": "vite",
+  "functions": {
+    "server/character-chat-api.ts": {
+      "runtime": "nodejs18.x"
+    },
+    "server/collaboration-server.ts": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "rewrites": [
+    {
+      "source": "/api/character-chat/(.*)",
+      "destination": "/server/character-chat-api.ts"
+    },
+    {
+      "source": "/api/collaboration/(.*)",
+      "destination": "/server/collaboration-server.ts"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
+  "env": {
+    "VITE_SUPABASE_URL": "@vite_supabase_url",
+    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key",
+    "VITE_UNSPLASH_ACCESS_KEY": "@vite_unsplash_access_key",
+    "OPENAI_API_KEY": "@openai_api_key",
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
+    "NODE_OPTIONS": "--max-old-space-size=6144"
+  },
   "headers": [
     {
       "source": "/(.*)",
@@ -41,20 +65,6 @@
       ]
     }
   ],
-  "env": {
-    "VITE_SUPABASE_URL": "@vite_supabase_url",
-    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key",
-    "VITE_OPENAI_API_KEY": "@vite_openai_api_key",
-    "VITE_UNSPLASH_ACCESS_KEY": "@vite_unsplash_access_key",
-    "OPENAI_API_KEY": "@openai_api_key",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
-    "NODE_OPTIONS": "--max-old-space-size=4096"
-  },
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "regions": ["iad1"],
   "cleanUrls": true
 }

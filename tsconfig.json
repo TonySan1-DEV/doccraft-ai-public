@@ -1,122 +1,46 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
+    "allowJs": true,
     "skipLibCheck": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-
-    /* Linting - permissive mode for production */
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "strict": false,
     "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "exactOptionalPropertyTypes": false,
     "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": false,
-    "forceConsistentCasingInFileNames": true,
-
-    /* Additional flags to resolve remaining errors */
-    "esModuleInterop": true,
-    "downlevelIteration": true,
-    "allowSyntheticDefaultImports": true,
-
-    /* Path mapping */
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitOverride": false,
+    "noPropertyAccessFromIndexSignature": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "forceConsistentCasingInFileNames": false,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false,
+    "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
       "@modules/*": ["modules/*"]
-    },
-
-    /* Type definitions */
-    "types": ["node", "vite/client"]
+    }
   },
-  "include": ["src/**/*", "modules/**/*", "server/**/*"],
+  "include": [
+    "src/**/*",
+    "modules/**/*",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx"
+  ],
   "exclude": [
-    // Test files and patterns
-    "**/*.spec.*",
-    "**/*.test.*",
-    "**/*.spec.ts",
-    "**/*.spec.tsx",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.spec.js",
-    "**/*.spec.jsx",
-    "**/*.test.js",
-    "**/*.test.jsx",
-
-    // Test directories
-    "**/__tests__/**",
-    "**/__stories__/**",
-    "**/__visual__/**",
-    "**/__mocks__/**",
-    "**/__test__/**",
-    "tests/**",
-    "test/**",
-
-    // Specific test file patterns
-    "**/*Test.*",
-    "**/*TestPage.*",
-    "**/*TestPage.tsx",
-    "**/CollabTest.*",
-    "**/SupabaseTest.*",
-    "**/SimpleTest.*",
-    "**/EmotionalArcTest.*",
-    "**/testHooks.*",
-    "**/testHooks.tsx",
-    "**/testHooks.ts",
-    "**/testHooks.js",
-    "**/testHooks.jsx",
-
-    // Test configuration files
-    "**/jest.config.*",
-    "**/jest.setup.*",
-    "**/setupTests.*",
-    "**/test-utils.*",
-    "**/testUtils.*",
-    "**/testHelpers.*",
-    "**/testHelpers.ts",
-    "**/testHelpers.js",
-    "**/testHelpers.tsx",
-    "**/testHelpers.jsx",
-
-    // Storybook files
-    "**/*.stories.*",
-    "**/*.stories.ts",
-    "**/*.stories.tsx",
-    "**/*.stories.js",
-    "**/*.stories.jsx",
-
-    // Build and development files
     "node_modules",
     "dist",
-    "build",
-    "coverage",
-    ".jest",
-    "**/.jest/**",
-    "**/cypress/**",
-    "**/playwright/**",
-    "**/e2e/**",
-    "**/integration/**",
-
-    // Documentation and examples
-    "**/docs/**",
-    "**/examples/**",
-    "**/demos/**",
-
-    // Temporary and backup files
-    "**/*.tmp",
-    "**/*.temp",
-    "**/*.bak",
-    "**/*.backup"
-  ],
-  "references": [{ "path": "./tsconfig.node.json" }]
+    "build"
+  ]
 }

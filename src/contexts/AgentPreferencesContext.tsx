@@ -243,7 +243,8 @@ export function AgentPreferencesProvider({
         const unlockedUpdates = Object.entries(updates).reduce(
           (acc, [key, value]) => {
             if (mcp.allowedActions.includes('updatePrefs')) {
-              acc[key as keyof AgentPrefs] = value as any;
+              // Type assertion to ensure compatibility with AgentPrefs
+              acc[key as keyof AgentPrefs] = value as AgentPrefs[keyof AgentPrefs];
             }
             return acc;
           },

@@ -219,7 +219,9 @@ export function asNumber(n: number | undefined, fallback = 0): number {
  * Safely access emotion analysis with fallback for primaryEmotion -> dominantEmotion
  */
 export function getDominantEmotion(analysis: EmotionAnalysis): BasicEmotion {
-  return analysis.dominantEmotion || analysis.primaryEmotion || 'neutral';
+  const emotion = analysis.dominantEmotion || analysis.primaryEmotion || 'neutral';
+  // Type assertion to ensure compatibility with BasicEmotion union type
+  return emotion as BasicEmotion;
 }
 
 /**

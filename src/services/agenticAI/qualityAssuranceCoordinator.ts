@@ -799,7 +799,7 @@ export class QualityAssuranceCoordinator {
             (sum: number, value: unknown) => sum + (typeof value === 'number' ? value : 0),
             0
           ) / Object.keys(result.qualityMetrics).length;
-        overallScore += moduleScore;
+        overallScore += Number(moduleScore);
         moduleCount++;
       }
     }

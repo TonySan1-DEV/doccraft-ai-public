@@ -19,7 +19,7 @@ export async function analyzeEngagement(
   }
 
   // Construct prompt
-  const messages = [
+  const messages: Array<{ role: 'system' | 'user'; content: string }> = [
     {
       role: 'system',
       content:

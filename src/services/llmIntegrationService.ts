@@ -446,12 +446,12 @@ export class LLMIntegrationService {
   /**
    * Create a new chat session
    */
-  createChatSession(
+  async createChatSession(
     title: string,
     provider: string,
     model: string,
     config: Partial<LLMConfig>
-  ): ChatSession {
+  ): Promise<ChatSession> {
     const sessionId = `session_${Date.now()}`;
 
     // Try to get API key from the API key manager if not provided

@@ -32,7 +32,7 @@ import { ModeAwareAIService } from '../../../src/services/modeAwareAIService';
 import { SystemMode, WritingContext } from '../../../src/types/systemModes';
 import { moduleCoordinator } from '../../../src/services/moduleCoordinator';
 import { ModeErrorBoundary } from '../../../src/components/ModeErrorBoundary';
-import { aiHelperService } from '../../../src/services/aiHelperService';
+import { runAIAction as aiHelperService } from '../../../src/services/aiHelperService';
 import { mcpRegistry } from '../../../src/mcpRegistry';
 
 // Debounce utility
@@ -509,7 +509,7 @@ export default function EmotionalArcModule({
     }
 
     return () => {
-      cancelled = true;
+      _cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
