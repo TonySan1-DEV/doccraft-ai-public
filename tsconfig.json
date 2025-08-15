@@ -16,7 +16,6 @@
     "exactOptionalPropertyTypes": false,
     "noImplicitOverride": false,
     "noPropertyAccessFromIndexSignature": false,
-    "suppressImplicitAnyIndexErrors": true,
     "forceConsistentCasingInFileNames": false,
     "module": "ESNext",
     "moduleResolution": "bundler",
