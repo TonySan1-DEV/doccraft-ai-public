@@ -1,5 +1,5 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React from 'react';
+import { Link } from 'react-router-dom';
 import {
   MessageCircle,
   HelpCircle,
@@ -8,7 +8,7 @@ import {
   MapPin,
   Heart,
   ExternalLink,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface FooterProps {
   showContactButton?: boolean;
@@ -17,7 +17,7 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({
   showContactButton = true,
-  className = "",
+  className = '',
 }) => {
   const currentYear = new Date().getFullYear();
 
@@ -94,6 +94,47 @@ export const Footer: React.FC<FooterProps> = ({
               </ul>
             </div>
 
+            {/* Legal & Info */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
+                Legal & Info
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    to="/terms"
+                    className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/privacy"
+                    className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/about"
+                    className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/help"
+                    className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    Help Center
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
             {/* Contact & Support */}
             <div>
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
@@ -107,6 +148,15 @@ export const Footer: React.FC<FooterProps> = ({
                   >
                     <HelpCircle className="w-4 h-4" />
                     <span>Support Center</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/contact"
+                    className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center space-x-1"
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span>Contact Us</span>
                   </Link>
                 </li>
                 <li>

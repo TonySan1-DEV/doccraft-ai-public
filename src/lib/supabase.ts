@@ -1,34 +1,45 @@
 import { createClient } from '@supabase/supabase-js';
-import env from '../config/env';
+import { config } from './config';
+import { logger } from './logger';
 
-const supabaseUrl = env.VITE_SUPABASE_URL;
-const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY;
-
-// Log warning if using placeholder values
-if (
-  supabaseUrl === 'https://placeholder.supabase.co' ||
-  supabaseAnonKey === 'placeholder-key'
-) {
-  console.warn(
-    '⚠️ Using placeholder Supabase credentials. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file'
-  );
-  console.warn('⚠️ The app will run in demo mode with limited functionality');
-}
-
-// Create Supabase client with error handling
+// Create Supabase client with secure configuration
 let supabase: any;
 
 try {
-  supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  supabase = createClient(config.supabase.url, config.supabase.anonKey, {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
+      flowType: 'pkce', // 🔒 More secure auth flow
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10, // 🔒 Rate limiting
+      },
+    },
+    global: {
+      headers: {
+        'X-Client-Info': 'doccraft-ai-v3',
+      },
     },
   });
-  console.log('✅ Supabase client created successfully');
+
+  // 🔒 Session validation
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      if (!session.user?.email || !session.access_token) {
+        logger.warn('Invalid session detected, signing out');
+        supabase.auth.signOut();
+      }
+    }
+  });
+
+  logger.info('Supabase client created successfully with PKCE flow');
 } catch (error) {
-  console.error('❌ Error creating Supabase client:', error);
+  logger.error('Failed to create Supabase client', {
+    error: error instanceof Error ? error.message : 'Unknown error',
+  });
 
   // Create a mock client for development
   supabase = {
@@ -46,7 +57,7 @@ try {
       signOut: async () => ({ error: null }),
     },
   };
-  console.log('🔄 Using mock Supabase client for demo mode');
+  logger.info('Using mock Supabase client for demo mode');
 }
 
 export { supabase };

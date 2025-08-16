@@ -3,6 +3,7 @@ import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { getDefaultLandingPage } from '../utils/userRedirect';
 import { UserService } from '../lib/auth/userService';
+import { logger } from '../lib/logger';
 
 // Extended user type with tier property
 export interface ExtendedUser extends User {
@@ -29,7 +30,7 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  console.log('🔐 AuthProvider initializing...');
+  logger.info('AuthProvider initializing');
 
   const [user, setUser] = useState<ExtendedUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,20 +38,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Function to load user profile data including tier
   const loadUserProfile = async (supabaseUser: User): Promise<ExtendedUser> => {
     try {
-      console.log('🔐 Loading user profile for:', supabaseUser.id);
+      logger.info('Loading user profile', { userId: supabaseUser.id });
 
       // Check if UserService is available (Supabase connection)
       if (supabase.auth && typeof supabase.auth.getSession === 'function') {
         const profile = await UserService.getCurrentUser();
 
         if (profile) {
-          console.log('🔐 User profile loaded with tier:', profile.tier);
+          logger.info('User profile loaded with tier', { tier: profile.tier });
           return {
             ...supabaseUser,
             tier: profile.tier,
           } as ExtendedUser;
         } else {
-          console.log('🔐 No profile found, using default tier');
+          logger.info('No profile found, using default tier');
           return {
             ...supabaseUser,
             tier: 'Free', // Default tier for new users
@@ -58,14 +59,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         // Demo mode - return mock user
-        console.log('🔐 Demo mode - using mock user profile');
+        logger.info('Demo mode - using mock user profile');
         return {
           ...supabaseUser,
           tier: 'Pro', // Demo tier
         } as ExtendedUser;
       }
     } catch (error: unknown) {
-      console.error('🔐 Error loading user profile:', error);
+      logger.error('Error loading user profile', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
       return {
         ...supabaseUser,
         tier: 'Free', // Default tier on error
@@ -74,11 +77,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    console.log('🔐 AuthProvider useEffect running...');
+    logger.info('AuthProvider useEffect running');
 
     // Set a timeout to prevent infinite loading
     const timeout = setTimeout(() => {
-      console.log('🔐 Auth timeout reached, setting loading to false');
+      logger.info('Auth timeout reached, setting loading to false');
       setLoading(false);
     }, 3000); // Reduced to 3 seconds for better UX
 
@@ -88,10 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       supabase.auth
         .getSession()
         .then(async ({ data: { session } }: { data: { session: any } }) => {
-          console.log(
-            '🔐 Session loaded:',
-            session ? 'User logged in' : 'No session'
-          );
+          logger.info('Session loaded', { hasSession: !!session });
 
           if (session?.user) {
             // Load user profile data including tier
@@ -105,7 +105,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           clearTimeout(timeout);
         })
         .catch((error: unknown) => {
-          console.error('🔐 Error loading session:', error);
+          logger.error('Error loading session', {
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
           setLoading(false);
           clearTimeout(timeout);
         });
@@ -114,10 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
-        console.log(
-          '🔐 Auth state changed:',
-          session ? 'User logged in' : 'User logged out'
-        );
+        logger.info('Auth state changed', { hasSession: !!session });
 
         if (session?.user) {
           // Load user profile data including tier
@@ -133,7 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return () => subscription.unsubscribe();
     } else {
       // Demo mode - no Supabase connection
-      console.log('🔐 Demo mode - no Supabase connection available');
+      logger.info('Demo mode - no Supabase connection available');
       setLoading(false);
       clearTimeout(timeout);
     }
@@ -152,7 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error) throw error;
       } else {
         // Demo mode - simulate successful sign in
-        console.log('🔐 Demo mode - simulating sign in');
+        logger.info('Demo mode - simulating sign in');
         const mockUser = {
           id: 'demo-user-id',
           email: email,
@@ -161,7 +160,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(mockUser);
       }
     } catch (error: unknown) {
-      console.error('🔐 Sign in error:', error);
+      logger.error('Sign in error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
       throw error;
     }
   };
@@ -173,7 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error) throw error;
       } else {
         // Demo mode - simulate successful sign up
-        console.log('🔐 Demo mode - simulating sign up');
+        logger.info('Demo mode - simulating sign up');
         const mockUser = {
           id: 'demo-user-id',
           email: email,
@@ -182,7 +183,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(mockUser);
       }
     } catch (error: unknown) {
-      console.error('🔐 Sign up error:', error);
+      logger.error('Sign up error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
       throw error;
     }
   };
@@ -195,7 +198,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       setUser(null);
     } catch (error: unknown) {
-      console.error('🔐 Sign out error:', error);
+      logger.error('Sign out error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
       throw error;
     }
   };
@@ -218,7 +223,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     redirectToAppropriatePage,
   };
 
-  console.log('🔐 AuthProvider context value:', { user: !!user, loading });
+  logger.info('AuthProvider context value', { hasUser: !!user, loading });
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

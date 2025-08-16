@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
@@ -30,7 +30,7 @@ export default defineConfig({
   },
   esbuild: {
     // Drop console logs in CI builds
-    drop: process.env.CI ? ['console', 'debugger'] : [],
+    drop: process.env['CI'] ? ['console', 'debugger'] : [],
   },
   optimizeDeps: {
     exclude: ['lucide-react'],
@@ -41,6 +41,8 @@ export default defineConfig({
   },
   // Reduce memory usage
   define: {
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+    'process.env.NODE_ENV': JSON.stringify(
+      process.env['NODE_ENV'] || 'development'
+    ),
   },
-})
+});

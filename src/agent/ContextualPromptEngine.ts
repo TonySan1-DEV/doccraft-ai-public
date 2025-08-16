@@ -11,6 +11,7 @@
 */
 
 import { PromptPatternLibrary } from './PromptPatternLibrary';
+import { logger } from '../lib/logger';
 
 // Type definitions
 export interface UserPrefs {
@@ -21,7 +22,7 @@ export interface UserPrefs {
 
 export interface DocumentContext {
   scene: string;
-  arc: "setup" | "rising" | "climax" | "resolution";
+  arc: 'setup' | 'rising' | 'climax' | 'resolution';
   characterName?: string;
 }
 
@@ -78,22 +79,28 @@ class ContextualPromptEngine {
       enableMemoization: true,
       maxMemoizedEntries: 100,
       enableFallbackLogging: true,
-      ...config
+      ...config,
     };
   }
 
   /**
    * Logs a fallback warning when the system defaults to a fallback pattern
    */
-  public logFallbackWarning(genre: string, arc: string, usedFallback: string, debug?: boolean): void {
-    const shouldLog = debug === true || (debug === undefined && this.config.debug);
-    
+  public logFallbackWarning(
+    genre: string,
+    arc: string,
+    usedFallback: string,
+    debug?: boolean
+  ): void {
+    const shouldLog =
+      debug === true || (debug === undefined && this.config.debug);
+
     if (!shouldLog) {
       return;
     }
 
     const memoizationKey = `${genre}|${arc}|${usedFallback}`;
-    
+
     // Prevent duplicate logging
     if (this.loggedFallbacks.has(memoizationKey)) {
       return;
@@ -114,7 +121,12 @@ class ContextualPromptEngine {
   /**
    * Adds a fallback log entry for diagnostics
    */
-  private addFallbackLog(genre: string, arc: string, usedFallback: string, context?: string): void {
+  private addFallbackLog(
+    genre: string,
+    arc: string,
+    usedFallback: string,
+    context?: string
+  ): void {
     if (!this.config.enableFallbackLogging) {
       return;
     }
@@ -124,7 +136,7 @@ class ContextualPromptEngine {
       arc,
       usedFallback,
       timestamp: Date.now(),
-      context
+      context,
     };
 
     this.fallbackLogs.push(logEntry);
@@ -182,25 +194,28 @@ class ContextualPromptEngine {
       totalFallbacks: this.fallbackLogs.length,
       uniqueFallbacks: this.loggedFallbacks.size,
       recentFallbacks,
-      mostCommonFallbacks
+      mostCommonFallbacks,
     };
   }
 
   /**
    * Builds a contextual prompt header based on user preferences and document context
    */
-  public buildContextualPromptHeader(prefs: UserPrefs, doc: DocumentContext): PromptHeader {
+  public buildContextualPromptHeader(
+    prefs: UserPrefs,
+    doc: DocumentContext
+  ): PromptHeader {
     if (this.config.debug) {
-      console.log('[PromptEngine] Building contextual prompt header');
-      console.log('[PromptEngine] Prefs:', prefs);
-      console.log('[PromptEngine] Context:', doc);
+      logger.debug('Building contextual prompt header');
+      logger.debug('Prompt preferences', { prefs });
+      logger.debug('Document context', { context: doc });
     }
 
     // Check memoization first
     const memoized = this.getMemoizedResult(prefs, doc);
     if (memoized) {
       if (this.config.debug) {
-        console.log('[PromptEngine] Using memoized result');
+        logger.debug('Using memoized result');
       }
       return memoized;
     }
@@ -210,10 +225,16 @@ class ContextualPromptEngine {
     const sanitizedContext = this.sanitizeDocumentContext(doc);
 
     // Get pattern from library with fallback tracking
-    const pattern = this.getPatternFromLibraryWithFallback(sanitizedPrefs.genre, sanitizedContext.arc);
-    
+    const pattern = this.getPatternFromLibraryWithFallback(
+      sanitizedPrefs.genre,
+      sanitizedContext.arc
+    );
+
     // Inject character name if provided
-    const injectedPattern = this.injectCharacterName(pattern, sanitizedContext.characterName);
+    const injectedPattern = this.injectCharacterName(
+      pattern,
+      sanitizedContext.characterName
+    );
 
     // Build the header
     const header = this.buildPromptHeader(sanitizedPrefs, injectedPattern);
@@ -224,14 +245,14 @@ class ContextualPromptEngine {
       tone: sanitizedPrefs.tone,
       language: sanitizedPrefs.language,
       genre: sanitizedPrefs.genre,
-      patternUsed: injectedPattern
+      patternUsed: injectedPattern,
     };
 
     // Memoize result
     this.memoizeResult(sanitizedPrefs, sanitizedContext, result);
 
     if (this.config.debug) {
-      console.log('[PromptEngine] Generated header:', result);
+      logger.debug('Generated header', { header: result });
     }
 
     return result;
@@ -240,18 +261,21 @@ class ContextualPromptEngine {
   /**
    * Gets pattern from library with fallback tracking
    */
-  private getPatternFromLibraryWithFallback(genre: string, arc: string): string {
+  private getPatternFromLibraryWithFallback(
+    genre: string,
+    arc: string
+  ): string {
     if (this.config.debug) {
-      console.log(`[PromptEngine] Looking for pattern: ${genre} / ${arc}`);
+      logger.debug('Looking for pattern', { genre, arc });
     }
 
     // Try exact match first
     let pattern = PromptPatternLibrary.getPattern(genre, arc);
     let usedFallback = '';
-    
+
     if (pattern) {
       if (this.config.debug) {
-        console.log(`[PromptEngine] Found exact pattern for ${genre} / ${arc}: "${pattern}"`);
+        logger.debug('Found exact pattern', { genre, arc, pattern });
       }
       return pattern;
     }
@@ -262,24 +286,25 @@ class ContextualPromptEngine {
       if (pattern) {
         usedFallback = `setup arc for ${genre}`;
         this.logFallbackWarning(genre, arc, usedFallback, this.config.debug);
-        
+
         if (this.config.debug) {
-          console.log(`[PromptEngine] Using setup pattern for ${genre}: "${pattern}"`);
+          logger.debug('Using setup pattern', { genre, pattern });
         }
         return pattern;
       }
     }
 
     // Fallback to generic pattern
-    pattern = PromptPatternLibrary.getPattern('DEFAULT', arc) || 
-              PromptPatternLibrary.getPattern('DEFAULT', 'setup') ||
-              'Create an engaging scene that advances the story';
+    pattern =
+      PromptPatternLibrary.getPattern('DEFAULT', arc) ||
+      PromptPatternLibrary.getPattern('DEFAULT', 'setup') ||
+      'Create an engaging scene that advances the story';
 
     usedFallback = `DEFAULT pattern for ${genre} / ${arc}`;
     this.logFallbackWarning(genre, arc, usedFallback, this.config.debug);
 
     if (this.config.debug) {
-      console.log(`[PromptEngine] Using fallback pattern: "${pattern}"`);
+      logger.debug('Using fallback pattern', { pattern });
     }
 
     return pattern;
@@ -289,13 +314,30 @@ class ContextualPromptEngine {
    * Sanitizes and validates user preferences with safe fallbacks
    */
   private sanitizeUserPrefs(prefs: UserPrefs): UserPrefs {
-    const safeTones = ['friendly', 'formal', 'casual', 'professional', 'creative', 'dramatic'];
-    const safeLanguages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'zh'];
+    const safeTones = [
+      'friendly',
+      'formal',
+      'casual',
+      'professional',
+      'creative',
+      'dramatic',
+    ];
+    const safeLanguages = [
+      'en',
+      'es',
+      'fr',
+      'de',
+      'it',
+      'pt',
+      'ja',
+      'ko',
+      'zh',
+    ];
 
     return {
       tone: safeTones.includes(prefs.tone) ? prefs.tone : 'friendly',
       language: safeLanguages.includes(prefs.language) ? prefs.language : 'en',
-      genre: prefs.genre || 'General'
+      genre: prefs.genre || 'General',
     };
   }
 
@@ -308,11 +350,9 @@ class ContextualPromptEngine {
     return {
       scene: context.scene || '',
       arc: safeArcs.includes(context.arc) ? context.arc : 'setup',
-      characterName: context.characterName || undefined
+      characterName: context.characterName || undefined,
     };
   }
-
-
 
   /**
    * Injects character name into pattern if provided
@@ -330,7 +370,7 @@ class ContextualPromptEngine {
       .replace(/\[THEIR\]/g, `${characterName}'s`);
 
     if (this.config.debug && pattern !== injected) {
-      console.log(`[PromptEngine] Injected character name: "${pattern}" → "${injected}"`);
+      logger.debug('Injected character name', { original: pattern, injected });
     }
 
     return injected;
@@ -343,7 +383,7 @@ class ContextualPromptEngine {
     const header = `/* Tone: ${prefs.tone} | Language: ${prefs.language} | Genre: ${prefs.genre} */\n/* Pattern: "${pattern}" */\n\n`;
 
     if (this.config.debug) {
-      console.log(`[PromptEngine] Built header:\n${header}`);
+      logger.debug('Built header', { header });
     }
 
     return header;
@@ -352,28 +392,39 @@ class ContextualPromptEngine {
   /**
    * Checks for memoized result to avoid duplicates
    */
-  private getMemoizedResult(prefs: UserPrefs, context: DocumentContext): PromptHeader | null {
+  private getMemoizedResult(
+    prefs: UserPrefs,
+    context: DocumentContext
+  ): PromptHeader | null {
     if (!this.config.enableMemoization) {
       return null;
     }
 
     // Check last used values first (most common case)
-    if (this.lastUsedValues.prefs && this.lastUsedValues.context && this.lastUsedValues.result) {
-      if (this.arePrefsEqual(this.lastUsedValues.prefs, prefs) && 
-          this.areContextsEqual(this.lastUsedValues.context, context)) {
+    if (
+      this.lastUsedValues.prefs &&
+      this.lastUsedValues.context &&
+      this.lastUsedValues.result
+    ) {
+      if (
+        this.arePrefsEqual(this.lastUsedValues.prefs, prefs) &&
+        this.areContextsEqual(this.lastUsedValues.context, context)
+      ) {
         return this.lastUsedValues.result;
       }
     }
 
     // Check memoization cache
     for (const entry of this.memoizedResults) {
-      if (this.arePrefsEqual(entry.prefs, prefs) && 
-          this.areContextsEqual(entry.context, context)) {
+      if (
+        this.arePrefsEqual(entry.prefs, prefs) &&
+        this.areContextsEqual(entry.context, context)
+      ) {
         // Update last used values
         this.lastUsedValues = {
           prefs: entry.prefs,
           context: entry.context,
-          result: entry.result
+          result: entry.result,
         };
         return entry.result;
       }
@@ -385,7 +436,11 @@ class ContextualPromptEngine {
   /**
    * Memoizes result for future use
    */
-  private memoizeResult(prefs: UserPrefs, context: DocumentContext, result: PromptHeader): void {
+  private memoizeResult(
+    prefs: UserPrefs,
+    context: DocumentContext,
+    result: PromptHeader
+  ): void {
     if (!this.config.enableMemoization) {
       return;
     }
@@ -398,13 +453,16 @@ class ContextualPromptEngine {
       prefs,
       context,
       result,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // Clean up old entries if cache is too large
     if (this.memoizedResults.length > this.config.maxMemoizedEntries!) {
       this.memoizedResults.sort((a, b) => b.timestamp - a.timestamp);
-      this.memoizedResults = this.memoizedResults.slice(0, this.config.maxMemoizedEntries!);
+      this.memoizedResults = this.memoizedResults.slice(
+        0,
+        this.config.maxMemoizedEntries!
+      );
     }
   }
 
@@ -412,18 +470,25 @@ class ContextualPromptEngine {
    * Compares user preferences for equality
    */
   private arePrefsEqual(prefs1: UserPrefs, prefs2: UserPrefs): boolean {
-    return prefs1.tone === prefs2.tone &&
-           prefs1.language === prefs2.language &&
-           prefs1.genre === prefs2.genre;
+    return (
+      prefs1.tone === prefs2.tone &&
+      prefs1.language === prefs2.language &&
+      prefs1.genre === prefs2.genre
+    );
   }
 
   /**
    * Compares document contexts for equality
    */
-  private areContextsEqual(context1: DocumentContext, context2: DocumentContext): boolean {
-    return context1.scene === context2.scene &&
-           context1.arc === context2.arc &&
-           context1.characterName === context2.characterName;
+  private areContextsEqual(
+    context1: DocumentContext,
+    context2: DocumentContext
+  ): boolean {
+    return (
+      context1.scene === context2.scene &&
+      context1.arc === context2.arc &&
+      context1.characterName === context2.characterName
+    );
   }
 
   /**
@@ -432,9 +497,9 @@ class ContextualPromptEngine {
   public clearMemoizationCache(): void {
     this.memoizedResults = [];
     this.lastUsedValues = {};
-    
+
     if (this.config.debug) {
-      console.log('[PromptEngine] Cleared memoization cache');
+      logger.info('Cleared memoization cache');
     }
   }
 
@@ -444,7 +509,7 @@ class ContextualPromptEngine {
   public getCacheStats(): { size: number; lastUsed: boolean } {
     return {
       size: this.memoizedResults.length,
-      lastUsed: !!this.lastUsedValues.result
+      lastUsed: !!this.lastUsedValues.result,
     };
   }
 
@@ -453,9 +518,9 @@ class ContextualPromptEngine {
    */
   public updateConfig(newConfig: Partial<PromptEngineConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    
+
     if (this.config.debug) {
-      console.log('[PromptEngine] Configuration updated:', this.config);
+      logger.info('Configuration updated', { config: this.config });
     }
   }
 }
@@ -463,12 +528,20 @@ class ContextualPromptEngine {
 // Export singleton instance and factory function
 const defaultEngine = new ContextualPromptEngine();
 
-export function buildContextualPromptHeader(prefs: UserPrefs, doc: DocumentContext): PromptHeader {
+export function buildContextualPromptHeader(
+  prefs: UserPrefs,
+  doc: DocumentContext
+): PromptHeader {
   return defaultEngine.buildContextualPromptHeader(prefs, doc);
 }
 
 // Export fallback diagnostics functions
-export function logFallbackWarning(genre: string, arc: string, usedFallback: string, debug?: boolean): void {
+export function logFallbackWarning(
+  genre: string,
+  arc: string,
+  usedFallback: string,
+  debug?: boolean
+): void {
   defaultEngine.logFallbackWarning(genre, arc, usedFallback, debug);
 }
 
@@ -477,4 +550,4 @@ export function getDiagnostics(): FallbackLog[] {
 }
 
 export { ContextualPromptEngine, defaultEngine };
-export type { PromptEngineConfig }; 
+export type { PromptEngineConfig };

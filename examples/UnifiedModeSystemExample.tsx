@@ -11,7 +11,7 @@
 */
 
 import React, { useState, useEffect } from 'react';
-import { ModeController } from '../src/components/ModeController';
+import ModeController from '../src/components/ModeController';
 import { useAgentPreferences } from '../src/contexts/AgentPreferencesContext';
 import { ModeAwareAIService } from '../src/services/modeAwareAIService';
 import { moduleCoordinator } from '../src/services/moduleCoordinator';

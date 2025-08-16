@@ -5,16 +5,16 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 import EmotionalArcModule from '../EmotionalArcModule';
 import { useAgentPreferences } from '../../../../src/contexts/AgentPreferencesContext';
 import { useNarrativeSync } from '../../../shared/state/useNarrativeSyncContext';
 
 // Mock dependencies
-vi.mock('../../../../src/contexts/AgentPreferencesContext');
-vi.mock('../../../../src/services/modeAwareAIService');
-vi.mock('../../../../src/services/moduleCoordinator');
-vi.mock('../../../../src/components/ModeErrorBoundary', () => ({
+jest.mock('../../../../src/contexts/AgentPreferencesContext');
+jest.mock('../../../../src/services/modeAwareAIService');
+jest.mock('../../../../src/services/moduleCoordinator');
+jest.mock('../../../../src/components/ModeErrorBoundary', () => ({
   ModeErrorBoundary: ({ children, onError, onRecovery }: any) => {
     // Simulate error boundary behavior
     if (onError) {
@@ -25,8 +25,8 @@ vi.mock('../../../../src/components/ModeErrorBoundary', () => ({
   },
 }));
 
-vi.mock('../../../shared/state/useNarrativeSyncContext');
-vi.mock('../EmotionTimelineChart', () => ({
+jest.mock('../../../shared/state/useNarrativeSyncContext');
+jest.mock('../EmotionTimelineChart', () => ({
   default: ({ emotionalBeats, onBeatClick }: any) => (
     <div data-testid="emotion-timeline-chart">
       <div data-testid="beats-count">{emotionalBeats?.length || 0}</div>
@@ -37,7 +37,7 @@ vi.mock('../EmotionTimelineChart', () => ({
   ),
 }));
 
-vi.mock('../TensionCurveViewer', () => ({
+jest.mock('../TensionCurveViewer', () => ({
   default: ({ tensionCurve, onPointClick }: any) => (
     <div data-testid="tension-curve-viewer">
       <div data-testid="curve-points">{tensionCurve?.length || 0}</div>
@@ -46,7 +46,7 @@ vi.mock('../TensionCurveViewer', () => ({
   ),
 }));
 
-vi.mock('../OptimizationSuggestions', () => ({
+jest.mock('../OptimizationSuggestions', () => ({
   default: ({
     optimizationPlan,
     onApplySuggestion,
@@ -66,7 +66,7 @@ vi.mock('../OptimizationSuggestions', () => ({
   ),
 }));
 
-vi.mock('../SceneSentimentPanel', () => ({
+jest.mock('../SceneSentimentPanel', () => ({
   default: ({ sceneData, onSceneSelect, onCharacterClick }: any) => (
     <div data-testid="scene-sentiment-panel">
       <div data-testid="scenes-count">{sceneData?.length || 0}</div>
@@ -78,7 +78,7 @@ vi.mock('../SceneSentimentPanel', () => ({
   ),
 }));
 
-vi.mock('../CharacterArcSwitch', () => ({
+jest.mock('../CharacterArcSwitch', () => ({
   default: ({ characterIds, selectedCharacter, onCharacterSwitch }: any) => (
     <div data-testid="character-arc-switch">
       <div data-testid="characters-count">{characterIds?.length || 0}</div>
@@ -91,9 +91,9 @@ vi.mock('../CharacterArcSwitch', () => ({
 }));
 
 // Mock services
-vi.mock('../../services/emotionAnalyzer', () => ({
-  EmotionAnalyzer: vi.fn().mockImplementation(() => ({
-    analyzeStoryEmotions: vi.fn().mockResolvedValue([
+jest.mock('../../services/emotionAnalyzer', () => ({
+  EmotionAnalyzer: jest.fn().mockImplementation(() => ({
+    analyzeStoryEmotions: jest.fn().mockResolvedValue([
       {
         sceneId: 'scene1',
         emotionalBeats: [
@@ -116,25 +116,25 @@ vi.mock('../../services/emotionAnalyzer', () => ({
   })),
 }));
 
-vi.mock('../../services/arcSimulator', () => ({
-  ArcSimulator: vi.fn().mockImplementation(() => ({
-    generateArcSimulation: vi.fn().mockReturnValue({
+jest.mock('../../services/arcSimulator', () => ({
+  ArcSimulator: jest.fn().mockImplementation(() => ({
+    generateArcSimulation: jest.fn().mockReturnValue({
       curve: [{ tension: 0.5, emotionalComplexity: 0.6 }],
       emotionalPeaks: [],
       readerEngagement: { overall: 0.7 },
       pacingAnalysis: { pacingScore: 0.75 },
     }),
-    generateArcSegments: vi.fn().mockReturnValue([]),
-    simulateReaderResponse: vi.fn().mockReturnValue({
+    generateArcSegments: jest.fn().mockReturnValue([]),
+    simulateReaderResponse: jest.fn().mockReturnValue({
       emotionalEngagement: 0.8,
       tensionResponse: 0.7,
     }),
   })),
 }));
 
-vi.mock('../../services/suggestionEngine', () => ({
-  SuggestionEngine: vi.fn().mockImplementation(() => ({
-    generateOptimizationSuggestions: vi.fn().mockReturnValue({
+jest.mock('../../services/suggestionEngine', () => ({
+  SuggestionEngine: jest.fn().mockImplementation(() => ({
+    generateOptimizationSuggestions: jest.fn().mockReturnValue({
       suggestions: [
         { id: 'suggestion1', type: 'emotional_consistency', confidence: 0.9 },
         { id: 'suggestion2', type: 'pacing_improvement', confidence: 0.8 },
@@ -144,10 +144,10 @@ vi.mock('../../services/suggestionEngine', () => ({
 }));
 
 describe('EmotionalArcModule - Mode Awareness', () => {
-  const mockUseAgentPreferences = useAgentPreferences as vi.MockedFunction<
+  const mockUseAgentPreferences = useAgentPreferences as jest.MockedFunction<
     typeof useAgentPreferences
   >;
-  const mockUseNarrativeSync = useNarrativeSync as vi.MockedFunction<
+  const mockUseNarrativeSync = useNarrativeSync as jest.MockedFunction<
     typeof useNarrativeSync
   >;
 
@@ -168,12 +168,12 @@ describe('EmotionalArcModule - Mode Awareness', () => {
       characterFocusId: 'all',
       currentSceneId: 'scene1',
     },
-    setScene: vi.fn(),
-    setCharacter: vi.fn(),
+    setScene: jest.fn(),
+    setCharacter: jest.fn(),
   };
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     mockUseNarrativeSync.mockReturnValue(defaultNarrativeSync);
   });
 
@@ -184,7 +184,7 @@ describe('EmotionalArcModule - Mode Awareness', () => {
           systemMode: 'MANUAL',
           modeConfiguration: {},
         },
-        updatePreferences: vi.fn(),
+        updatePreferences: jest.fn(),
       });
     });
 
@@ -232,7 +232,7 @@ describe('EmotionalArcModule - Mode Awareness', () => {
           systemMode: 'HYBRID',
           modeConfiguration: {},
         },
-        updatePreferences: vi.fn(),
+        updatePreferences: jest.fn(),
       });
     });
 
@@ -277,7 +277,7 @@ describe('EmotionalArcModule - Mode Awareness', () => {
           systemMode: 'FULLY_AUTO',
           modeConfiguration: {},
         },
-        updatePreferences: vi.fn(),
+        updatePreferences: jest.fn(),
       });
     });
 
@@ -332,7 +332,7 @@ describe('EmotionalArcModule - Mode Awareness', () => {
           systemMode: 'HYBRID',
           modeConfiguration: {},
         },
-        updatePreferences: vi.fn(),
+        updatePreferences: jest.fn(),
       });
 
       rerender(<EmotionalArcModule {...defaultProps} />);
@@ -351,7 +351,7 @@ describe('EmotionalArcModule - Mode Awareness', () => {
           systemMode: 'HYBRID',
           modeConfiguration: {},
         },
-        updatePreferences: vi.fn(),
+        updatePreferences: jest.fn(),
       });
 
       rerender(<EmotionalArcModule {...defaultProps} />);
@@ -368,7 +368,7 @@ describe('EmotionalArcModule - Mode Awareness', () => {
           systemMode: 'MANUAL',
           modeConfiguration: {},
         },
-        updatePreferences: vi.fn(),
+        updatePreferences: jest.fn(),
       });
 
       rerender(<EmotionalArcModule {...defaultProps} />);
@@ -387,11 +387,11 @@ describe('EmotionalArcModule - Mode Awareness', () => {
 
     it('handles analysis errors gracefully', async () => {
       // Mock service to throw error
-      const mockEmotionAnalyzer = vi.mocked(
+      const mockEmotionAnalyzer = jest.mocked(
         await import('../../services/emotionAnalyzer')
       );
       mockEmotionAnalyzer.EmotionAnalyzer.mockImplementation(() => ({
-        analyzeStoryEmotions: vi
+        analyzeStoryEmotions: jest
           .fn()
           .mockRejectedValue(new Error('Analysis failed')),
       }));
@@ -404,7 +404,7 @@ describe('EmotionalArcModule - Mode Awareness', () => {
           systemMode: 'HYBRID',
           modeConfiguration: {},
         },
-        updatePreferences: vi.fn(),
+        updatePreferences: jest.fn(),
       });
 
       await waitFor(() => {
@@ -442,7 +442,7 @@ describe('EmotionalArcModule - Mode Awareness', () => {
 
   describe('Integration Features', () => {
     it('registers with module coordinator', () => {
-      const mockModuleCoordinator = vi.mocked(
+      const mockModuleCoordinator = jest.mocked(
         await import('../../../../src/services/moduleCoordinator')
       );
       render(<EmotionalArcModule {...defaultProps} />);

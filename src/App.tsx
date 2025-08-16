@@ -32,20 +32,25 @@ import DocumentEditorDemo from './pages/DocumentEditorDemo';
 import Support from './pages/Support';
 import ShareableAccessPage from './pages/ShareableAccessPage';
 import { Footer } from './components/Footer';
+import TermsOfService from './pages/TermsOfService';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import ContactUs from './pages/ContactUs';
+import AboutUs from './pages/AboutUs';
+import Help from './pages/Help';
 import DemoModeIndicator from './components/DemoModeIndicator';
 import TestPage from './pages/TestPage';
 import MinimalTest from './pages/MinimalTest';
 
 import './index.css';
 
-console.log('🚀 App.tsx loading...');
+// App.tsx loading...
 
 // Check if running in demo mode
 const isDemoMode =
   import.meta.env.VITE_SUPABASE_URL === 'https://placeholder.supabase.co' ||
   !import.meta.env.VITE_SUPABASE_URL;
 
-console.log('🔍 Demo mode:', isDemoMode);
+// Demo mode check
 
 // Sidebar layout handler
 const handleSidebarToggle = (event: CustomEvent) => {
@@ -95,7 +100,7 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({
 );
 
 function App() {
-  console.log('🚀 App component rendering...');
+  // App component rendering
 
   return (
     <div
@@ -224,6 +229,11 @@ function App() {
             />
             <Route path="/support" element={<Support />} />
             <Route path="/share/:token" element={<ShareableAccessPage />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/help" element={<Help />} />
             <Route
               path="/collab-test"
               element={

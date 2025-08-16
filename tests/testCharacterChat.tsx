@@ -10,14 +10,17 @@ import { CharacterPersona } from '../src/types/CharacterPersona';
 // Mock persona
 const mockPersona: CharacterPersona = {
   id: 'persona-1',
-  user_id: 'user-1',
   name: 'Sir Reginald',
+  description: 'A retired knight and scholar',
   archetype: 'Mentor',
-  goals: 'Guide the hero to greatness',
+  goals: ['Guide the hero to greatness'],
   voiceStyle: 'Shakespearean',
   worldview: 'Noble, wise, and patient',
-  personality:
+  personality: [
     'Openness: high, Conscientiousness: high, Extraversion: moderate, Agreeableness: high, Neuroticism: low',
+  ],
+  conflicts: [],
+  arc: "Mentor's journey",
   knownConnections: [
     {
       name: 'Dr. Kalin',
@@ -25,14 +28,26 @@ const mockPersona: CharacterPersona = {
       description: 'Long-standing academic adversary',
     },
   ],
-  // TODO: Add background field to CharacterPersona interface
-  // background: 'A retired knight and scholar.',
-  traits: {
-    tone: 'formal',
-    quirks: 'quotes ancient proverbs',
-    worldview: 'optimistic',
-  },
-  memory: {},
+  traits: [
+    {
+      id: 'trait-1',
+      name: 'formal',
+      category: 'personality',
+      value: 'formal',
+      strength: 8,
+      description: 'Speaks in a formal, Shakespearean manner',
+    },
+  ],
+  memory: [
+    {
+      id: 'memory-1',
+      timestamp: Date.now(),
+      type: 'interaction',
+      content: 'First meeting with the hero',
+      emotionalImpact: 0.7,
+      importance: 'high',
+    },
+  ],
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
 };

@@ -158,7 +158,7 @@ export const AdvancedAgentCoordinationExample: React.FC = () => {
         'emotional_depth',
         'thematic_coherence',
       ],
-      writingPhase: 'development',
+      writingPhase: 'planning',
       userExperience: 'advanced',
       currentMode: 'FULLY_AUTO',
       sessionDuration: 1800000, // 30 minutes
@@ -222,7 +222,7 @@ export const AdvancedAgentCoordinationExample: React.FC = () => {
             qualityScore: 0.65,
           },
           context: {
-            writingPhase: 'development',
+            writingPhase: 'planning',
             genre: 'literary_fiction',
             targetAudience: 'adult_fiction',
             userMode: 'FULLY_AUTO',

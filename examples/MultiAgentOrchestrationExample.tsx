@@ -49,57 +49,10 @@ export default function MultiAgentOrchestrationExample({
   const [systemHealth, setSystemHealth] = useState<any>(null);
   const [cacheStats, setCacheStats] = useState<any>(null);
 
-  // Initialize services
-  useEffect(() => {
-    const initializeServices = async () => {
-      try {
-        // Initialize mock services (in real app, these would be actual service instances)
-        const mockWriterProfile = {
-          id: 'user-123',
-          preferences: { style: 'academic', tone: 'professional' },
-        };
-
-        const mockAIHelper = {
-          runAIAction: async () => 'AI response',
-        };
-
-        const mockCharacterAI = {
-          analyzeCharacter: async () => ({ personality: 'complex' }),
-        };
-
-        const mockModeAwareService = {} as any;
-        const mockModuleCoordinator = {} as any;
-
-        // Create services
-        const cache = new AICacheService(mockWriterProfile);
-        const monitor = new PerformanceMonitor();
-        const orchestratorInstance = new AgentOrchestrator(
-          mockAIHelper,
-          mockCharacterAI,
-          mockWriterProfile,
-          mockModeAwareService,
-          mockModuleCoordinator
-        );
-
-        setCacheService(cache);
-        setPerformanceMonitor(monitor);
-        setOrchestrator(orchestratorInstance);
-
-        // Start monitoring
-        startHealthMonitoring(monitor);
-        startCacheMonitoring(cache);
-      } catch (error) {
-        console.error('Failed to initialize services:', error);
-      }
-    };
-
-    initializeServices();
-  }, []);
-
   // Monitor system health
-  const startHealthMonitoring = (monitor: PerformanceMonitor) => {
+  const startHealthMonitoring = () => {
     const interval = setInterval(() => {
-      const health = monitor.getSystemHealth();
+      const health = performanceMonitor?.getSystemHealth();
       setSystemHealth(health);
     }, 5000);
 
@@ -107,10 +60,10 @@ export default function MultiAgentOrchestrationExample({
   };
 
   // Monitor cache performance
-  const startCacheMonitoring = (cache: AICacheService) => {
+  const startCacheMonitoring = () => {
     const interval = setInterval(async () => {
       try {
-        const stats = await cache.getCacheStats();
+        const stats = await cacheService?.getCacheStats();
         setCacheStats(stats);
       } catch (error) {
         console.error('Failed to get cache stats:', error);
@@ -119,6 +72,53 @@ export default function MultiAgentOrchestrationExample({
 
     return () => clearInterval(interval);
   };
+
+  // Initialize services
+  const initializeServices = async () => {
+    try {
+      // Initialize mock services (in real app, these would be actual service instances)
+      const mockWriterProfile = {
+        id: 'user-123',
+        preferences: { style: 'academic', tone: 'professional' },
+      };
+
+      const mockAIHelper = {
+        runAIAction: async () => 'AI response',
+      };
+
+      const mockCharacterAI = {
+        analyzeCharacter: async () => ({ personality: 'complex' }),
+      };
+
+      const mockModeAwareService = {} as any;
+      const mockModuleCoordinator = {} as any;
+
+      // Create services
+      const cache = new AICacheService(mockWriterProfile);
+      const monitor = new PerformanceMonitor();
+      const orchestratorInstance = new AgentOrchestrator(
+        mockAIHelper,
+        mockCharacterAI,
+        mockWriterProfile,
+        mockModeAwareService,
+        mockModuleCoordinator
+      );
+
+      setCacheService(cache);
+      setPerformanceMonitor(monitor);
+      setOrchestrator(orchestratorInstance);
+
+      // Start monitoring
+      startHealthMonitoring();
+      startCacheMonitoring();
+    } catch (error) {
+      console.error('Failed to initialize services:', error);
+    }
+  };
+
+  useEffect(() => {
+    initializeServices();
+  }, []);
 
   // Create example writing task
   const createExampleTask = (): WritingTask => {
@@ -145,7 +145,7 @@ export default function MultiAgentOrchestrationExample({
           'improve character development',
           'enhance emotional impact',
         ],
-        writingPhase: 'revision',
+        writingPhase: 'revising',
         userExperience: 'intermediate',
         currentMode: 'HYBRID',
         sessionDuration: 1800000,
@@ -216,8 +216,12 @@ export default function MultiAgentOrchestrationExample({
   };
 
   return (
-    <div className={`multi-agent-orchestration-example ${className}`}>
-      <h2>Multi-Agent Orchestration with Intelligent Caching</h2>
+    <div className="multi-agent-orchestration-example">
+      <h2>Multi-Agent Orchestration System</h2>
+      <p className="description">
+        Advanced AI orchestration with intelligent task distribution, conflict
+        resolution, and performance optimization.
+      </p>
 
       {/* Service Status */}
       <div className="service-status">
@@ -465,180 +469,6 @@ export default function MultiAgentOrchestrationExample({
           </p>
         </div>
       </div>
-
-      <style jsx>{`
-        .multi-agent-orchestration-example {
-          padding: 20px;
-          max-width: 1200px;
-          margin: 0 auto;
-          font-family:
-            -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        h2 {
-          color: #2c3e50;
-          border-bottom: 3px solid #3498db;
-          padding-bottom: 10px;
-          margin-bottom: 30px;
-        }
-
-        h3 {
-          color: #34495e;
-          margin-top: 30px;
-          margin-bottom: 15px;
-        }
-
-        .service-status,
-        .task-controls,
-        .current-task,
-        .task-results,
-        .system-health,
-        .cache-stats,
-        .utility-controls,
-        .performance-insights {
-          background: #f8f9fa;
-          border: 1px solid #e9ecef;
-          border-radius: 8px;
-          padding: 20px;
-          margin-bottom: 20px;
-        }
-
-        .status-grid,
-        .health-grid,
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 15px;
-          margin-top: 15px;
-        }
-
-        .status-item,
-        .health-item,
-        .stat-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 10px;
-          background: white;
-          border-radius: 6px;
-          border: 1px solid #dee2e6;
-        }
-
-        .label {
-          font-weight: 600;
-          color: #495057;
-        }
-
-        .value {
-          font-weight: 500;
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-size: 0.9em;
-        }
-
-        .online {
-          background: #d4edda;
-          color: #155724;
-        }
-        .offline {
-          background: #f8d7da;
-          color: #721c24;
-        }
-        .status-healthy {
-          background: #d4edda;
-          color: #155724;
-        }
-        .status-degraded {
-          background: #fff3cd;
-          color: #856404;
-        }
-        .status-unhealthy {
-          background: #f8d7da;
-          color: #721c24;
-        }
-
-        .control-buttons {
-          display: flex;
-          gap: 10px;
-          flex-wrap: wrap;
-          margin-top: 15px;
-        }
-
-        .btn {
-          padding: 10px 20px;
-          border: none;
-          border-radius: 6px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .btn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .btn-primary {
-          background: #007bff;
-          color: white;
-        }
-        .btn-secondary {
-          background: #6c757d;
-          color: white;
-        }
-        .btn-info {
-          background: #17a2b8;
-          color: white;
-        }
-        .btn-warning {
-          background: #ffc107;
-          color: #212529;
-        }
-        .btn-success {
-          background: #28a745;
-          color: white;
-        }
-
-        .btn:hover:not(:disabled) {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .task-details,
-        .result-details {
-          background: white;
-          padding: 15px;
-          border-radius: 6px;
-          border: 1px solid #dee2e6;
-        }
-
-        .task-details ul,
-        .result-details ul {
-          margin: 10px 0;
-          padding-left: 20px;
-        }
-
-        .task-details li,
-        .result-details li {
-          margin: 5px 0;
-        }
-
-        .health-recommendations {
-          margin-top: 20px;
-          padding-top: 20px;
-          border-top: 1px solid #dee2e6;
-        }
-
-        .insights-content p {
-          margin: 15px 0;
-          line-height: 1.6;
-          color: #495057;
-        }
-
-        .insights-content strong {
-          color: #2c3e50;
-        }
-      `}</style>
     </div>
   );
 }

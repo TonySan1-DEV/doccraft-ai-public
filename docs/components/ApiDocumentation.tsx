@@ -12,6 +12,32 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
+// Type definitions for API endpoints
+interface ApiEndpoint {
+  title: string;
+  description: string;
+  method: string;
+  url: string;
+  headers: Array<{
+    name: string;
+    required: boolean;
+    description: string;
+  }>;
+  requestBody?: {
+    type: string;
+    properties: Record<string, any>;
+  };
+  queryParams?: Array<{
+    name: string;
+    type: string;
+    required: boolean;
+    description: string;
+    enum?: string[];
+  }>;
+}
+
+type EndpointData = Record<string, ApiEndpoint>;
+
 export const ApiDocumentation: React.FC = () => {
   const [activeSection, setActiveSection] = useState('overview');
   const [selectedEndpoint, setSelectedEndpoint] = useState('/ai/process');
@@ -479,7 +505,7 @@ const QuickStartSection: React.FC = () => (
 );
 
 const EndpointSection: React.FC<{ endpoint: string }> = ({ endpoint }) => {
-  const endpointData = {
+  const endpointData: EndpointData = {
     '/ai/process': {
       title: 'AI Processing',
       description:
@@ -589,6 +615,7 @@ const EndpointSection: React.FC<{ endpoint: string }> = ({ endpoint }) => {
           name: 'mode',
           type: 'string',
           required: false,
+          description: 'AI mode filter',
           enum: ['MANUAL', 'HYBRID', 'FULLY_AUTO'],
         },
       ],
@@ -596,6 +623,10 @@ const EndpointSection: React.FC<{ endpoint: string }> = ({ endpoint }) => {
   };
 
   const data = endpointData[endpoint as keyof typeof endpointData];
+
+  if (!data) {
+    return <div>Endpoint not found</div>;
+  }
 
   return (
     <div className="max-w-4xl">
@@ -673,7 +704,7 @@ const EndpointSection: React.FC<{ endpoint: string }> = ({ endpoint }) => {
           </div>
         )}
 
-        {data.queryParams && (
+        {data.queryParams && data.queryParams.length > 0 && (
           <div>
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Query Parameters

@@ -1,4 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  jest,
+  beforeEach,
+  afterEach,
+} from '@jest/globals';
 import { analyzeEngagement } from '../src/services/engagementAnalyzer';
 import { EngagementAnalysis } from '../src/types/EngagementAnalysis';
 import { WriterProfile } from '../src/types/WriterProfile';
@@ -14,7 +21,7 @@ const proProfile: WriterProfile = {
 
 describe('EngagementAnalyzer', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    jest.resetAllMocks();
   });
 
   it('returns low score for very short content', async () => {
@@ -24,7 +31,8 @@ describe('EngagementAnalyzer', () => {
   });
 
   it('returns moderate score for average content', async () => {
-    const content = 'This is a story. It has a beginning, middle, and end. The characters are interesting.';
+    const content =
+      'This is a story. It has a beginning, middle, and end. The characters are interesting.';
     const result = await analyzeEngagement(content);
     expect(result.engagementScore).toBeGreaterThanOrEqual(0.4);
     expect(result.engagementScore).toBeLessThanOrEqual(0.7);
@@ -32,7 +40,8 @@ describe('EngagementAnalyzer', () => {
   });
 
   it('returns higher score for strong hook', async () => {
-    const content = 'Suddenly, a twist! Danger loomed. Betrayal was in the air.';
+    const content =
+      'Suddenly, a twist! Danger loomed. Betrayal was in the air.';
     const result = await analyzeEngagement(content);
     expect(result.engagementScore).toBeGreaterThan(0.5);
     expect(result.tags).toContain('Strong Hook');
@@ -58,14 +67,14 @@ describe('EngagementAnalyzer', () => {
   });
 
   it('returns fallback response on API error', async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error('API error'));
+    global.fetch = jest.fn().mockRejectedValue(new Error('API error'));
     const content = 'A story with a twist.';
     const result = await analyzeEngagement(content, 'Mystery');
     expect(result.summary).toMatch(/engage|engagement/i);
   });
 
   it('returns AI prompt structure (mocked)', async () => {
-    global.fetch = vi.fn().mockResolvedValue({
+    global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
         engagementScore: 0.8,
@@ -73,8 +82,8 @@ describe('EngagementAnalyzer', () => {
         summary: 'Strong opening. High engagement.',
         tags: ['Strong Hook'],
         recommendations: ['Keep up the tension!'],
-        matchedTrends: ['Twist Ending']
-      })
+        matchedTrends: ['Twist Ending'],
+      }),
     });
     const content = 'A story with a twist.';
     const result = await analyzeEngagement(content, 'Mystery');
@@ -82,4 +91,4 @@ describe('EngagementAnalyzer', () => {
     expect(result.tags).toContain('Strong Hook');
     expect(result.matchedTrends).toContain('Twist Ending');
   });
-}); 
+});

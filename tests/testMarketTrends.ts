@@ -1,19 +1,26 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { 
-  getTrendsByGenre, 
-  analyzeAgainstTrends, 
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals';
+import {
+  getTrendsByGenre,
+  analyzeAgainstTrends,
   getMarketAnalysis,
   getGenreTrendSummary,
-  generateTrendRecommendations
+  generateTrendRecommendations,
 } from '../src/services/trendAdvisor';
 import { MarketTrend, TrendMatchResult } from '../src/types/MarketTrend';
 
 // Mock Supabase client
 const mockSupabase = {
-  from: vi.fn(() => ({
-    select: vi.fn(() => ({
-      eq: vi.fn(() => ({
-        order: vi.fn(() => ({
+  from: jest.fn(() => ({
+    select: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        order: jest.fn(() => ({
           data: [
             {
               id: 'trend-1',
@@ -22,7 +29,7 @@ const mockSupabase = {
               label: 'Enemies to Lovers',
               score: 0.95,
               examples: ['Forced proximity', 'Workplace rivals'],
-              updated_at: '2024-01-01T00:00:00Z'
+              updated_at: '2024-01-01T00:00:00Z',
             },
             {
               id: 'trend-2',
@@ -31,19 +38,19 @@ const mockSupabase = {
               label: 'Slow Burn',
               score: 0.88,
               examples: ['Gradual emotional development', 'Building tension'],
-              updated_at: '2024-01-01T00:00:00Z'
-            }
+              updated_at: '2024-01-01T00:00:00Z',
+            },
           ],
-          error: null
-        }))
-      }))
-    }))
-  }))
+          error: null,
+        })),
+      })),
+    })),
+  })),
 };
 
 // Mock the supabase import
-vi.mock('../src/lib/supabase', () => ({
-  supabase: mockSupabase
+jest.mock('../src/lib/supabase', () => ({
+  supabase: mockSupabase,
 }));
 
 describe('Market Trend Integration System Tests', () => {
@@ -54,8 +61,12 @@ describe('Market Trend Integration System Tests', () => {
       trend_type: 'topic',
       label: 'Enemies to Lovers',
       score: 0.95,
-      examples: ['Forced proximity', 'Workplace rivals', 'Academic competition'],
-      updated_at: '2024-01-01T00:00:00Z'
+      examples: [
+        'Forced proximity',
+        'Workplace rivals',
+        'Academic competition',
+      ],
+      updated_at: '2024-01-01T00:00:00Z',
     },
     {
       id: 'trend-2',
@@ -63,8 +74,12 @@ describe('Market Trend Integration System Tests', () => {
       trend_type: 'tone',
       label: 'Slow Burn',
       score: 0.88,
-      examples: ['Gradual emotional development', 'Delayed gratification', 'Building tension'],
-      updated_at: '2024-01-01T00:00:00Z'
+      examples: [
+        'Gradual emotional development',
+        'Delayed gratification',
+        'Building tension',
+      ],
+      updated_at: '2024-01-01T00:00:00Z',
     },
     {
       id: 'trend-3',
@@ -73,31 +88,31 @@ describe('Market Trend Integration System Tests', () => {
       label: 'Dual POV',
       score: 0.92,
       examples: ['Alternating perspectives', 'Both sides of the story'],
-      updated_at: '2024-01-01T00:00:00Z'
+      updated_at: '2024-01-01T00:00:00Z',
     },
     {
       id: 'trend-4',
       genre: 'Mystery',
       trend_type: 'topic',
       label: 'Small Town Secrets',
-      score: 0.90,
+      score: 0.9,
       examples: ['Close-knit communities', 'Hidden pasts'],
-      updated_at: '2024-01-01T00:00:00Z'
-    }
+      updated_at: '2024-01-01T00:00:00Z',
+    },
   ];
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe('getTrendsByGenre Function', () => {
     it('should fetch trends for a specific genre', async () => {
       const result = await getTrendsByGenre('Romance');
-      
+
       expect(result).toHaveLength(3);
       expect(result.every(trend => trend.genre === 'Romance')).toBe(true);
       expect(mockSupabase.from).toHaveBeenCalledWith('market_trends');
@@ -106,40 +121,40 @@ describe('Market Trend Integration System Tests', () => {
     it('should return empty array for non-existent genre', async () => {
       // Mock empty result
       mockSupabase.from.mockReturnValue({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            order: vi.fn(() => ({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            order: jest.fn(() => ({
               data: [],
-              error: null
-            }))
-          }))
-        }))
+              error: null,
+            })),
+          })),
+        })),
       });
 
       const result = await getTrendsByGenre('NonExistentGenre');
-      
+
       expect(result).toEqual([]);
     });
 
     it('should handle database errors gracefully', async () => {
       mockSupabase.from.mockReturnValue({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            order: vi.fn(() => ({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            order: jest.fn(() => ({
               data: null,
-              error: { message: 'Database connection failed' }
-            }))
-          }))
-        }))
+              error: { message: 'Database connection failed' },
+            })),
+          })),
+        })),
       });
 
-      await expect(getTrendsByGenre('Romance'))
-        .rejects.toThrow('Failed to fetch market trends');
+      await expect(getTrendsByGenre('Romance')).rejects.toThrow(
+        'Failed to fetch market trends'
+      );
     });
 
     it('should validate genre parameter', async () => {
-      await expect(getTrendsByGenre(''))
-        .rejects.toThrow('Genre is required');
+      await expect(getTrendsByGenre('')).rejects.toThrow('Genre is required');
     });
   });
 
@@ -155,9 +170,10 @@ describe('Market Trend Integration System Tests', () => {
     });
 
     it('should analyze content against trends', async () => {
-      const content = 'This is a romance story about enemies who become lovers through forced proximity in the workplace.';
+      const content =
+        'This is a romance story about enemies who become lovers through forced proximity in the workplace.';
       const result = await analyzeAgainstTrends(content, 'Romance');
-      
+
       expect(result.length).toBeGreaterThan(0);
       expect(result[0]).toHaveProperty('trend');
       expect(result[0]).toHaveProperty('matchScore');
@@ -168,10 +184,13 @@ describe('Market Trend Integration System Tests', () => {
     });
 
     it('should calculate match scores correctly', async () => {
-      const content = 'Enemies to lovers story with workplace rivals and forced proximity.';
+      const content =
+        'Enemies to lovers story with workplace rivals and forced proximity.';
       const result = await analyzeAgainstTrends(content, 'Romance');
-      
-      const enemiesToLoversMatch = result.find(r => r.trend.label === 'Enemies to Lovers');
+
+      const enemiesToLoversMatch = result.find(
+        r => r.trend.label === 'Enemies to Lovers'
+      );
       expect(enemiesToLoversMatch).toBeDefined();
       expect(enemiesToLoversMatch!.matchScore).toBeGreaterThan(0.5);
     });
@@ -179,17 +198,20 @@ describe('Market Trend Integration System Tests', () => {
     it('should generate appropriate recommendations', async () => {
       const content = 'A slow burn romance with gradual emotional development.';
       const result = await analyzeAgainstTrends(content, 'Romance');
-      
+
       const slowBurnMatch = result.find(r => r.trend.label === 'Slow Burn');
       expect(slowBurnMatch).toBeDefined();
       expect(slowBurnMatch!.recommendation).toContain('Slow Burn');
     });
 
     it('should find evidence in content', async () => {
-      const content = 'The story features forced proximity and workplace rivals.';
+      const content =
+        'The story features forced proximity and workplace rivals.';
       const result = await analyzeAgainstTrends(content, 'Romance');
-      
-      const enemiesMatch = result.find(r => r.trend.label === 'Enemies to Lovers');
+
+      const enemiesMatch = result.find(
+        r => r.trend.label === 'Enemies to Lovers'
+      );
       expect(enemiesMatch).toBeDefined();
       expect(enemiesMatch!.evidence.length).toBeGreaterThan(0);
     });
@@ -197,7 +219,7 @@ describe('Market Trend Integration System Tests', () => {
     it('should calculate confidence scores', async () => {
       const content = 'Enemies to lovers with forced proximity.';
       const result = await analyzeAgainstTrends(content, 'Romance');
-      
+
       result.forEach(match => {
         expect(match.confidence).toBeGreaterThanOrEqual(0);
         expect(match.confidence).toBeLessThanOrEqual(1);
@@ -207,7 +229,7 @@ describe('Market Trend Integration System Tests', () => {
     it('should assign severity levels correctly', async () => {
       const content = 'Enemies to lovers story.';
       const result = await analyzeAgainstTrends(content, 'Romance');
-      
+
       result.forEach(match => {
         expect(['high', 'medium', 'low']).toContain(match.severity);
       });
@@ -218,7 +240,7 @@ describe('Market Trend Integration System Tests', () => {
     it('should return different trends for different genres', async () => {
       const romanceTrends = await getTrendsByGenre('Romance');
       const mysteryTrends = await getTrendsByGenre('Mystery');
-      
+
       expect(romanceTrends.length).toBeGreaterThan(0);
       expect(mysteryTrends.length).toBeGreaterThan(0);
       expect(romanceTrends.every(t => t.genre === 'Romance')).toBe(true);
@@ -228,7 +250,7 @@ describe('Market Trend Integration System Tests', () => {
     it('should handle case-insensitive genre matching', async () => {
       const result1 = await getTrendsByGenre('romance');
       const result2 = await getTrendsByGenre('ROMANCE');
-      
+
       expect(result1.length).toBeGreaterThan(0);
       expect(result2.length).toBeGreaterThan(0);
     });
@@ -238,23 +260,27 @@ describe('Market Trend Integration System Tests', () => {
     it('should score exact matches highly', async () => {
       const content = 'This is an enemies to lovers story.';
       const result = await analyzeAgainstTrends(content, 'Romance');
-      
-      const exactMatch = result.find(r => r.trend.label === 'Enemies to Lovers');
+
+      const exactMatch = result.find(
+        r => r.trend.label === 'Enemies to Lovers'
+      );
       expect(exactMatch!.matchScore).toBeGreaterThan(0.3);
     });
 
     it('should score partial matches moderately', async () => {
       const content = 'A story about workplace rivals.';
       const result = await analyzeAgainstTrends(content, 'Romance');
-      
-      const partialMatch = result.find(r => r.trend.label === 'Enemies to Lovers');
+
+      const partialMatch = result.find(
+        r => r.trend.label === 'Enemies to Lovers'
+      );
       expect(partialMatch!.matchScore).toBeGreaterThan(0.1);
     });
 
     it('should score no matches low', async () => {
       const content = 'A completely unrelated story about cooking.';
       const result = await analyzeAgainstTrends(content, 'Romance');
-      
+
       if (result.length > 0) {
         result.forEach(match => {
           expect(match.matchScore).toBeLessThan(0.5);
@@ -265,14 +291,16 @@ describe('Market Trend Integration System Tests', () => {
     it('should consider trend popularity in scoring', async () => {
       const content = 'Enemies to lovers story.';
       const result = await analyzeAgainstTrends(content, 'Romance');
-      
+
       // High-scoring trends should appear first
       const highScoringTrends = result.filter(r => r.trend.score > 0.9);
       const lowScoringTrends = result.filter(r => r.trend.score < 0.8);
-      
+
       if (highScoringTrends.length > 0 && lowScoringTrends.length > 0) {
-        const highScore = highScoringTrends[0].matchScore * highScoringTrends[0].trend.score;
-        const lowScore = lowScoringTrends[0].matchScore * lowScoringTrends[0].trend.score;
+        const highScore =
+          highScoringTrends[0]?.matchScore * highScoringTrends[0]?.trend.score;
+        const lowScore =
+          lowScoringTrends[0]?.matchScore * lowScoringTrends[0]?.trend.score;
         expect(highScore).toBeGreaterThanOrEqual(lowScore);
       }
     });
@@ -282,14 +310,14 @@ describe('Market Trend Integration System Tests', () => {
     it('should handle missing trend data gracefully', async () => {
       // Mock empty trends
       mockSupabase.from.mockReturnValue({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            order: vi.fn(() => ({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            order: jest.fn(() => ({
               data: [],
-              error: null
-            }))
-          }))
-        }))
+              error: null,
+            })),
+          })),
+        })),
       });
 
       const result = await analyzeAgainstTrends('Some content', 'Romance');
@@ -298,14 +326,14 @@ describe('Market Trend Integration System Tests', () => {
 
     it('should handle API failures gracefully', async () => {
       mockSupabase.from.mockReturnValue({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            order: vi.fn(() => ({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            order: jest.fn(() => ({
               data: null,
-              error: { message: 'API error' }
-            }))
-          }))
-        }))
+              error: { message: 'API error' },
+            })),
+          })),
+        })),
       });
 
       const result = await analyzeAgainstTrends('Some content', 'Romance');
@@ -317,18 +345,18 @@ describe('Market Trend Integration System Tests', () => {
     it('should handle large content efficiently', async () => {
       const largeContent = 'A'.repeat(10000); // 10KB of content
       const startTime = Date.now();
-      
+
       const result = await analyzeAgainstTrends(largeContent, 'Romance');
       const processingTime = Date.now() - startTime;
-      
+
       expect(processingTime).toBeLessThan(5000); // Should complete within 5 seconds
       expect(result).toBeDefined();
     });
 
     it('should handle multiple concurrent requests', async () => {
-      const promises = Array(5).fill(null).map(() => 
-        analyzeAgainstTrends('Test content', 'Romance')
-      );
+      const promises = Array(5)
+        .fill(null)
+        .map(() => analyzeAgainstTrends('Test content', 'Romance'));
 
       const results = await Promise.all(promises);
       expect(results).toHaveLength(5);
@@ -342,7 +370,7 @@ describe('Market Trend Integration System Tests', () => {
     it('should provide comprehensive market analysis', async () => {
       const content = 'Enemies to lovers story with slow burn romance.';
       const analysis = await getMarketAnalysis(content, 'Romance');
-      
+
       expect(analysis).toHaveProperty('genre');
       expect(analysis).toHaveProperty('content');
       expect(analysis).toHaveProperty('trends');
@@ -357,7 +385,7 @@ describe('Market Trend Integration System Tests', () => {
     it('should calculate overall alignment correctly', async () => {
       const content = 'Enemies to lovers story.';
       const analysis = await getMarketAnalysis(content, 'Romance');
-      
+
       expect(analysis.overallAlignment).toBeGreaterThanOrEqual(0);
       expect(analysis.overallAlignment).toBeLessThanOrEqual(1);
     });
@@ -365,7 +393,7 @@ describe('Market Trend Integration System Tests', () => {
     it('should generate top recommendations', async () => {
       const content = 'A romance story.';
       const analysis = await getMarketAnalysis(content, 'Romance');
-      
+
       expect(analysis.topRecommendations.length).toBeGreaterThan(0);
       analysis.topRecommendations.forEach(rec => {
         expect(typeof rec).toBe('string');
@@ -376,14 +404,14 @@ describe('Market Trend Integration System Tests', () => {
     it('should identify market opportunities', async () => {
       const content = 'A basic romance story.';
       const analysis = await getMarketAnalysis(content, 'Romance');
-      
+
       expect(Array.isArray(analysis.marketOpportunities)).toBe(true);
     });
 
     it('should identify risk factors', async () => {
       const content = 'A romance story.';
       const analysis = await getMarketAnalysis(content, 'Romance');
-      
+
       expect(Array.isArray(analysis.riskFactors)).toBe(true);
     });
   });
@@ -391,7 +419,7 @@ describe('Market Trend Integration System Tests', () => {
   describe('getGenreTrendSummary Function', () => {
     it('should provide genre trend summary', async () => {
       const summary = await getGenreTrendSummary('Romance');
-      
+
       expect(summary).toHaveProperty('genre');
       expect(summary).toHaveProperty('topTrends');
       expect(summary).toHaveProperty('trendCounts');
@@ -401,7 +429,7 @@ describe('Market Trend Integration System Tests', () => {
 
     it('should calculate trend counts correctly', async () => {
       const summary = await getGenreTrendSummary('Romance');
-      
+
       expect(summary.trendCounts.topic).toBeGreaterThanOrEqual(0);
       expect(summary.trendCounts.tone).toBeGreaterThanOrEqual(0);
       expect(summary.trendCounts.structure).toBeGreaterThanOrEqual(0);
@@ -410,7 +438,7 @@ describe('Market Trend Integration System Tests', () => {
 
     it('should calculate average score correctly', async () => {
       const summary = await getGenreTrendSummary('Romance');
-      
+
       expect(summary.averageScore).toBeGreaterThanOrEqual(0);
       expect(summary.averageScore).toBeLessThanOrEqual(1);
     });
@@ -419,8 +447,11 @@ describe('Market Trend Integration System Tests', () => {
   describe('generateTrendRecommendations Function', () => {
     it('should generate trend recommendations', async () => {
       const content = 'A romance story.';
-      const recommendations = await generateTrendRecommendations(content, 'Romance');
-      
+      const recommendations = await generateTrendRecommendations(
+        content,
+        'Romance'
+      );
+
       expect(Array.isArray(recommendations)).toBe(true);
       recommendations.forEach(rec => {
         expect(rec).toHaveProperty('type');
@@ -435,8 +466,11 @@ describe('Market Trend Integration System Tests', () => {
 
     it('should include different types of recommendations', async () => {
       const content = 'A romance story.';
-      const recommendations = await generateTrendRecommendations(content, 'Romance');
-      
+      const recommendations = await generateTrendRecommendations(
+        content,
+        'Romance'
+      );
+
       const types = recommendations.map(r => r.type);
       expect(types).toContain('alignment');
       expect(types).toContain('opportunity');
@@ -453,7 +487,7 @@ describe('Market Trend Integration System Tests', () => {
         expect(trend).toHaveProperty('score');
         expect(trend).toHaveProperty('examples');
         expect(trend).toHaveProperty('updated_at');
-        
+
         expect(typeof trend.genre).toBe('string');
         expect(typeof trend.trend_type).toBe('string');
         expect(typeof trend.label).toBe('string');
@@ -467,7 +501,7 @@ describe('Market Trend Integration System Tests', () => {
     it('should validate match result structure', async () => {
       const content = 'Enemies to lovers story.';
       const results = await analyzeAgainstTrends(content, 'Romance');
-      
+
       results.forEach(result => {
         expect(result).toHaveProperty('trend');
         expect(result).toHaveProperty('matchScore');
@@ -475,7 +509,7 @@ describe('Market Trend Integration System Tests', () => {
         expect(result).toHaveProperty('confidence');
         expect(result).toHaveProperty('evidence');
         expect(result).toHaveProperty('severity');
-        
+
         expect(typeof result.matchScore).toBe('number');
         expect(typeof result.recommendation).toBe('string');
         expect(typeof result.confidence).toBe('number');
@@ -484,4 +518,4 @@ describe('Market Trend Integration System Tests', () => {
       });
     });
   });
-}); 
+});

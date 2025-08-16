@@ -5,15 +5,57 @@ import SceneChatSimulator from '../src/components/SceneChatSimulator';
 import { AuthContext } from '../src/contexts/AuthContext';
 import * as simulateSceneModule from '../src/services/simulateSceneDialog';
 import * as useSceneConfigModule from '../src/hooks/useSceneConfig';
+import { ExtendedUser } from '../src/contexts/AuthContext';
 
 jest.useFakeTimers();
 
-const proUser = { id: 'user-1', tier: 'Pro' };
-const freeUser = { id: 'user-2', tier: 'Free' };
+// Mock users with required ExtendedUser properties
+const proUser: ExtendedUser = {
+  id: 'user-1',
+  tier: 'Pro',
+  app_metadata: {},
+  user_metadata: {},
+  aud: 'authenticated',
+  created_at: new Date().toISOString(),
+};
+const freeUser: ExtendedUser = {
+  id: 'user-2',
+  tier: 'Free',
+  app_metadata: {},
+  user_metadata: {},
+  aud: 'authenticated',
+  created_at: new Date().toISOString(),
+};
 
 const mockPersonas = [
-  { id: 'c1', user_id: 'user-1', name: 'Alice', archetype: 'Hero', goals: '', voiceStyle: '', worldview: '', personality: '', knownConnections: [], traits: {}, created_at: '', updated_at: '' },
-  { id: 'c2', user_id: 'user-1', name: 'Bob', archetype: 'Mentor', goals: '', voiceStyle: '', worldview: '', personality: '', knownConnections: [], traits: {}, created_at: '', updated_at: '' },
+  {
+    id: 'c1',
+    user_id: 'user-1',
+    name: 'Alice',
+    archetype: 'Hero',
+    goals: '',
+    voiceStyle: '',
+    worldview: '',
+    personality: '',
+    knownConnections: [],
+    traits: {},
+    created_at: '',
+    updated_at: '',
+  },
+  {
+    id: 'c2',
+    user_id: 'user-1',
+    name: 'Bob',
+    archetype: 'Mentor',
+    goals: '',
+    voiceStyle: '',
+    worldview: '',
+    personality: '',
+    knownConnections: [],
+    traits: {},
+    created_at: '',
+    updated_at: '',
+  },
 ];
 const mockScene = {
   id: 'scene-1',
@@ -63,9 +105,13 @@ describe('SceneChatSimulator', () => {
   it('starts playback on Play Scene click and respects timing', () => {
     setup();
     fireEvent.click(screen.getByLabelText(/Play Scene/i));
-    act(() => { jest.advanceTimersByTime(1600); });
+    act(() => {
+      jest.advanceTimersByTime(1600);
+    });
     expect(screen.getByText('Alice:')).toBeInTheDocument();
-    act(() => { jest.advanceTimersByTime(1600); });
+    act(() => {
+      jest.advanceTimersByTime(1600);
+    });
     expect(screen.getByText('Bob:')).toBeInTheDocument();
   });
 
@@ -73,11 +119,15 @@ describe('SceneChatSimulator', () => {
     setup();
     fireEvent.click(screen.getByLabelText(/Play Scene/i));
     fireEvent.click(screen.getByLabelText(/Pause/i));
-    act(() => { jest.advanceTimersByTime(2000); });
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
     // Should not advance
     expect(screen.queryByText('Bob:')).not.toBeInTheDocument();
     fireEvent.click(screen.getByLabelText(/Resume/i));
-    act(() => { jest.advanceTimersByTime(1600); });
+    act(() => {
+      jest.advanceTimersByTime(1600);
+    });
     expect(screen.getByText('Bob:')).toBeInTheDocument();
   });
 
@@ -91,8 +141,12 @@ describe('SceneChatSimulator', () => {
   it('shows current speaker with visual highlight', () => {
     setup();
     fireEvent.click(screen.getByLabelText(/Play Scene/i));
-    act(() => { jest.advanceTimersByTime(1600); });
-    const highlighted = screen.getAllByRole('listitem').find(el => el.getAttribute('aria-current') === 'step');
+    act(() => {
+      jest.advanceTimersByTime(1600);
+    });
+    const highlighted = screen
+      .getAllByRole('listitem')
+      .find(el => el.getAttribute('aria-current') === 'step');
     expect(highlighted).toBeTruthy();
   });
 
@@ -103,7 +157,11 @@ describe('SceneChatSimulator', () => {
   });
 
   it('handles empty or malformed scenes gracefully', () => {
-    mockUseSceneConfig.mockReturnValue({ config: null, loading: false, error: null });
+    mockUseSceneConfig.mockReturnValue({
+      config: null,
+      loading: false,
+      error: null,
+    });
     render(
       <AuthContext.Provider value={{ user: proUser }}>
         <SceneChatSimulator sceneId="scene-1" />
@@ -122,4 +180,4 @@ describe('SceneChatSimulator', () => {
     const { asFragment } = setup();
     expect(asFragment()).toMatchSnapshot();
   });
-}); 
+});

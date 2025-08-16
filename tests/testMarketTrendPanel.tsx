@@ -3,16 +3,45 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import MarketTrendPanel from '../src/components/MarketTrendPanel';
 import { WriterProfile } from '../src/types/WriterProfile';
 import * as useMarketTrendsModule from '../src/hooks/useMarketTrends';
+import {
+  MarketTrend,
+  TrendMatchResult,
+  MarketAnalysis,
+  GenreTrendSummary,
+  TrendRecommendation,
+} from '../src/types/MarketTrend';
 
-const mockTrends = [
-  { id: '1', genre: 'Romance', trend_type: 'topic', label: 'Enemies to Lovers', score: 0.95, examples: ['Book A', 'Book B'], updated_at: '2024-01-01' },
-  { id: '2', genre: 'Romance', trend_type: 'tone', label: 'Slow Burn', score: 0.88, examples: ['Book C'], updated_at: '2024-01-01' }
+const mockTrends: MarketTrend[] = [
+  {
+    id: '1',
+    genre: 'Romance',
+    trend_type: 'tone',
+    label: 'Enemies to Lovers',
+    score: 0.91,
+    examples: ['Pride and Prejudice'],
+    updated_at: '2024-01-01',
+  },
+  {
+    id: '2',
+    genre: 'Romance',
+    trend_type: 'structure',
+    label: 'Slow Burn',
+    score: 0.85,
+    examples: ['The Hating Game'],
+    updated_at: '2024-01-01',
+  },
 ];
-const mockMatchResults = [
-  { trend: mockTrends[0], matchScore: 0.2, recommendation: 'Try adding more rivalry.', confidence: 0.7, evidence: ['Book A'], severity: 'medium' },
-  { trend: mockTrends[1], matchScore: 0.8, recommendation: 'Great alignment!', confidence: 0.9, evidence: ['Book C'], severity: 'high' }
+const mockMatchResults: TrendMatchResult[] = [
+  {
+    trend: mockTrends[0],
+    matchScore: 0.75,
+    recommendation: 'Emphasize rivalry',
+    confidence: 0.8,
+    evidence: ['Strong conflict setup'],
+    severity: 'high',
+  },
 ];
-const mockAnalysis = {
+const mockAnalysis: MarketAnalysis = {
   genre: 'Romance',
   content: 'Outline text',
   trends: mockTrends,
@@ -21,17 +50,31 @@ const mockAnalysis = {
   topRecommendations: ['Emphasize rivalry'],
   marketOpportunities: [],
   riskFactors: [],
-  summary: { totalTrends: 2, highMatches: 1, mediumMatches: 1, lowMatches: 0, averageAlignment: 0.75 }
+  summary: {
+    totalTrends: 2,
+    highMatches: 1,
+    mediumMatches: 1,
+    lowMatches: 0,
+    averageAlignment: 0.75,
+  },
 };
-const mockSummary = {
+const mockSummary: GenreTrendSummary = {
   genre: 'Romance',
   topTrends: mockTrends,
   trendCounts: { topic: 1, tone: 1, structure: 0, theme: 0 },
   averageScore: 0.91,
-  lastUpdated: '2024-01-01'
+  lastUpdated: '2024-01-01',
 };
-const mockRecommendations = [
-  { type: 'alignment', title: 'Strong Alignment', description: 'You are on trend!', impact: 'high', confidence: 0.9, actionableSteps: ['Keep it up!'], relatedTrends: ['Slow Burn'] }
+const mockRecommendations: TrendRecommendation[] = [
+  {
+    type: 'alignment',
+    title: 'Strong Alignment',
+    description: 'You are on trend!',
+    impact: 'high',
+    confidence: 0.9,
+    actionableSteps: ['Keep it up!'],
+    relatedTrends: ['Slow Burn'],
+  },
 ];
 
 const proProfile: WriterProfile = {
@@ -42,7 +85,7 @@ const proProfile: WriterProfile = {
   genre_specializations: ['Romance'],
   successful_patterns: {},
   lastTrendMatchScore: 0.75,
-  topMisalignments: ['Enemies to Lovers']
+  topMisalignments: ['Enemies to Lovers'],
 };
 
 describe('MarketTrendPanel', () => {
@@ -58,7 +101,7 @@ describe('MarketTrendPanel', () => {
       lastUpdated: new Date(),
       refreshTrends: jest.fn(),
       analyzeContent: jest.fn(),
-      getRecommendations: jest.fn()
+      getRecommendations: jest.fn(),
     });
   });
 
@@ -67,7 +110,13 @@ describe('MarketTrendPanel', () => {
   });
 
   it('renders top market trends and match scores', () => {
-    render(<MarketTrendPanel genre="Romance" content="Outline text" profile={proProfile} />);
+    render(
+      <MarketTrendPanel
+        genre="Romance"
+        content="Outline text"
+        profile={proProfile}
+      />
+    );
     expect(screen.getByText('Market Trends: Romance')).toBeInTheDocument();
     expect(screen.getByText('Enemies to Lovers')).toBeInTheDocument();
     expect(screen.getByText('Slow Burn')).toBeInTheDocument();
@@ -76,8 +125,10 @@ describe('MarketTrendPanel', () => {
   });
 
   it('shows Pro gating for Free users', () => {
-    render(<MarketTrendPanel genre="Romance" content="Outline text" profile={undefined} />);
-    expect(screen.getByText(/Market trend analysis is a Pro feature/i)).toBeInTheDocument();
+    render(<MarketTrendPanel genre="Romance" content="Outline text" />);
+    expect(
+      screen.getByText(/Market trend analysis is a Pro feature/i)
+    ).toBeInTheDocument();
     expect(screen.getByText(/Upgrade to Pro/i)).toBeInTheDocument();
   });
 
@@ -93,9 +144,15 @@ describe('MarketTrendPanel', () => {
       lastUpdated: null,
       refreshTrends: jest.fn(),
       analyzeContent: jest.fn(),
-      getRecommendations: jest.fn()
+      getRecommendations: jest.fn(),
     });
-    render(<MarketTrendPanel genre="Romance" content="Outline text" profile={proProfile} />);
+    render(
+      <MarketTrendPanel
+        genre="Romance"
+        content="Outline text"
+        profile={proProfile}
+      />
+    );
     expect(screen.getByText(/Analyzing market trends/i)).toBeInTheDocument();
   });
 
@@ -111,10 +168,16 @@ describe('MarketTrendPanel', () => {
       lastUpdated: null,
       refreshTrends: jest.fn(),
       analyzeContent: jest.fn(),
-      getRecommendations: jest.fn()
+      getRecommendations: jest.fn(),
     });
-    render(<MarketTrendPanel genre="Romance" content="Outline text" profile={proProfile} />);
+    render(
+      <MarketTrendPanel
+        genre="Romance"
+        content="Outline text"
+        profile={proProfile}
+      />
+    );
     expect(screen.queryByText('Market Trends: Romance')).toBeInTheDocument();
     expect(screen.queryByText('Enemies to Lovers')).not.toBeInTheDocument();
   });
-}); 
+});

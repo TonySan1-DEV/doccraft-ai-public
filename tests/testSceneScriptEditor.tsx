@@ -13,14 +13,64 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import SceneScriptEditor, { ScriptLine } from '../src/components/SceneScriptEditor';
+import SceneScriptEditor, {
+  ScriptLine,
+} from '../src/components/SceneScriptEditor';
 import { CharacterPersona } from '../src/types/CharacterPersona';
 
 const proUser = { id: 'user-1', tier: 'Pro' };
 const freeUser = { id: 'user-2', tier: 'Free' };
 const mockParticipants: CharacterPersona[] = [
-  { id: 'c1', user_id: 'user-1', name: 'Alice', archetype: '', goals: '', voiceStyle: '', worldview: '', personality: '', knownConnections: [], traits: {}, created_at: '', updated_at: '' },
-  { id: 'c2', user_id: 'user-1', name: 'Bob', archetype: '', goals: '', voiceStyle: '', worldview: '', personality: '', knownConnections: [], traits: {}, created_at: '', updated_at: '' },
+  {
+    id: 'c1',
+    name: 'Alice',
+    description: 'A curious explorer',
+    archetype: 'Hero',
+    goals: ['Discover new lands'],
+    voiceStyle: 'Enthusiastic',
+    worldview: 'Optimistic',
+    personality: ['Curious', 'Brave'],
+    conflicts: [],
+    arc: "Hero's journey",
+    knownConnections: [],
+    traits: [
+      {
+        id: 'trait-1',
+        name: 'curious',
+        category: 'personality',
+        value: 'curious',
+        strength: 8,
+        description: 'Always asking questions',
+      },
+    ],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'c2',
+    name: 'Bob',
+    description: 'A wise mentor',
+    archetype: 'Mentor',
+    goals: ['Guide others'],
+    voiceStyle: 'Calm',
+    worldview: 'Wise',
+    personality: ['Patient', 'Knowledgeable'],
+    conflicts: [],
+    arc: "Mentor's journey",
+    knownConnections: [],
+    traits: [
+      {
+        id: 'trait-2',
+        name: 'patient',
+        category: 'personality',
+        value: 'patient',
+        strength: 9,
+        description: 'Takes time to explain things',
+      },
+    ],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
 ];
 const initialLines: ScriptLine[] = [
   { id: '1', speakerId: 'c1', text: 'Hello, Bob!' },
@@ -31,7 +81,12 @@ describe('SceneScriptEditor', () => {
   it('renders lines and characters correctly', () => {
     render(
       <SceneScriptEditor
-        scene={{ id: 'scene-1', title: 'Test', setting: '', participants: mockParticipants }}
+        scene={{
+          id: 'scene-1',
+          title: 'Test',
+          setting: '',
+          participants: mockParticipants,
+        }}
         initialLines={initialLines}
         participants={mockParticipants}
         onSaveScript={jest.fn()}
@@ -47,7 +102,12 @@ describe('SceneScriptEditor', () => {
   it('allows editing and adding of lines', () => {
     render(
       <SceneScriptEditor
-        scene={{ id: 'scene-1', title: 'Test', setting: '', participants: mockParticipants }}
+        scene={{
+          id: 'scene-1',
+          title: 'Test',
+          setting: '',
+          participants: mockParticipants,
+        }}
         initialLines={initialLines}
         participants={mockParticipants}
         onSaveScript={jest.fn()}
@@ -55,7 +115,9 @@ describe('SceneScriptEditor', () => {
         onSimulateScript={jest.fn()}
       />
     );
-    fireEvent.change(screen.getByPlaceholderText('Add new line...'), { target: { value: 'A new line' } });
+    fireEvent.change(screen.getByPlaceholderText('Add new line...'), {
+      target: { value: 'A new line' },
+    });
     fireEvent.click(screen.getByLabelText('Add Line (Enter)'));
     expect(screen.getByDisplayValue('A new line')).toBeInTheDocument();
   });
@@ -63,7 +125,12 @@ describe('SceneScriptEditor', () => {
   it('deletes selected line with Delete key', () => {
     render(
       <SceneScriptEditor
-        scene={{ id: 'scene-1', title: 'Test', setting: '', participants: mockParticipants }}
+        scene={{
+          id: 'scene-1',
+          title: 'Test',
+          setting: '',
+          participants: mockParticipants,
+        }}
         initialLines={initialLines}
         participants={mockParticipants}
         onSaveScript={jest.fn()}
@@ -80,7 +147,12 @@ describe('SceneScriptEditor', () => {
   it('supports keyboard navigation (↑, ↓, Enter)', () => {
     render(
       <SceneScriptEditor
-        scene={{ id: 'scene-1', title: 'Test', setting: '', participants: mockParticipants }}
+        scene={{
+          id: 'scene-1',
+          title: 'Test',
+          setting: '',
+          participants: mockParticipants,
+        }}
         initialLines={initialLines}
         participants={mockParticipants}
         onSaveScript={jest.fn()}
@@ -101,7 +173,12 @@ describe('SceneScriptEditor', () => {
   it('shows tooltips and ARIA roles', () => {
     render(
       <SceneScriptEditor
-        scene={{ id: 'scene-1', title: 'Test', setting: '', participants: mockParticipants }}
+        scene={{
+          id: 'scene-1',
+          title: 'Test',
+          setting: '',
+          participants: mockParticipants,
+        }}
         initialLines={initialLines}
         participants={mockParticipants}
         onSaveScript={jest.fn()}
@@ -111,8 +188,12 @@ describe('SceneScriptEditor', () => {
     );
     expect(screen.getByLabelText('Save Script (Ctrl+S)')).toBeInTheDocument();
     expect(screen.getByLabelText('Export Script (Ctrl+E)')).toBeInTheDocument();
-    expect(screen.getByLabelText('Simulate Scene (Ctrl+P)')).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: /Script Editor/i })).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Simulate Scene (Ctrl+P)')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: /Script Editor/i })
+    ).toBeInTheDocument();
   });
 
   it('calls export, simulate, and save triggers', () => {
@@ -121,7 +202,12 @@ describe('SceneScriptEditor', () => {
     const onSim = jest.fn();
     render(
       <SceneScriptEditor
-        scene={{ id: 'scene-1', title: 'Test', setting: '', participants: mockParticipants }}
+        scene={{
+          id: 'scene-1',
+          title: 'Test',
+          setting: '',
+          participants: mockParticipants,
+        }}
         initialLines={initialLines}
         participants={mockParticipants}
         onSaveScript={onSave}
@@ -140,7 +226,12 @@ describe('SceneScriptEditor', () => {
   it('matches snapshot for key UI states', () => {
     const { asFragment } = render(
       <SceneScriptEditor
-        scene={{ id: 'scene-1', title: 'Test', setting: '', participants: mockParticipants }}
+        scene={{
+          id: 'scene-1',
+          title: 'Test',
+          setting: '',
+          participants: mockParticipants,
+        }}
         initialLines={initialLines}
         participants={mockParticipants}
         onSaveScript={jest.fn()}
@@ -150,4 +241,4 @@ describe('SceneScriptEditor', () => {
     );
     expect(asFragment()).toMatchSnapshot();
   });
-}); 
+});

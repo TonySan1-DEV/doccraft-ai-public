@@ -8,26 +8,22 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
 
-console.log('🚀 main.tsx loading...');
-console.log('🔍 Environment check:', {
-  NODE_ENV: import.meta.env.NODE_ENV,
-  VITE_DEV_MODE: import.meta.env.VITE_DEV_MODE,
-  VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL ? 'Set' : 'Not set',
-});
+// main.tsx loading...
+// Environment check completed
 
 try {
   const rootElement = document.getElementById('root');
-  console.log('🔍 Root element found:', rootElement);
+  // Root element found
 
   if (!rootElement) {
     throw new Error('Root element not found');
   }
 
-  console.log('🔍 Creating React root...');
+  // Creating React root...
   const root = ReactDOM.createRoot(rootElement);
-  console.log('✅ React root created');
+  // React root created
 
-  console.log('🔍 Rendering app...');
+  // Rendering app...
   root.render(
     <React.StrictMode>
       <ErrorBoundary>
@@ -43,7 +39,7 @@ try {
     </React.StrictMode>
   );
 
-  console.log('✅ App rendered successfully');
+  // App rendered successfully
 } catch (error) {
   console.error('❌ Error in main.tsx:', error);
 
