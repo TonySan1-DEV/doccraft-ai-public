@@ -12,16 +12,16 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { CharacterPersona } from '../types/CharacterPersona';
-import { 
-  CharacterInteraction, 
-  CharacterDevelopmentPrompt, 
+import {
+  CharacterInteraction,
+  CharacterDevelopmentPrompt,
   CharacterAnalysis,
   generateCharacterPrompts,
   simulateCharacterResponse,
   analyzeCharacterPersonality,
   generatePersonalityInsights,
   exportCharacterData,
-  importCharacterData
+  importCharacterData,
 } from '../services/characterDevelopmentService';
 
 export interface UseCharacterInteractionOptions {
@@ -66,7 +66,7 @@ export function useCharacterInteraction(
   const {
     autoAnalyze = true,
     saveToLocalStorage = true,
-    maxInteractions = 100
+    maxInteractions = 100,
   } = options;
 
   // State
@@ -81,7 +81,9 @@ export function useCharacterInteraction(
   // Load saved data from localStorage
   useEffect(() => {
     if (saveToLocalStorage) {
-      const savedData = localStorage.getItem(`character-interaction-${character.id}`);
+      const savedData = localStorage.getItem(
+        `character-interaction-${character.id}`
+      );
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData);
@@ -102,9 +104,12 @@ export function useCharacterInteraction(
         interactions,
         prompts,
         analysis,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
       };
-      localStorage.setItem(`character-interaction-${character.id}`, JSON.stringify(dataToSave));
+      localStorage.setItem(
+        `character-interaction-${character.id}`,
+        JSON.stringify(dataToSave)
+      );
     }
   }, [interactions, prompts, analysis, character.id, saveToLocalStorage]);
 
@@ -116,45 +121,51 @@ export function useCharacterInteraction(
 
   // Auto-analyze character after significant interactions
   useEffect(() => {
-    if (autoAnalyze && interactions.length > 0 && interactions.length % 10 === 0) {
+    if (
+      autoAnalyze &&
+      interactions.length > 0 &&
+      interactions.length % 10 === 0
+    ) {
       analyzeCharacter();
     }
   }, [interactions.length, autoAnalyze]);
 
   // Send message to character
-  const sendMessage = useCallback(async (message: string, context: string = '') => {
-    if (!message.trim()) return;
+  const sendMessage = useCallback(
+    async (message: string, context: string = '') => {
+      if (!message.trim()) return;
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const interaction = await simulateCharacterResponse(
-        message,
-        character,
-        context,
-        interactions
-      );
+      try {
+        const interaction = await simulateCharacterResponse(
+          message,
+          character,
+          context,
+          interactions
+        );
 
-      setInteractions(prev => {
-        const newInteractions = [...prev, interaction];
-        // Keep only the last maxInteractions
-        return newInteractions.slice(-maxInteractions);
-      });
+        setInteractions(prev => {
+          const newInteractions = [...prev, interaction];
+          // Keep only the last maxInteractions
+          return newInteractions.slice(-maxInteractions);
+        });
 
-      // Generate prompts if this is one of the first few interactions
-      if (interactions.length < 5 && prompts.length === 0) {
-        const newPrompts = generateCharacterPrompts(character);
-        setPrompts(newPrompts);
+        // Generate prompts if this is one of the first few interactions
+        if (interactions.length < 5 && prompts.length === 0) {
+          const newPrompts = generateCharacterPrompts(character);
+          setPrompts(newPrompts);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to send message');
+        console.error('Character interaction error:', err);
+      } finally {
+        setIsLoading(false);
       }
-
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send message');
-      console.error('Character interaction error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [character, interactions, prompts.length, maxInteractions]);
+    },
+    [character, interactions, prompts.length, maxInteractions]
+  );
 
   // Generate development prompts
   const generatePrompts = useCallback(() => {
@@ -163,27 +174,30 @@ export function useCharacterInteraction(
   }, [character]);
 
   // Complete a development prompt
-  const completePrompt = useCallback((promptId: string, response: string) => {
-    setPrompts(prev => 
-      prev.map(prompt => 
-        prompt.id === promptId 
-          ? { ...prompt, completed: true, response, timestamp: new Date() }
-          : prompt
-      )
-    );
+  const completePrompt = useCallback(
+    (promptId: string, response: string) => {
+      setPrompts(prev =>
+        prev.map(prompt =>
+          prompt.id === promptId
+            ? { ...prompt, completed: true, response, timestamp: new Date() }
+            : prompt
+        )
+      );
 
-    // Add the response as an interaction for context
-    const interaction: CharacterInteraction = {
-      message: `Development Question: ${prompts.find(p => p.id === promptId)?.question}`,
-      characterResponse: response,
-      emotion: 'reflective',
-      intensity: 0.6,
-      context: 'character-development',
-      timestamp: new Date()
-    };
+      // Add the response as an interaction for context
+      const interaction: CharacterInteraction = {
+        message: `Development Question: ${prompts.find(p => p.id === promptId)?.question}`,
+        characterResponse: response,
+        emotion: 'reflective',
+        intensity: 0.6,
+        context: 'character-development',
+        timestamp: new Date(),
+      };
 
-    setInteractions(prev => [...prev, interaction]);
-  }, [prompts]);
+      setInteractions(prev => [...prev, interaction]);
+    },
+    [prompts]
+  );
 
   // Analyze character
   const analyzeCharacter = useCallback(async () => {
@@ -191,10 +205,15 @@ export function useCharacterInteraction(
     setError(null);
 
     try {
-      const newAnalysis = await analyzeCharacterPersonality(character, interactions);
+      const newAnalysis = await analyzeCharacterPersonality(
+        character,
+        interactions
+      );
       setAnalysis(newAnalysis);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to analyze character');
+      setError(
+        err instanceof Error ? err.message : 'Failed to analyze character'
+      );
       console.error('Character analysis error:', err);
     } finally {
       setIsLoading(false);
@@ -203,15 +222,20 @@ export function useCharacterInteraction(
 
   // Export character data
   const exportData = useCallback(() => {
-    return exportCharacterData(character, interactions, prompts, analysis || {
-      personalityInsights: [],
-      relationshipPatterns: [],
-      goalAlignment: [],
-      psychologicalProfile: [],
-      communicationStyle: [],
-      developmentRecommendations: [],
-      storyPotential: []
-    });
+    return exportCharacterData(
+      character,
+      interactions,
+      prompts,
+      analysis || {
+        personalityInsights: [],
+        relationshipPatterns: [],
+        goalAlignment: [],
+        psychologicalProfile: [],
+        communicationStyle: [],
+        developmentRecommendations: [],
+        storyPotential: [],
+      }
+    );
   }, [character, interactions, prompts, analysis]);
 
   // Import character data
@@ -233,7 +257,7 @@ export function useCharacterInteraction(
     setPrompts([]);
     setAnalysis(null);
     setError(null);
-    
+
     if (saveToLocalStorage) {
       localStorage.removeItem(`character-interaction-${character.id}`);
     }
@@ -242,26 +266,31 @@ export function useCharacterInteraction(
   // Get session statistics
   const getSessionStats = useCallback(() => {
     const duration = Date.now() - sessionStartTime.getTime();
-    const averageResponseTime = interactions.length > 0 
-      ? interactions.reduce((sum, _interaction) => {
-          // Calculate response time (simplified)
-          return sum + 1000; // Assume 1 second average
-        }, 0) / interactions.length
-      : 0;
+    const averageResponseTime =
+      interactions.length > 0
+        ? interactions.reduce((sum, _interaction) => {
+            // Calculate response time (simplified)
+            return sum + 1000; // Assume 1 second average
+          }, 0) / interactions.length
+        : 0;
 
-    const emotionCounts = interactions.reduce((counts, interaction) => {
-      counts[interaction.emotion] = (counts[interaction.emotion] || 0) + 1;
-      return counts;
-    }, {} as Record<string, number>);
+    const emotionCounts = interactions.reduce(
+      (counts, interaction) => {
+        counts[interaction.emotion] = (counts[interaction.emotion] || 0) + 1;
+        return counts;
+      },
+      {} as Record<string, number>
+    );
 
-    const mostCommonEmotion = Object.entries(emotionCounts)
-      .sort(([,a], [,b]) => b - a)[0]?.[0] || 'neutral';
+    const mostCommonEmotion =
+      Object.entries(emotionCounts).sort(([, a], [, b]) => b - a)[0]?.[0] ||
+      'neutral';
 
     return {
       duration,
       averageResponseTime,
       mostCommonEmotion,
-      interactionCount: interactions.length
+      interactionCount: interactions.length,
     };
   }, [interactions, sessionStartTime]);
 
@@ -275,7 +304,7 @@ export function useCharacterInteraction(
     sessionStartTime,
     totalInteractions: interactions.length,
     completedPrompts: prompts.filter(p => p.completed).length,
-    personalityInsights
+    personalityInsights,
   };
 
   // Actions object
@@ -287,7 +316,7 @@ export function useCharacterInteraction(
     exportData,
     importData,
     clearSession,
-    getSessionStats
+    getSessionStats,
   };
 
   return [state, actions];
@@ -301,7 +330,6 @@ export function useVoiceInteraction() {
   const startListening = useCallback(() => {
     setIsListening(true);
     // TODO: Implement speech recognition
-    console.log('Voice recognition not yet implemented');
   }, []);
 
   const stopListening = useCallback(() => {
@@ -313,7 +341,7 @@ export function useVoiceInteraction() {
     isListening,
     transcript,
     startListening,
-    stopListening
+    stopListening,
   };
 }
 
@@ -346,9 +374,14 @@ export function useCharacterDevelopment(_character: CharacterPersona) {
       notes: developmentNotes.length,
       growthAreas: growthAreas.length,
       achievements: achievements.length,
-      progress: Math.min((developmentStage / 5) * 100, 100) // Assuming 5 stages
+      progress: Math.min((developmentStage / 5) * 100, 100), // Assuming 5 stages
     };
-  }, [developmentStage, developmentNotes.length, growthAreas.length, achievements.length]);
+  }, [
+    developmentStage,
+    developmentNotes.length,
+    growthAreas.length,
+    achievements.length,
+  ]);
 
   return {
     developmentStage,
@@ -359,6 +392,6 @@ export function useCharacterDevelopment(_character: CharacterPersona) {
     addGrowthArea,
     addAchievement,
     advanceStage,
-    getDevelopmentProgress
+    getDevelopmentProgress,
   };
-} 
+}

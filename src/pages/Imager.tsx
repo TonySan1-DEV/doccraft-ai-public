@@ -27,7 +27,6 @@ export default function Imager() {
   }
 
   const handleFileUpload = (file: File) => {
-    console.log('Simulating file upload and processing:', file.name);
     setTimeout(() => {
       const mockProcessedDoc: ProcessedDocument = {
         id: 'mock-id',

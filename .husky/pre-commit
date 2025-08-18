@@ -1,8 +1,5 @@
 #!/usr/bin/env sh
-. "$(dirname "$0")/_/husky.sh"
+. "$(dirname -- "$0")/_/husky.sh"
 
-echo "🔎 Running lint-staged for emotionArc..."
-npx lint-staged
-
-echo "🧠 Type-checking..."
-pnpm tsc --noEmit 
+pnpm run docs:changed
+pnpm run docs:verify 

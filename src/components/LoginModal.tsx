@@ -79,21 +79,21 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       // Handle different modes
       switch (mode) {
         case "login":
-          console.log("Logging in:", {
+    
             email: formData.email,
             password: formData.password,
           });
           // Add your login logic here
           break;
         case "signup":
-          console.log("Signing up:", {
+    
             email: formData.email,
             password: formData.password,
           });
           // Add your signup logic here
           break;
         case "forgot":
-          console.log("Password reset requested for:", formData.email);
+    
           // Add your password reset logic here
           break;
       }

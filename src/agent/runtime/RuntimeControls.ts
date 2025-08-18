@@ -38,13 +38,12 @@ let runtimeState: RuntimeState = {
   memoryActive: true,
   lastCopilotToggle: Date.now(),
   lastMemoryToggle: Date.now(),
-  debugMode: false
+  debugMode: false,
 };
 
 // Debug logging utility
 function logDebug(message: string, data?: any): void {
   if (runtimeState.debugMode) {
-    console.log(`[RuntimeControls] ${message}`, data || '');
   }
 }
 
@@ -54,7 +53,7 @@ function logTelemetry(event: string, data: any): void {
   if (typeof window !== 'undefined' && (window as any).logTelemetryEvent) {
     (window as any).logTelemetryEvent(event, {
       ...data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 }
@@ -62,7 +61,10 @@ function logTelemetry(event: string, data: any): void {
 /**
  * Sync prompt behavior with tone and language settings
  */
-export function syncPromptBehavior(tone: string, language: string): {
+export function syncPromptBehavior(
+  tone: string,
+  language: string
+): {
   header: string;
   injected: boolean;
   tone: string;
@@ -71,15 +73,15 @@ export function syncPromptBehavior(tone: string, language: string): {
 } {
   const validTones = ['friendly', 'formal', 'concise'];
   const validLanguages = ['en', 'es', 'fr', 'de', 'ja', 'zh', 'ko'];
-  
+
   const validatedTone = validTones.includes(tone) ? tone : 'friendly';
   const validatedLanguage = validLanguages.includes(language) ? language : 'en';
-  
+
   return {
     header: `/* Tone: ${validatedTone} | Language: ${validatedLanguage} */`,
     injected: true,
     tone: validatedTone,
-    language: validatedLanguage
+    language: validatedLanguage,
   };
 }
 
@@ -90,7 +92,9 @@ export function syncPromptBehavior(tone: string, language: string): {
 export function toggleCopilot(enabled: boolean): RuntimeStatus {
   // Guard against redundant updates
   if (runtimeState.copilotActive === enabled) {
-    logDebug(`Copilot already ${enabled ? 'enabled' : 'disabled'}, skipping redundant toggle`);
+    logDebug(
+      `Copilot already ${enabled ? 'enabled' : 'disabled'}, skipping redundant toggle`
+    );
     return getRuntimeStatus();
   }
 
@@ -98,21 +102,20 @@ export function toggleCopilot(enabled: boolean): RuntimeStatus {
     if (enabled) {
       // Enable copilot functionality
       copilotEngine.enable();
-      
+
       // Rehydrate suggestions immediately using current context
       // This would trigger immediate suggestion generation
       logDebug('Enabling copilot and rehydrating suggestions');
-      
+
       // Notify UI components to show suggestion elements
       notifyUIComponents('copilot', 'show');
-      
     } else {
       // Disable copilot functionality
       copilotEngine.disable();
-      
+
       // Prevent all background suggestion calculations
       logDebug('Disabling copilot and stopping background calculations');
-      
+
       // Notify UI components to hide suggestion elements
       notifyUIComponents('copilot', 'hide');
     }
@@ -125,16 +128,15 @@ export function toggleCopilot(enabled: boolean): RuntimeStatus {
     logTelemetry('copilot_toggled', {
       enabled,
       previousState: !enabled,
-      action: enabled ? 'enabled' : 'disabled'
+      action: enabled ? 'enabled' : 'disabled',
     });
 
     logDebug(`Copilot ${enabled ? 'enabled' : 'disabled'} successfully`);
-
   } catch (error) {
     console.error('[RuntimeControls] Error toggling copilot:', error);
     logTelemetry('copilot_toggle_error', {
       enabled,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 
@@ -148,7 +150,9 @@ export function toggleCopilot(enabled: boolean): RuntimeStatus {
 export function toggleMemory(enabled: boolean): RuntimeStatus {
   // Guard against redundant updates
   if (runtimeState.memoryActive === enabled) {
-    logDebug(`Memory already ${enabled ? 'enabled' : 'disabled'}, skipping redundant toggle`);
+    logDebug(
+      `Memory already ${enabled ? 'enabled' : 'disabled'}, skipping redundant toggle`
+    );
     return getRuntimeStatus();
   }
 
@@ -156,23 +160,22 @@ export function toggleMemory(enabled: boolean): RuntimeStatus {
     if (enabled) {
       // Enable memory functionality
       sessionMemory.enable();
-      
+
       // Resume memory capture and prior context chaining
       logDebug('Enabling memory and resuming context capture');
-      
+
       // Notify memory-dependent components
       notifyUIComponents('memory', 'show');
-      
     } else {
       // Disable memory functionality
       sessionMemory.disable();
-      
+
       // Immediately purge in-session memory state
       sessionMemory.clear();
-      
+
       // Prevent further context accumulation
       logDebug('Disabling memory and purging session state');
-      
+
       // Notify memory-dependent components
       notifyUIComponents('memory', 'hide');
     }
@@ -185,16 +188,15 @@ export function toggleMemory(enabled: boolean): RuntimeStatus {
     logTelemetry('memory_toggled', {
       enabled,
       previousState: !enabled,
-      action: enabled ? 'enabled' : 'disabled'
+      action: enabled ? 'enabled' : 'disabled',
     });
 
     logDebug(`Memory ${enabled ? 'enabled' : 'disabled'} successfully`);
-
   } catch (error) {
     console.error('[RuntimeControls] Error toggling memory:', error);
     logTelemetry('memory_toggle_error', {
       enabled,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 
@@ -204,14 +206,17 @@ export function toggleMemory(enabled: boolean): RuntimeStatus {
 /**
  * Notify UI components of runtime state changes
  */
-function notifyUIComponents(component: 'copilot' | 'memory', action: 'show' | 'hide'): void {
+function notifyUIComponents(
+  component: 'copilot' | 'memory',
+  action: 'show' | 'hide'
+): void {
   // Dispatch custom events for UI components to listen to
   const event = new CustomEvent('runtimeStateChange', {
     detail: {
       component,
       action,
-      timestamp: Date.now()
-    }
+      timestamp: Date.now(),
+    },
   });
 
   if (typeof window !== 'undefined') {
@@ -231,7 +236,7 @@ export function getRuntimeStatus(): RuntimeStatus {
     updatedAt: new Date().toISOString(),
     lastCopilotToggle: new Date(runtimeState.lastCopilotToggle).toISOString(),
     lastMemoryToggle: new Date(runtimeState.lastMemoryToggle).toISOString(),
-    debugMode: runtimeState.debugMode
+    debugMode: runtimeState.debugMode,
   };
 }
 
@@ -248,7 +253,6 @@ export function enableDebugMode(): void {
  */
 export function disableDebugMode(): void {
   runtimeState.debugMode = false;
-  console.log('[RuntimeControls] Debug mode disabled');
 }
 
 /**
@@ -260,7 +264,7 @@ export function resetRuntimeState(): void {
     memoryActive: true,
     lastCopilotToggle: Date.now(),
     lastMemoryToggle: Date.now(),
-    debugMode: false
+    debugMode: false,
   };
 
   // Reset engine states
@@ -286,8 +290,12 @@ export function getRuntimeStats(): {
     memoryActive: runtimeState.memoryActive,
     copilotEngineEnabled: copilotEngine.isEnabled(),
     sessionMemoryEnabled: sessionMemory.isEnabled(),
-    uptime: Date.now() - Math.min(runtimeState.lastCopilotToggle, runtimeState.lastMemoryToggle),
-    totalToggles: (runtimeState.copilotActive ? 1 : 0) + (runtimeState.memoryActive ? 1 : 0)
+    uptime:
+      Date.now() -
+      Math.min(runtimeState.lastCopilotToggle, runtimeState.lastMemoryToggle),
+    totalToggles:
+      (runtimeState.copilotActive ? 1 : 0) +
+      (runtimeState.memoryActive ? 1 : 0),
   };
 }
 
@@ -312,7 +320,7 @@ export function validateRuntimeState(): {
 
   return {
     isValid: issues.length === 0,
-    issues
+    issues,
   };
 }
 
@@ -324,15 +332,19 @@ export function syncRuntimeState(): void {
   const sessionMemoryEnabled = sessionMemory.isEnabled();
 
   if (runtimeState.copilotActive !== copilotEngineEnabled) {
-    logDebug(`Syncing copilot state: runtime=${runtimeState.copilotActive}, engine=${copilotEngineEnabled}`);
+    logDebug(
+      `Syncing copilot state: runtime=${runtimeState.copilotActive}, engine=${copilotEngineEnabled}`
+    );
     runtimeState.copilotActive = copilotEngineEnabled;
   }
 
   if (runtimeState.memoryActive !== sessionMemoryEnabled) {
-    logDebug(`Syncing memory state: runtime=${runtimeState.memoryActive}, engine=${sessionMemoryEnabled}`);
+    logDebug(
+      `Syncing memory state: runtime=${runtimeState.memoryActive}, engine=${sessionMemoryEnabled}`
+    );
     runtimeState.memoryActive = sessionMemoryEnabled;
   }
 }
 
 // Export runtime state for external access
-export { runtimeState }; 
+export { runtimeState };

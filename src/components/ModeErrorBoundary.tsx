@@ -132,11 +132,11 @@ export class ModeErrorBoundary extends Component<
     return {
       hasError: true,
       error,
-      modeValidationError: this.extractModeValidationError(error),
+      modeValidationError: ModeErrorBoundary.extractModeValidationError(error),
     };
   }
 
-  componentDidMount() {
+  override componentDidMount() {
     // Set up memory cleanup interval
     this.memoryCleanupInterval = this.createManagedInterval(() => {
       this.performMemoryCleanup();
@@ -165,7 +165,7 @@ export class ModeErrorBoundary extends Component<
     });
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('🚨 ModeErrorBoundary caught an error:', error, errorInfo);
 
     // Extract mode-specific error information
@@ -193,7 +193,7 @@ export class ModeErrorBoundary extends Component<
     }
   }
 
-  componentWillUnmount() {
+  override componentWillUnmount() {
     // Clear all timeouts
     if (this.recoveryTimeout) {
       clearTimeout(this.recoveryTimeout);

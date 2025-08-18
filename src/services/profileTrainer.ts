@@ -63,7 +63,6 @@ export async function saveWriterProfile(
   profile: WriterProfile
 ): Promise<void> {
   if (isDemoMode) {
-    console.log('🔄 Demo mode: Simulating profile save for user:', userId);
     return Promise.resolve();
   }
 
@@ -111,7 +110,6 @@ export async function getWriterProfile(
   userId: string
 ): Promise<WriterProfile | null> {
   if (isDemoMode) {
-    console.log('🔄 Demo mode: Returning mock profile for user:', userId);
     return Promise.resolve(mockWriterProfile);
   }
 
@@ -145,7 +143,6 @@ export async function updateWriterProfile(
   updateData: ProfileUpdateData
 ): Promise<void> {
   if (isDemoMode) {
-    console.log('🔄 Demo mode: Simulating profile update for user:', userId);
     return Promise.resolve();
   }
 
@@ -187,7 +184,6 @@ export async function analyzeWriterProfile(
   userId: string
 ): Promise<ProfileAnalytics> {
   if (isDemoMode) {
-    console.log('🔄 Demo mode: Returning mock analytics for user:', userId);
     return Promise.resolve(mockProfileAnalytics);
   }
 

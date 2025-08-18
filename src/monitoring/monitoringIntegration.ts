@@ -41,7 +41,6 @@ export class MonitoringIntegration {
     this.setupPerformanceMonitoring();
 
     this.isInitialized = true;
-    console.log('Monitoring integration initialized');
   }
 
   /**
@@ -177,7 +176,8 @@ export class MonitoringIntegration {
             service: serviceName,
             operation: operationName,
             error_type: (error as Error).constructor.name,
-            error_message: (error as Error).message?.substring(0, 100) || 'Unknown error',
+            error_message:
+              (error as Error).message?.substring(0, 100) || 'Unknown error',
           },
         });
 
@@ -268,7 +268,6 @@ export class MonitoringIntegration {
     // Clean up old metrics every 5 minutes
     setInterval(() => {
       // This is handled by the performance monitor internally
-      console.log('Monitoring maintenance cycle completed');
     }, 300000);
   }
 

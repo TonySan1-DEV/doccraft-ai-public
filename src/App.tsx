@@ -2,6 +2,8 @@ import { Routes, Route } from 'react-router-dom';
 
 import { WriterProfileProvider } from './contexts/WriterProfileContext';
 import { DocCraftAgentProvider } from './contexts/AgentContext';
+import { SimpleThemeProvider } from './contexts/SimpleThemeContext';
+
 import Header from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -11,13 +13,13 @@ import DocumentView from './pages/DocumentView';
 import ProcessDocument from './pages/ProcessDocument';
 import Analyzer from './pages/Analyzer';
 import Builder from './pages/Builder';
-import CollabTest from './pages/CollabTest';
 import AuditLogs from './pages/AuditLogs';
-import SupabaseTestPage from './pages/SupabaseTestPage';
 import Home from './pages/Home';
 import { Login } from './pages/Login';
 import SignUp from './pages/SignUp';
 import Demo from './pages/Demo';
+import Pricing from './pages/Pricing';
+
 import EbookAnalyzer from './pages/EbookAnalyzer';
 import CharacterDevelopment from './pages/CharacterDevelopment';
 import Workspace from './pages/Workspace';
@@ -38,8 +40,8 @@ import ContactUs from './pages/ContactUs';
 import AboutUs from './pages/AboutUs';
 import Help from './pages/Help';
 import DemoModeIndicator from './components/DemoModeIndicator';
-import TestPage from './pages/TestPage';
-import MinimalTest from './pages/MinimalTest';
+
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 import './index.css';
 
@@ -109,211 +111,251 @@ function App() {
     >
       <DemoModeIndicator isVisible={isDemoMode} />
 
-      <WriterProfileProvider>
-        <DocCraftAgentProvider>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/test" element={<TestPage />} />
-            <Route path="/minimal" element={<MinimalTest />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute allowedTiers={['Pro', 'Admin']}>
-                  <SidebarLayout>
-                    <Dashboard />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/processor"
-              element={
-                <ProtectedRoute>
-                  <SidebarLayout>
-                    <DocumentProcessor />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/view"
-              element={
-                <ProtectedRoute>
-                  <SidebarLayout>
-                    <DocumentView />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/process"
-              element={
-                <ProtectedRoute>
-                  <SidebarLayout>
-                    <ProcessDocument />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/analyzer"
-              element={
-                <ProtectedRoute>
-                  <SidebarLayout>
-                    <Analyzer />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/builder"
-              element={
-                <ProtectedRoute>
-                  <SidebarLayout>
-                    <Builder />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/workspace"
-              element={
-                <ProtectedRoute>
-                  <SidebarLayout>
-                    <Workspace />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <SidebarLayout>
-                    <Settings />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/billing"
-              element={
-                <ProtectedRoute>
-                  <SidebarLayout>
-                    <Billing />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/analytics"
-              element={
-                <ProtectedRoute allowedTiers={['Pro', 'Admin']}>
-                  <SidebarLayout>
-                    <Analytics />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <SidebarLayout>
-                    <Profile />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/support" element={<Support />} />
-            <Route path="/share/:token" element={<ShareableAccessPage />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/contact" element={<ContactUs />} />
-            <Route path="/about" element={<AboutUs />} />
-            <Route path="/help" element={<Help />} />
-            <Route
-              path="/collab-test"
-              element={
-                <ProtectedRoute>
-                  <SidebarLayout>
-                    <CollabTest />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/audit-logs"
-              element={
-                <ProtectedRoute allowedTiers={['Admin']}>
-                  <SidebarLayout>
-                    <AuditLogs />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/supabase-test"
-              element={
-                <ProtectedRoute>
-                  <SidebarLayout>
-                    <SupabaseTestPage />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/outliner"
-              element={
-                <ProtectedRoute allowedTiers={['Pro', 'Admin']}>
-                  <OutlineBuilder />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/book-outliner"
-              element={
-                <ProtectedRoute>
-                  <BookOutliner />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/demo/editor" element={<DocumentEditorDemo />} />
-            <Route path="/auth/reset-password" element={<ResetPassword />} />
-            <Route
-              path="/demo"
-              element={
-                <LayoutWrapper>
-                  <Demo />
-                </LayoutWrapper>
-              }
-            />
-            <Route
-              path="/ebook-analyzer"
-              element={
-                <ProtectedRoute>
-                  <SidebarLayout>
-                    <EbookAnalyzer />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/character-development"
-              element={
-                <ProtectedRoute>
-                  <SidebarLayout>
-                    <CharacterDevelopment />
-                  </SidebarLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Home />} />
-          </Routes>
-        </DocCraftAgentProvider>
-      </WriterProfileProvider>
+      <SimpleThemeProvider>
+        <WriterProfileProvider>
+          <DocCraftAgentProvider>
+            <ErrorBoundary>
+              <Routes>
+                <Route path="/" element={<Home />} />
+
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<SignUp />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute allowedTiers={['Pro', 'Admin']}>
+                      <SidebarLayout>
+                        <Dashboard />
+                      </SidebarLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/processor"
+                  element={
+                    <ProtectedRoute>
+                      <SidebarLayout>
+                        <DocumentProcessor />
+                      </SidebarLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/view"
+                  element={
+                    <ProtectedRoute>
+                      <SidebarLayout>
+                        <DocumentView />
+                      </SidebarLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/process"
+                  element={
+                    <ProtectedRoute>
+                      <SidebarLayout>
+                        <ProcessDocument />
+                      </SidebarLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/analyzer"
+                  element={
+                    <ProtectedRoute>
+                      <SidebarLayout>
+                        <Analyzer />
+                      </SidebarLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/builder"
+                  element={
+                    <ProtectedRoute>
+                      <SidebarLayout>
+                        <Builder />
+                      </SidebarLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/workspace"
+                  element={
+                    <ProtectedRoute>
+                      <SidebarLayout>
+                        <Workspace />
+                      </SidebarLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <SidebarLayout>
+                        <Settings />
+                      </SidebarLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/billing"
+                  element={
+                    <ProtectedRoute>
+                      <SidebarLayout>
+                        <Billing />
+                      </SidebarLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/analytics"
+                  element={
+                    <ProtectedRoute allowedTiers={['Pro', 'Admin']}>
+                      <SidebarLayout>
+                        <Analytics />
+                      </SidebarLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <SidebarLayout>
+                        <Profile />
+                      </SidebarLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/support" element={<Support />} />
+                <Route path="/share/:token" element={<ShareableAccessPage />} />
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/contact" element={<ContactUs />} />
+                <Route path="/about" element={<AboutUs />} />
+                <Route path="/help" element={<Help />} />
+
+                <Route
+                  path="/audit-logs"
+                  element={
+                    <ProtectedRoute allowedTiers={['Admin']}>
+                      <SidebarLayout>
+                        <AuditLogs />
+                      </SidebarLayout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/outliner"
+                  element={
+                    <ProtectedRoute allowedTiers={['Pro', 'Admin']}>
+                      <OutlineBuilder />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/book-outliner"
+                  element={
+                    <ProtectedRoute>
+                      <BookOutliner />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/demo/editor" element={<DocumentEditorDemo />} />
+                <Route
+                  path="/auth/reset-password"
+                  element={<ResetPassword />}
+                />
+                <Route
+                  path="/demo"
+                  element={
+                    <LayoutWrapper>
+                      <Demo />
+                    </LayoutWrapper>
+                  }
+                />
+
+                <Route
+                  path="/pricing"
+                  element={
+                    <LayoutWrapper>
+                      <Pricing />
+                    </LayoutWrapper>
+                  }
+                />
+
+                <Route
+                  path="/ebook-analyzer"
+                  element={
+                    <ProtectedRoute>
+                      <SidebarLayout>
+                        <EbookAnalyzer />
+                      </SidebarLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/character-development"
+                  element={
+                    <ProtectedRoute>
+                      <SidebarLayout>
+                        <CharacterDevelopment />
+                      </SidebarLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Add missing routes for footer navigation */}
+                <Route
+                  path="/docs"
+                  element={
+                    <LayoutWrapper>
+                      <div className="py-20 px-8 text-center">
+                        <h1 className="text-3xl font-bold mb-4">
+                          Documentation
+                        </h1>
+                        <p className="text-gray-600">
+                          Documentation coming soon...
+                        </p>
+                      </div>
+                    </LayoutWrapper>
+                  }
+                />
+                <Route
+                  path="/blog"
+                  element={
+                    <LayoutWrapper>
+                      <div className="py-20 px-8 text-center">
+                        <h1 className="text-3xl font-bold mb-4">Blog</h1>
+                        <p className="text-gray-600">
+                          Blog posts coming soon...
+                        </p>
+                      </div>
+                    </LayoutWrapper>
+                  }
+                />
+                <Route
+                  path="/tutorials"
+                  element={
+                    <LayoutWrapper>
+                      <div className="py-20 px-8 text-center">
+                        <h1 className="text-3xl font-bold mb-4">Tutorials</h1>
+                        <p className="text-gray-600">
+                          Tutorials coming soon...
+                        </p>
+                      </div>
+                    </LayoutWrapper>
+                  }
+                />
+                <Route path="*" element={<Home />} />
+              </Routes>
+            </ErrorBoundary>
+          </DocCraftAgentProvider>
+        </WriterProfileProvider>
+      </SimpleThemeProvider>
     </div>
   );
 }

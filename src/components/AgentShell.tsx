@@ -35,37 +35,40 @@ export interface BehaviorChanges {
 
 export function AgentShell({ children, onBehaviorChange }: AgentShellProps) {
   const { preferences, isFieldLocked } = useAgentPreferences();
-  const mcp = useMCP("AgentShell.tsx");
+  const mcp = useMCP('AgentShell.tsx');
   const previousPrefs = useRef(preferences);
   const behaviorChangeTimeout = useRef<NodeJS.Timeout>();
 
   // Debounced behavior change handler
-  const handleBehaviorChange = useCallback((changes: Partial<BehaviorChanges>) => {
-    if (behaviorChangeTimeout.current) {
-      clearTimeout(behaviorChangeTimeout.current);
-    }
-
-    behaviorChangeTimeout.current = setTimeout(() => {
-      const fullChanges: BehaviorChanges = {
-        copilotEnabled: preferences.copilotEnabled,
-        memoryEnabled: preferences.memoryEnabled,
-        tone: preferences.tone,
-        language: preferences.language,
-        timestamp: Date.now()
-      };
-
-      // Emit telemetry if available
-      if (window.logTelemetryEvent) {
-        window.logTelemetryEvent('agent_behavior_changed', {
-          changes: Object.keys(changes),
-          userTier: mcp.tier,
-          timestamp: Date.now()
-        });
+  const handleBehaviorChange = useCallback(
+    (changes: Partial<BehaviorChanges>) => {
+      if (behaviorChangeTimeout.current) {
+        clearTimeout(behaviorChangeTimeout.current);
       }
 
-      onBehaviorChange?.(fullChanges);
-    }, 300); // Debounce behavior changes
-  }, [preferences, mcp.tier, onBehaviorChange]);
+      behaviorChangeTimeout.current = setTimeout(() => {
+        const fullChanges: BehaviorChanges = {
+          copilotEnabled: preferences.copilotEnabled,
+          memoryEnabled: preferences.memoryEnabled,
+          tone: preferences.tone,
+          language: preferences.language,
+          timestamp: Date.now(),
+        };
+
+        // Emit telemetry if available
+        if (window.logTelemetryEvent) {
+          window.logTelemetryEvent('agent_behavior_changed', {
+            changes: Object.keys(changes),
+            userTier: mcp.tier,
+            timestamp: Date.now(),
+          });
+        }
+
+        onBehaviorChange?.(fullChanges);
+      }, 300); // Debounce behavior changes
+    },
+    [preferences, mcp.tier, onBehaviorChange]
+  );
 
   // Monitor preference changes and update core systems
   useEffect(() => {
@@ -76,27 +79,23 @@ export function AgentShell({ children, onBehaviorChange }: AgentShellProps) {
     // Check for copilot changes
     if (prev.copilotEnabled !== current.copilotEnabled) {
       changes.copilotEnabled = current.copilotEnabled;
-      
+
       if (current.copilotEnabled) {
         CopilotEngine.enable();
-        console.log('Agent: Copilot suggestions enabled');
       } else {
         CopilotEngine.disable();
-        console.log('Agent: Copilot suggestions disabled');
       }
     }
 
     // Check for memory changes
     if (prev.memoryEnabled !== current.memoryEnabled) {
       changes.memoryEnabled = current.memoryEnabled;
-      
+
       if (current.memoryEnabled) {
         SessionMemory.enable();
-        console.log('Agent: Session memory enabled');
       } else {
         SessionMemory.clear();
         SessionMemory.disable();
-        console.log('Agent: Session memory disabled and cleared');
       }
     }
 
@@ -104,14 +103,12 @@ export function AgentShell({ children, onBehaviorChange }: AgentShellProps) {
     if (prev.tone !== current.tone) {
       changes.tone = current.tone;
       PromptBuilder.setTone(current.tone);
-      console.log(`Agent: Tone changed to ${current.tone}`);
     }
 
     // Check for language changes
     if (prev.language !== current.language) {
       changes.language = current.language;
       PromptBuilder.setLanguage(current.language);
-      console.log(`Agent: Language changed to ${current.language}`);
     }
 
     // Emit behavior change if any preferences changed
@@ -125,21 +122,23 @@ export function AgentShell({ children, onBehaviorChange }: AgentShellProps) {
 
   // Validate locked preferences don't override behavior
   useEffect(() => {
-    const lockedFields = Object.keys(preferences).filter(key => 
+    const lockedFields = Object.keys(preferences).filter(key =>
       isFieldLocked(key as keyof typeof preferences)
     );
 
     if (lockedFields.length > 0) {
-      console.log('Agent: Locked preferences detected:', lockedFields);
-      
       // Ensure locked preferences are respected
       lockedFields.forEach(field => {
         const fieldKey = field as keyof typeof preferences;
         if (fieldKey === 'copilotEnabled' && preferences.copilotEnabled) {
-          console.warn('Agent: Copilot enabled but field is locked - respecting lock');
+          console.warn(
+            'Agent: Copilot enabled but field is locked - respecting lock'
+          );
         }
         if (fieldKey === 'memoryEnabled' && preferences.memoryEnabled) {
-          console.warn('Agent: Memory enabled but field is locked - respecting lock');
+          console.warn(
+            'Agent: Memory enabled but field is locked - respecting lock'
+          );
         }
       });
     }
@@ -147,12 +146,14 @@ export function AgentShell({ children, onBehaviorChange }: AgentShellProps) {
 
   // Graceful degradation when context is missing
   if (!preferences) {
-    console.warn('Agent: AgentPreferencesContext not available, using defaults');
+    console.warn(
+      'Agent: AgentPreferencesContext not available, using defaults'
+    );
     return <div className="agent-shell">{children}</div>;
   }
 
   return (
-    <div 
+    <div
       className="agent-shell"
       data-copilot-enabled={preferences.copilotEnabled}
       data-memory-enabled={preferences.memoryEnabled}
@@ -172,7 +173,7 @@ export function getCurrentBehavior(): BehaviorChanges {
     memoryEnabled: true,
     tone: 'friendly',
     language: 'en',
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 }
 
@@ -187,6 +188,6 @@ export function simulateBehaviorWithPrefs(
     memoryEnabled,
     tone,
     language,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
-} 
+}

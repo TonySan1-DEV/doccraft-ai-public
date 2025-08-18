@@ -1114,30 +1114,24 @@ export const EnterpriseAnalyticsDashboard: React.FC = () => {
 
   const updatePerformanceWidgets = useCallback((metrics: RealtimeMetrics) => {
     // Update specific dashboard widgets based on real-time metrics
-    console.log('Updating performance widgets:', metrics);
   }, []);
 
   const updateSecurityWidgets = useCallback((metrics: RealtimeMetrics) => {
     // Update security-related widgets
-    console.log('Updating security widgets:', metrics);
   }, []);
 
   const updateUserExperienceWidgets = useCallback(
     (metrics: RealtimeMetrics) => {
       // Update user experience widgets
-      console.log('Updating UX widgets:', metrics);
     },
     []
   );
 
   const loadDashboardData = useCallback(async (timeframe: TimeFrame) => {
     // Load dashboard data for the selected timeframe
-    console.log('Loading dashboard data for timeframe:', timeframe);
   }, []);
 
-  const showDetailedPerformanceView = useCallback((metric: string) => {
-    console.log('Showing detailed view for metric:', metric);
-  }, []);
+  const showDetailedPerformanceView = useCallback((metric: string) => {}, []);
 
   if (isLoading) {
     return (

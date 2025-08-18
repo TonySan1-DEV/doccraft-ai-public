@@ -29,7 +29,6 @@ export function GenreSelectorExample({
 
   const handleGenreSelected = (genre: Genre) => {
     setSelectedGenre(genre);
-    console.log('Selected genre:', genre);
   };
 
   const handleMultipleGenresSelected = (genre: Genre) => {
@@ -278,7 +277,7 @@ export function GenreSelectorExample({
               </h4>
               <pre className="text-sm text-gray-400 bg-gray-800 p-3 rounded overflow-x-auto">
                 {`<GenreSelector
-  onGenreSelected={(genre) => console.log(genre)}
+          onGenreSelected={(genre) => {}}
   selectedGenreId="fantasy"
   showSearch={true}
   showPopular={true}

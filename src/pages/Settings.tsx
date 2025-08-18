@@ -9,29 +9,29 @@ import {
   Pause,
   AlertTriangle,
   Trash2,
-} from "lucide-react";
-import { useMCP } from "../useMCP";
-import { AccessWarning } from "../components/AccessWarning";
-import ThemeSelector from "../components/ThemeSelector";
-import APIKeyManagementPanel from "../components/APIKeyManagementPanel";
-import { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
-import { supabase } from "../lib/supabase";
-import toast from "react-hot-toast";
-import { apiKeyManager } from "../services/apiKeyManager";
+} from 'lucide-react';
+import { useMCP } from '../useMCP';
+import { AccessWarning } from '../components/AccessWarning';
+
+import APIKeyManagementPanel from '../components/APIKeyManagementPanel';
+import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
+import toast from 'react-hot-toast';
+import { apiKeyManager } from '../services/apiKeyManager';
 
 export default function Settings() {
-  const ctx = useMCP("Settings.tsx");
+  const ctx = useMCP('Settings.tsx');
   const { user, signOut } = useAuth();
-  const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
+
   const [isAPIKeyModalOpen, setIsAPIKeyModalOpen] = useState(false);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [isPauseModalOpen, setIsPauseModalOpen] = useState(false);
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
-  const [pauseDuration, setPauseDuration] = useState("30");
+  const [pauseDuration, setPauseDuration] = useState('30');
   const [isLoading, setIsLoading] = useState(false);
 
-  if (ctx.tier !== "Admin") {
+  if (ctx.tier !== 'Admin') {
     return <AccessWarning tier="Admin" feature="System configuration" />;
   }
 
@@ -42,14 +42,14 @@ export default function Settings() {
       pauseEndDate.setDate(pauseEndDate.getDate() + parseInt(pauseDuration));
 
       const { error } = await supabase
-        .from("writer_profiles")
+        .from('writer_profiles')
         .update({
-          account_status: "paused",
+          account_status: 'paused',
           pause_start_date: new Date().toISOString(),
           pause_end_date: pauseEndDate.toISOString(),
           updated_at: new Date().toISOString(),
         })
-        .eq("user_id", user?.id);
+        .eq('user_id', user?.id);
 
       if (error) throw error;
 
@@ -59,7 +59,7 @@ export default function Settings() {
       await signOut();
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : "Failed to pause account";
+        error instanceof Error ? error.message : 'Failed to pause account';
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -71,29 +71,29 @@ export default function Settings() {
     try {
       // First, update the profile to mark as closed
       const { error: profileError } = await supabase
-        .from("writer_profiles")
+        .from('writer_profiles')
         .update({
-          account_status: "closed",
+          account_status: 'closed',
           closed_date: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
-        .eq("user_id", user?.id);
+        .eq('user_id', user?.id);
 
       if (profileError) throw profileError;
 
       // Then delete the user account from Supabase Auth
       const { error: authError } = await supabase.auth.admin.deleteUser(
-        user?.id || ""
+        user?.id || ''
       );
 
       if (authError) throw authError;
 
-      toast.success("Account closed successfully");
+      toast.success('Account closed successfully');
       setIsCloseModalOpen(false);
       await signOut();
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : "Failed to close account";
+        error instanceof Error ? error.message : 'Failed to close account';
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -156,24 +156,6 @@ export default function Settings() {
             communications.
           </p>
           <button className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 text-sm font-medium">
-            Configure →
-          </button>
-        </div>
-
-        <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl rounded-xl border border-white/20 dark:border-slate-700/20 p-6">
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mb-4">
-            <Palette className="h-6 w-6 text-white" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            Appearance
-          </h3>
-          <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-            Customize themes, branding, and user interface preferences.
-          </p>
-          <button
-            onClick={() => setIsThemeSelectorOpen(true)}
-            className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 text-sm font-medium"
-          >
             Configure →
           </button>
         </div>
@@ -341,22 +323,16 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Theme Selector Modal */}
-      <ThemeSelector
-        isOpen={isThemeSelectorOpen}
-        onClose={() => setIsThemeSelectorOpen(false)}
-      />
-
       {/* API Key Management Modal */}
       <APIKeyManagementPanel
         isOpen={isAPIKeyModalOpen}
         onClose={() => setIsAPIKeyModalOpen(false)}
-        onSave={(keys) => {
+        onSave={keys => {
           // Save keys using the API key manager
-          keys.forEach((key) => {
+          keys.forEach(key => {
             apiKeyManager.addKey(key.provider, key.apiKey);
           });
-          toast.success("API keys saved successfully");
+          toast.success('API keys saved successfully');
         }}
         currentKeys={apiKeyManager.getAllKeys()}
       />
@@ -405,7 +381,7 @@ export default function Settings() {
                 <div className="flex items-center space-x-3 mb-4">
                   <select
                     value={pauseDuration}
-                    onChange={(e) => setPauseDuration(e.target.value)}
+                    onChange={e => setPauseDuration(e.target.value)}
                     className="flex-1 px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                   >
                     <option value="7">7 days</option>
@@ -458,7 +434,7 @@ export default function Settings() {
               </h3>
             </div>
             <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Are you sure you want to pause your account for {pauseDuration}{" "}
+              Are you sure you want to pause your account for {pauseDuration}{' '}
               days? You will be signed out and won&apos;t be able to access the
               platform until the pause period ends.
             </p>
@@ -474,7 +450,7 @@ export default function Settings() {
                 disabled={isLoading}
                 className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? "Pausing..." : "Pause Account"}
+                {isLoading ? 'Pausing...' : 'Pause Account'}
               </button>
             </div>
           </div>
@@ -514,7 +490,7 @@ export default function Settings() {
                 disabled={isLoading}
                 className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? "Closing..." : "Close Account"}
+                {isLoading ? 'Closing...' : 'Close Account'}
               </button>
             </div>
           </div>

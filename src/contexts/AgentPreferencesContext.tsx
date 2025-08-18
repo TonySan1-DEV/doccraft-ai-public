@@ -244,7 +244,8 @@ export function AgentPreferencesProvider({
           (acc, [key, value]) => {
             if (mcp.allowedActions.includes('updatePrefs')) {
               // Type assertion to ensure compatibility with AgentPrefs
-              acc[key as keyof AgentPrefs] = value as AgentPrefs[keyof AgentPrefs];
+              acc[key as keyof AgentPrefs] =
+                value as AgentPrefs[keyof AgentPrefs];
             }
             return acc;
           },
@@ -518,7 +519,6 @@ export async function syncToServer(
     // });
     // return response.ok;
 
-    console.log('Server sync not yet implemented');
     return true; // Stub success
   } catch (error) {
     console.error('Failed to sync preferences to server:', error);

@@ -138,7 +138,6 @@ export async function loadInitialPrefs(
     if (initialPrefs) {
       const validation = validatePreferences(initialPrefs);
       if (validation.isValid) {
-        console.log('Using provided initial preferences');
         return { ...FALLBACK_PREFERENCES, ...initialPrefs };
       } else {
         console.warn(
@@ -151,7 +150,6 @@ export async function loadInitialPrefs(
     // Priority 2: LocalStorage
     const localStoragePrefs = loadFromLocalStorage();
     if (localStoragePrefs) {
-      console.log('Using preferences from localStorage');
       return { ...FALLBACK_PREFERENCES, ...localStoragePrefs };
     }
 
@@ -180,7 +178,6 @@ export async function loadInitialPrefs(
       language: resolvedLanguage as SupportedLanguage,
     };
 
-    console.log('Using admin default policy with browser language detection');
     return resolvedPrefs;
   } catch (error) {
     console.error('Failed to load initial preferences:', error);

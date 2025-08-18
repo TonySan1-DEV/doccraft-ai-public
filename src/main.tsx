@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import App from './App.tsx';
-import { ThemeProvider } from './contexts/ThemeContext';
+
 import { AuthProvider } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
@@ -27,14 +27,12 @@ try {
   root.render(
     <React.StrictMode>
       <ErrorBoundary>
-        <ThemeProvider>
-          <AuthProvider>
-            <BrowserRouter>
-              <App />
-              <Toaster position="top-right" />
-            </BrowserRouter>
-          </AuthProvider>
-        </ThemeProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <App />
+            <Toaster position="top-right" />
+          </BrowserRouter>
+        </AuthProvider>
       </ErrorBoundary>
     </React.StrictMode>
   );

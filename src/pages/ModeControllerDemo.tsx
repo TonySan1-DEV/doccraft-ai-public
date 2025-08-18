@@ -134,7 +134,6 @@ const ModeControllerDemo: React.FC = () => {
 
   const handleModeChange = (mode: SystemMode, config: ModeConfiguration) => {
     setCurrentMode(mode);
-    console.log(`Mode changed to: ${mode}`, config);
   };
 
   const handleScenarioSelect = (scenario: DemoScenario) => {

@@ -33,12 +33,7 @@ export const env = {
 
 // Log environment status
 if (env.VITE_SUPABASE_URL === 'https://placeholder.supabase.co') {
-  console.warn(
-    '⚠️ Using placeholder Supabase credentials. The app will run in demo mode.'
-  );
-  console.warn(
-    '⚠️ To connect to a real Supabase instance, create a .env file with your credentials.'
-  );
+  // Demo mode - no console output needed
 }
 
 export default env;

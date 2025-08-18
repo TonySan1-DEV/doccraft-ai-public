@@ -39,7 +39,7 @@ const PREFERENCES_SCHEMA = {
   language: ['en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'zh'],
   copilotEnabled: 'boolean',
   memoryEnabled: 'boolean',
-  defaultCommandView: ['list', 'grid']
+  defaultCommandView: ['list', 'grid'],
 } as const;
 
 /**
@@ -51,13 +51,22 @@ function validatePreferences(data: any): AgentPrefs | null {
     if (!data || typeof data !== 'object') return null;
 
     const validated: AgentPrefs = {
-      tone: PREFERENCES_SCHEMA.tone.includes(data.tone) ? data.tone : 'friendly',
-      language: PREFERENCES_SCHEMA.language.includes(data.language) ? data.language : 'en',
-      copilotEnabled: typeof data.copilot_enabled === 'boolean' ? data.copilot_enabled : true,
-      memoryEnabled: typeof data.memory_enabled === 'boolean' ? data.memory_enabled : true,
-      defaultCommandView: PREFERENCES_SCHEMA.defaultCommandView.includes(data.default_command_view) 
-        ? data.default_command_view : 'list',
-      lockedFields: Array.isArray(data.locked_fields) ? data.locked_fields : []
+      tone: PREFERENCES_SCHEMA.tone.includes(data.tone)
+        ? data.tone
+        : 'friendly',
+      language: PREFERENCES_SCHEMA.language.includes(data.language)
+        ? data.language
+        : 'en',
+      copilotEnabled:
+        typeof data.copilot_enabled === 'boolean' ? data.copilot_enabled : true,
+      memoryEnabled:
+        typeof data.memory_enabled === 'boolean' ? data.memory_enabled : true,
+      defaultCommandView: PREFERENCES_SCHEMA.defaultCommandView.includes(
+        data.default_command_view
+      )
+        ? data.default_command_view
+        : 'list',
+      lockedFields: Array.isArray(data.locked_fields) ? data.locked_fields : [],
     };
 
     return validated;
@@ -70,7 +79,10 @@ function validatePreferences(data: any): AgentPrefs | null {
 /**
  * Converts AgentPrefs to database row format
  */
-function preferencesToRow(prefs: AgentPrefs, userId: string): UserPreferencesRow {
+function preferencesToRow(
+  prefs: AgentPrefs,
+  userId: string
+): UserPreferencesRow {
   return {
     user_id: userId,
     tone: prefs.tone,
@@ -80,7 +92,7 @@ function preferencesToRow(prefs: AgentPrefs, userId: string): UserPreferencesRow
     default_command_view: prefs.defaultCommandView,
     locked_fields: prefs.lockedFields,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   };
 }
 
@@ -89,10 +101,18 @@ function preferencesToRow(prefs: AgentPrefs, userId: string): UserPreferencesRow
  */
 function rowToPreferences(row: UserPreferencesRow): AgentPrefs {
   // Validate language value
-  const validLanguages: SupportedLanguage[] = ['en', 'es', 'fr', 'de', 'ja', 'zh', 'ko'];
-  const language = validLanguages.includes(row.language as SupportedLanguage) 
-    ? row.language as SupportedLanguage 
-    : 'en' as const;
+  const validLanguages: SupportedLanguage[] = [
+    'en',
+    'es',
+    'fr',
+    'de',
+    'ja',
+    'zh',
+    'ko',
+  ];
+  const language = validLanguages.includes(row.language as SupportedLanguage)
+    ? (row.language as SupportedLanguage)
+    : ('en' as const);
 
   return {
     tone: row.tone,
@@ -100,14 +120,16 @@ function rowToPreferences(row: UserPreferencesRow): AgentPrefs {
     copilotEnabled: row.copilot_enabled,
     memoryEnabled: row.memory_enabled,
     defaultCommandView: row.default_command_view,
-    lockedFields: row.locked_fields
+    lockedFields: row.locked_fields,
   };
 }
 
 /**
  * Fetches user preferences from Supabase
  */
-export async function fetchPreferencesFromSupabase(userId: string): Promise<AgentPrefs | null> {
+export async function fetchPreferencesFromSupabase(
+  userId: string
+): Promise<AgentPrefs | null> {
   try {
     // Validate user ID
     if (!userId || typeof userId !== 'string') {
@@ -125,7 +147,7 @@ export async function fetchPreferencesFromSupabase(userId: string): Promise<Agen
     if (error) {
       if (error.code === 'PGRST116') {
         // No rows found - this is normal for new users
-        console.log('[SupabaseAdapter] No preferences found for user:', userId);
+
         return null;
       }
       throw error;
@@ -134,24 +156,25 @@ export async function fetchPreferencesFromSupabase(userId: string): Promise<Agen
     // Validate and return preferences
     const validatedPrefs = validatePreferences(data);
     if (validatedPrefs) {
-      console.log('[SupabaseAdapter] Successfully fetched preferences for user:', userId);
       return validatedPrefs;
     } else {
-      console.error('[SupabaseAdapter] Invalid preference data received:', data);
+      console.error(
+        '[SupabaseAdapter] Invalid preference data received:',
+        data
+      );
       return null;
     }
-
   } catch (error) {
     console.error('[SupabaseAdapter] Fetch error:', error);
-    
+
     // Log telemetry if available
     if (typeof window !== 'undefined' && (window as any).logTelemetryEvent) {
       (window as any).logTelemetryEvent('preferences_fetch_supabase_error', {
         userId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-    
+
     return null;
   }
 }
@@ -159,7 +182,10 @@ export async function fetchPreferencesFromSupabase(userId: string): Promise<Agen
 /**
  * Syncs user preferences to Supabase
  */
-export async function syncPreferencesToSupabase(userId: string, prefs: AgentPrefs): Promise<void> {
+export async function syncPreferencesToSupabase(
+  userId: string,
+  prefs: AgentPrefs
+): Promise<void> {
   try {
     // Validate inputs
     if (!userId || typeof userId !== 'string') {
@@ -180,38 +206,33 @@ export async function syncPreferencesToSupabase(userId: string, prefs: AgentPref
     const row = preferencesToRow(validatedPrefs, userId);
 
     // Upsert preferences (insert or update)
-    const { error } = await supabase
-      .from('user_preferences')
-      .upsert(row, {
-        onConflict: 'user_id',
-        ignoreDuplicates: false
-      });
+    const { error } = await supabase.from('user_preferences').upsert(row, {
+      onConflict: 'user_id',
+      ignoreDuplicates: false,
+    });
 
     if (error) {
       throw error;
     }
 
-    console.log('[SupabaseAdapter] Successfully synced preferences for user:', userId);
-    
     // Log telemetry if available
     if (typeof window !== 'undefined' && (window as any).logTelemetryEvent) {
       (window as any).logTelemetryEvent('preferences_sync_supabase_success', {
         userId,
-        fields: Object.keys(validatedPrefs)
+        fields: Object.keys(validatedPrefs),
       });
     }
-
   } catch (error) {
     console.error('[SupabaseAdapter] Sync error:', error);
-    
+
     // Log telemetry if available
     if (typeof window !== 'undefined' && (window as any).logTelemetryEvent) {
       (window as any).logTelemetryEvent('preferences_sync_supabase_error', {
         userId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-    
+
     throw error;
   }
 }
@@ -219,7 +240,9 @@ export async function syncPreferencesToSupabase(userId: string, prefs: AgentPref
 /**
  * Deletes user preferences from Supabase
  */
-export async function deletePreferencesFromSupabase(userId: string): Promise<void> {
+export async function deletePreferencesFromSupabase(
+  userId: string
+): Promise<void> {
   try {
     if (!userId || typeof userId !== 'string') {
       throw new Error('Invalid user ID provided');
@@ -233,9 +256,6 @@ export async function deletePreferencesFromSupabase(userId: string): Promise<voi
     if (error) {
       throw error;
     }
-
-    console.log('[SupabaseAdapter] Successfully deleted preferences for user:', userId);
-
   } catch (error) {
     console.error('[SupabaseAdapter] Delete error:', error);
     throw error;
@@ -245,7 +265,9 @@ export async function deletePreferencesFromSupabase(userId: string): Promise<voi
 /**
  * Checks if user has preferences in Supabase
  */
-export async function hasPreferencesInSupabase(userId: string): Promise<boolean> {
+export async function hasPreferencesInSupabase(
+  userId: string
+): Promise<boolean> {
   try {
     if (!userId || typeof userId !== 'string') {
       return false;
@@ -265,7 +287,6 @@ export async function hasPreferencesInSupabase(userId: string): Promise<boolean>
     }
 
     return !!data;
-
   } catch (error) {
     console.error('[SupabaseAdapter] Has preferences check error:', error);
     return false;
@@ -277,15 +298,17 @@ export async function hasPreferencesInSupabase(userId: string): Promise<boolean>
  */
 export async function getCurrentUserId(): Promise<string | null> {
   try {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
     if (error) {
       console.error('[SupabaseAdapter] Auth error:', error);
       return null;
     }
 
     return user?.id || null;
-
   } catch (error) {
     console.error('[SupabaseAdapter] Get current user error:', error);
     return null;
@@ -308,7 +331,9 @@ export async function fetchCurrentUserPreferences(): Promise<AgentPrefs | null> 
 /**
  * Utility function to sync preferences for current user
  */
-export async function syncCurrentUserPreferences(prefs: AgentPrefs): Promise<void> {
+export async function syncCurrentUserPreferences(
+  prefs: AgentPrefs
+): Promise<void> {
   const userId = await getCurrentUserId();
   if (!userId) {
     throw new Error('No authenticated user found');
@@ -319,4 +344,4 @@ export async function syncCurrentUserPreferences(prefs: AgentPrefs): Promise<voi
 
 // Export types for external use
 export type { UserPreferencesRow };
-export { validatePreferences, preferencesToRow, rowToPreferences }; 
+export { validatePreferences, preferencesToRow, rowToPreferences };

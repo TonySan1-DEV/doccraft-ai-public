@@ -16,8 +16,9 @@ import { useMCP } from '../useMCP';
 
 export default function EmotionalArcTest() {
   const mcpContext = useMCP('EmotionalArcTest.tsx');
-  
-  const [storyText, setStoryText] = useState(`Sarah felt a deep sadness as she walked through the empty house. The memories of her grandmother's laughter echoed in her mind, but now there was only silence. She picked up the old photo album, her hands trembling with emotion.
+
+  const [storyText, setStoryText] =
+    useState(`Sarah felt a deep sadness as she walked through the empty house. The memories of her grandmother's laughter echoed in her mind, but now there was only silence. She picked up the old photo album, her hands trembling with emotion.
 
 "Grandma, I miss you so much," she whispered, tears streaming down her face. The pain was almost unbearable, but somehow she found strength in remembering their last conversation.
 
@@ -33,9 +34,7 @@ Sarah felt overwhelmed with gratitude and love. The sadness was still there, but
 
   const [characterIds] = useState(['Sarah', 'Emma']);
 
-  const handleArcUpdate = (arc: any) => {
-    console.log('Emotional arc updated:', arc);
-  };
+  const handleArcUpdate = (arc: any) => {};
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -58,7 +57,7 @@ Sarah felt overwhelmed with gratitude and love. The sadness was still there, but
               </h2>
               <textarea
                 value={storyText}
-                onChange={(e) => setStoryText(e.target.value)}
+                onChange={e => setStoryText(e.target.value)}
                 className="w-full h-96 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter your story text here..."
               />
@@ -86,7 +85,7 @@ Sarah felt overwhelmed with gratitude and love. The sadness was still there, but
               onArcUpdate={handleArcUpdate}
               readerProfile={{
                 empathyLevel: 70,
-                tensionTolerance: 65
+                tensionTolerance: 65,
               }}
             />
           </div>
@@ -98,14 +97,26 @@ Sarah felt overwhelmed with gratitude and love. The sadness was still there, but
             MCP Context Information
           </h3>
           <div className="text-sm text-gray-600">
-            <p><strong>Role:</strong> {mcpContext.role}</p>
-            <p><strong>Allowed Actions:</strong> {mcpContext.allowedActions.join(', ')}</p>
-            <p><strong>Theme:</strong> {mcpContext.theme}</p>
-            <p><strong>Tier:</strong> {mcpContext.tier}</p>
-            <p><strong>Content Sensitivity:</strong> {mcpContext.contentSensitivity}</p>
+            <p>
+              <strong>Role:</strong> {mcpContext.role}
+            </p>
+            <p>
+              <strong>Allowed Actions:</strong>{' '}
+              {mcpContext.allowedActions.join(', ')}
+            </p>
+            <p>
+              <strong>Theme:</strong> {mcpContext.theme}
+            </p>
+            <p>
+              <strong>Tier:</strong> {mcpContext.tier}
+            </p>
+            <p>
+              <strong>Content Sensitivity:</strong>{' '}
+              {mcpContext.contentSensitivity}
+            </p>
           </div>
         </div>
       </div>
     </div>
   );
-} 
+}

@@ -92,19 +92,13 @@ export class YjsProvider {
 
       // Handle connection events
       this.provider.on('status', ({ status }: { status: string }) => {
-        console.log('Yjs connection status:', status);
-
         if (status === 'connected') {
-          console.log('✅ Connected to collaboration server');
         } else if (status === 'disconnected') {
-          console.log('❌ Disconnected from collaboration server');
         }
       });
 
       // Handle sync events
-      this.provider.on('sync', (isSynced: boolean) => {
-        console.log('Yjs sync status:', isSynced ? 'synced' : 'syncing');
-      });
+      this.provider.on('sync', (isSynced: boolean) => {});
     } catch (error) {
       console.error('Error connecting to Yjs provider:', error);
 
@@ -150,7 +144,6 @@ export class YjsProvider {
 
         this.provider.disconnect();
         this.provider = null;
-        console.log('✅ Disconnected from collaboration server');
       }
     } catch (error) {
       console.error('Error disconnecting from Yjs provider:', error);

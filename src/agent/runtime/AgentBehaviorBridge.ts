@@ -10,8 +10,6 @@
 }
 */
 
-
-
 // Import the main AgentPrefs interface from shared types
 import { AgentPrefs } from '../../types/agentPreferences';
 
@@ -56,16 +54,15 @@ class AgentBehaviorBridge implements AgentBridgeController {
   constructor(options: BridgeOptions = {}) {
     this.options = {
       debug: false,
-      ...options
+      ...options,
     };
 
     this.syncStats = {
       totalUpdates: 0,
-      lastUpdate: 0
+      lastUpdate: 0,
     };
 
     if (this.options.debug) {
-      console.log('[AgentBridge] Initialized with options:', this.options);
     }
   }
 
@@ -88,7 +85,6 @@ class AgentBehaviorBridge implements AgentBridgeController {
     this.syncStats.lastUpdate = Date.now();
 
     if (this.options.debug) {
-      console.log('[AgentBridge] Processing preference update:', prefs);
     }
 
     // If this is the first update, sync all preferences
@@ -104,7 +100,6 @@ class AgentBehaviorBridge implements AgentBridgeController {
   // Sync all preferences to subsystems
   private syncAllPreferences(prefs: AgentPrefs): void {
     if (this.options.debug) {
-      console.log('[AgentBridge] Performing initial sync of all preferences');
     }
 
     // Sync prompt behavior
@@ -117,12 +112,14 @@ class AgentBehaviorBridge implements AgentBridgeController {
     this.toggleMemory(prefs.memoryEnabled);
 
     if (this.options.debug) {
-      console.log('[AgentBridge] Initial sync completed');
     }
   }
 
   // Detect and handle individual preference changes
-  private detectAndHandleChanges(previousPrefs: AgentPrefs, newPrefs: AgentPrefs): void {
+  private detectAndHandleChanges(
+    previousPrefs: AgentPrefs,
+    newPrefs: AgentPrefs
+  ): void {
     const changes: PreferenceChangeEvent[] = [];
 
     // Check tone changes
@@ -131,7 +128,7 @@ class AgentBehaviorBridge implements AgentBridgeController {
         field: 'tone',
         previousValue: previousPrefs.tone,
         newValue: newPrefs.tone,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
       this.syncPromptBehavior(newPrefs.tone, newPrefs.language);
     }
@@ -142,7 +139,7 @@ class AgentBehaviorBridge implements AgentBridgeController {
         field: 'language',
         previousValue: previousPrefs.language,
         newValue: newPrefs.language,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
       this.syncPromptBehavior(newPrefs.tone, newPrefs.language);
     }
@@ -153,7 +150,7 @@ class AgentBehaviorBridge implements AgentBridgeController {
         field: 'copilotEnabled',
         previousValue: previousPrefs.copilotEnabled,
         newValue: newPrefs.copilotEnabled,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
       this.toggleCopilot(newPrefs.copilotEnabled);
     }
@@ -164,16 +161,14 @@ class AgentBehaviorBridge implements AgentBridgeController {
         field: 'memoryEnabled',
         previousValue: previousPrefs.memoryEnabled,
         newValue: newPrefs.memoryEnabled,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
       this.toggleMemory(newPrefs.memoryEnabled);
     }
 
     // Log changes in debug mode
     if (this.options.debug && changes.length > 0) {
-      changes.forEach(change => {
-        console.log(`[AgentBridge] ${change.field} changed: ${change.previousValue} → ${change.newValue}`);
-      });
+      changes.forEach(change => {});
     }
 
     // Update sync statistics
@@ -183,19 +178,18 @@ class AgentBehaviorBridge implements AgentBridgeController {
   // Sync prompt behavior (tone and language)
   private syncPromptBehavior(tone: string, language: string): void {
     if (this.options.debug) {
-      console.log(`[AgentBridge] Syncing prompt behavior: tone=${tone}, language=${language}`);
     }
 
     this.syncStats.lastToneChange = {
       from: this.lastPrefs?.tone || 'unknown',
       to: tone,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     this.syncStats.lastLanguageChange = {
       from: this.lastPrefs?.language || 'unknown',
       to: language,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // Call the prompt sync callback
@@ -211,12 +205,11 @@ class AgentBehaviorBridge implements AgentBridgeController {
   // Toggle copilot suggestions
   private toggleCopilot(enabled: boolean): void {
     if (this.options.debug) {
-      console.log(`[AgentBridge] Toggling copilot: ${enabled ? 'enabled' : 'disabled'}`);
     }
 
     this.syncStats.lastCopilotToggle = {
       enabled,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // Call the copilot toggle callback
@@ -224,7 +217,10 @@ class AgentBehaviorBridge implements AgentBridgeController {
       try {
         this.options.onToggleCopilot(enabled);
       } catch (error) {
-        console.error('[AgentBridge] Error in onToggleCopilot callback:', error);
+        console.error(
+          '[AgentBridge] Error in onToggleCopilot callback:',
+          error
+        );
       }
     }
   }
@@ -232,12 +228,11 @@ class AgentBehaviorBridge implements AgentBridgeController {
   // Toggle session memory
   private toggleMemory(enabled: boolean): void {
     if (this.options.debug) {
-      console.log(`[AgentBridge] Toggling memory: ${enabled ? 'enabled' : 'disabled'}`);
     }
 
     this.syncStats.lastMemoryToggle = {
       enabled,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // Call the memory toggle callback
@@ -258,26 +253,26 @@ class AgentBehaviorBridge implements AgentBridgeController {
           this.syncStats.lastToneChange = {
             from: change.previousValue,
             to: change.newValue,
-            timestamp: change.timestamp
+            timestamp: change.timestamp,
           };
           break;
         case 'language':
           this.syncStats.lastLanguageChange = {
             from: change.previousValue,
             to: change.newValue,
-            timestamp: change.timestamp
+            timestamp: change.timestamp,
           };
           break;
         case 'copilotEnabled':
           this.syncStats.lastCopilotToggle = {
             enabled: change.newValue,
-            timestamp: change.timestamp
+            timestamp: change.timestamp,
           };
           break;
         case 'memoryEnabled':
           this.syncStats.lastMemoryToggle = {
             enabled: change.newValue,
-            timestamp: change.timestamp
+            timestamp: change.timestamp,
           };
           break;
       }
@@ -301,14 +296,13 @@ class AgentBehaviorBridge implements AgentBridgeController {
     }
 
     if (this.options.debug) {
-      console.log('[AgentBridge] Disposing bridge');
     }
 
     this.isDisposed = true;
     this.lastPrefs = null;
     this.syncStats = {
       totalUpdates: 0,
-      lastUpdate: 0
+      lastUpdate: 0,
     };
   }
 
@@ -328,7 +322,7 @@ class AgentBehaviorBridge implements AgentBridgeController {
       isDisposed: this.isDisposed,
       hasLastPrefs: this.lastPrefs !== null,
       totalUpdates: this.syncStats.totalUpdates,
-      lastUpdate: this.syncStats.lastUpdate
+      lastUpdate: this.syncStats.lastUpdate,
     };
   }
 }
@@ -339,19 +333,21 @@ export function initializeAgentBehaviorBridge(
   options: BridgeOptions = {}
 ): AgentBridgeController {
   const bridge = new AgentBehaviorBridge(options);
-  
+
   // Perform initial sync
   bridge.update(preferences);
-  
+
   return bridge;
 }
 
 // Utility function to create bridge with default options
-export function createDefaultBridge(preferences: AgentPrefs): AgentBridgeController {
+export function createDefaultBridge(
+  preferences: AgentPrefs
+): AgentBridgeController {
   return initializeAgentBehaviorBridge(preferences, {
-    debug: process.env.NODE_ENV === 'development'
+    debug: process.env.NODE_ENV === 'development',
   });
 }
 
 // Export the bridge class for testing
-export { AgentBehaviorBridge }; 
+export { AgentBehaviorBridge };

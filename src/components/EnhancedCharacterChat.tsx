@@ -285,7 +285,6 @@ export default function EnhancedCharacterChat({
         await enhancedCharacterInteraction.analyzeConversationFlow(
           conversationFlow
         );
-      console.log('Conversation Analysis:', analysis);
 
       setShowEmotionalAnalysis(true);
       toast.success('Conversation analysis complete');

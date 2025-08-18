@@ -78,9 +78,6 @@ export class EnterpriseAlertSystem {
     // Note: PerformanceMonitor doesn't have an 'on' method
     // This would need to be implemented as a proper event system
     // For now, we'll handle alerts through direct method calls
-    console.log(
-      'Performance monitor listener setup - event system not implemented'
-    );
   }
 
   private async processAlert(alertData: {
@@ -180,10 +177,6 @@ export class EnterpriseAlertSystem {
   ): Promise<void> {
     // Implementation would integrate with email service (SendGrid, AWS SES, etc.)
     const html = this.generateEmailHTML(notification);
-    console.log(
-      `Email alert sent to ${config.recipients}:`,
-      notification.title
-    );
 
     // Example implementation:
     // await emailService.send({
@@ -216,8 +209,6 @@ export class EnterpriseAlertSystem {
       ],
     };
 
-    console.log(`Slack alert sent to ${config.channel}:`, notification.title);
-
     // Example implementation:
     // await fetch(config.webhookUrl, {
     //   method: 'POST',
@@ -237,8 +228,6 @@ export class EnterpriseAlertSystem {
       source: 'DocCraft-AI Monitoring',
     };
 
-    console.log(`Webhook alert sent to ${config.url}:`, notification.title);
-
     // Example implementation:
     // await fetch(config.url, {
     //   method: 'POST',
@@ -253,11 +242,6 @@ export class EnterpriseAlertSystem {
   ): Promise<void> {
     // Implementation would integrate with SMS service (Twilio, AWS SNS, etc.)
     const message = `[${notification.severity.toUpperCase()}] ${notification.title}: ${notification.message}`;
-
-    console.log(
-      `SMS alert sent to ${config.phoneNumbers}:`,
-      notification.title
-    );
 
     // Example implementation:
     // await smsService.send({
@@ -301,8 +285,6 @@ export class EnterpriseAlertSystem {
 
   private async escalateAlert(notification: AlertNotification): Promise<void> {
     // Escalate to higher-level channels or personnel
-    console.log(`Escalating critical alert: ${notification.id}`);
-
     // Example escalation logic:
     // - Send to emergency contacts
     // - Create incident ticket

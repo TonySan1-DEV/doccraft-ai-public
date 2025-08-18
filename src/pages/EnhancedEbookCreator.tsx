@@ -435,7 +435,7 @@ const EnhancedEbookCreator: React.FC = () => {
   const handleTemplateSave = async (template: EbookTemplate) => {
     try {
       // In a real implementation, this would save the customized template
-      console.log('Saving template:', template);
+
       await new Promise(resolve => setTimeout(resolve, 1000));
       toast.success('Template saved successfully');
     } catch (error) {
@@ -574,7 +574,6 @@ const EnhancedEbookCreator: React.FC = () => {
 
         // Log export metadata
         if (result.metadata) {
-          console.log('Export metadata:', result.metadata);
         }
       } else {
         toast.error(result.error || `Failed to export ${format.toUpperCase()}`);

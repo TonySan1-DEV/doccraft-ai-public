@@ -1,20 +1,20 @@
-import { supabase } from '../lib/supabase'
+import { supabase } from '../lib/supabase';
 
 export interface Chapter {
-  title: string
-  summary: string
+  title: string;
+  summary: string;
 }
 
 export interface BookOutline {
-  id: string
-  user_id: string
-  title: string
-  genre: string
-  tone: string
-  outline: Chapter[]
-  created_at: string
-  matchScore?: number
-  misalignments?: string[]
+  id: string;
+  user_id: string;
+  title: string;
+  genre: string;
+  tone: string;
+  outline: Chapter[];
+  created_at: string;
+  matchScore?: number;
+  misalignments?: string[];
 }
 
 /**
@@ -23,7 +23,7 @@ export interface BookOutline {
  * @returns Sanitized string
  */
 function sanitizeInput(input: string): string {
-  return input.trim().replace(/[<>]/g, '')
+  return input.trim().replace(/[<>]/g, '');
 }
 
 /**
@@ -33,15 +33,16 @@ function sanitizeInput(input: string): string {
  */
 function validateOutline(outline: Chapter[]): boolean {
   if (!Array.isArray(outline) || outline.length === 0) {
-    return false
+    return false;
   }
-  
-  return outline.every(chapter => 
-    typeof chapter.title === 'string' && 
-    chapter.title.trim().length > 0 &&
-    typeof chapter.summary === 'string' && 
-    chapter.summary.trim().length > 0
-  )
+
+  return outline.every(
+    chapter =>
+      typeof chapter.title === 'string' &&
+      chapter.title.trim().length > 0 &&
+      typeof chapter.summary === 'string' &&
+      chapter.summary.trim().length > 0
+  );
 }
 
 /**
@@ -67,17 +68,17 @@ export async function saveOutlineToSupabase(
   try {
     // Input validation
     if (!userId || !title || !genre || !tone) {
-      throw new Error('Missing required fields')
+      throw new Error('Missing required fields');
     }
 
     if (!validateOutline(outline)) {
-      throw new Error('Invalid outline data')
+      throw new Error('Invalid outline data');
     }
 
     // Sanitize inputs
-    const sanitizedTitle = sanitizeInput(title)
-    const sanitizedGenre = sanitizeInput(genre)
-    const sanitizedTone = sanitizeInput(tone)
+    const sanitizedTitle = sanitizeInput(title);
+    const sanitizedGenre = sanitizeInput(genre);
+    const sanitizedTone = sanitizeInput(tone);
 
     // Prepare data for insertion
     const outlineData: any = {
@@ -85,43 +86,25 @@ export async function saveOutlineToSupabase(
       title: sanitizedTitle,
       genre: sanitizedGenre,
       tone: sanitizedTone,
-      outline: outline // JSONB will be automatically handled by Supabase
-    }
-    if (typeof matchScore === 'number') outlineData.matchScore = matchScore
-    if (Array.isArray(misalignments)) outlineData.misalignments = misalignments
-
-    console.log('Saving outline to Supabase:', {
-      userId,
-      title: sanitizedTitle,
-      genre: sanitizedGenre,
-      tone: sanitizedTone,
-      chapterCount: outline.length,
-      matchScore,
-      misalignments
-    })
+      outline: outline, // JSONB will be automatically handled by Supabase
+    };
+    if (typeof matchScore === 'number') outlineData.matchScore = matchScore;
+    if (Array.isArray(misalignments)) outlineData.misalignments = misalignments;
 
     // Insert into Supabase
     const { data, error } = await supabase
       .from('book_outlines')
       .insert(outlineData)
       .select()
-      .single()
+      .single();
 
     if (error) {
-      console.error('Supabase error:', error)
-      throw new Error(`Failed to save outline: ${error.message}`)
+      console.error('Supabase error:', error);
+      throw new Error(`Failed to save outline: ${error.message}`);
     }
-
-    console.log('Outline saved successfully:', {
-      outlineId: data.id,
-      userId: data.user_id,
-      title: data.title,
-      createdAt: data.created_at
-    })
-
   } catch (error: any) {
-    console.error('Error saving outline:', error)
-    throw new Error(`Failed to save outline: ${error.message}`)
+    console.error('Error saving outline:', error);
+    throw new Error(`Failed to save outline: ${error.message}`);
   }
 }
 
@@ -136,17 +119,17 @@ export async function getUserOutlines(userId: string): Promise<BookOutline[]> {
       .from('book_outlines')
       .select('*')
       .eq('user_id', userId)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching outlines:', error)
-      throw new Error(`Failed to fetch outlines: ${error.message}`)
+      console.error('Error fetching outlines:', error);
+      throw new Error(`Failed to fetch outlines: ${error.message}`);
     }
 
-    return data || []
+    return data || [];
   } catch (error: any) {
-    console.error('Error in getUserOutlines:', error)
-    throw new Error(`Failed to fetch outlines: ${error.message}`)
+    console.error('Error in getUserOutlines:', error);
+    throw new Error(`Failed to fetch outlines: ${error.message}`);
   }
 }
 
@@ -156,22 +139,23 @@ export async function getUserOutlines(userId: string): Promise<BookOutline[]> {
  * @param userId - The user's ID (for security)
  * @returns Promise<void>
  */
-export async function deleteOutline(outlineId: string, userId: string): Promise<void> {
+export async function deleteOutline(
+  outlineId: string,
+  userId: string
+): Promise<void> {
   try {
     const { error } = await supabase
       .from('book_outlines')
       .delete()
       .eq('id', outlineId)
-      .eq('user_id', userId)
+      .eq('user_id', userId);
 
     if (error) {
-      console.error('Error deleting outline:', error)
-      throw new Error(`Failed to delete outline: ${error.message}`)
+      console.error('Error deleting outline:', error);
+      throw new Error(`Failed to delete outline: ${error.message}`);
     }
-
-    console.log('Outline deleted successfully:', outlineId)
   } catch (error: any) {
-    console.error('Error in deleteOutline:', error)
-    throw new Error(`Failed to delete outline: ${error.message}`)
+    console.error('Error in deleteOutline:', error);
+    throw new Error(`Failed to delete outline: ${error.message}`);
   }
-} 
+}

@@ -69,7 +69,7 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
       );
 
       // In development, we might want to show validation errors
-      if (validation.errors.some((error) => error.severity === 'critical')) {
+      if (validation.errors.some(error => error.severity === 'critical')) {
         throw new Error(
           `Critical validation error: ${validation.errors[0]?.message}`
         );
@@ -156,7 +156,6 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
 
   const handlePreviewEvent = useCallback(() => {
     // Log preview events for analytics
-    console.debug('Voice preview event triggered');
   }, []);
 
   const handleFavoriteToggle = useCallback(
@@ -210,7 +209,8 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
           aria-label={`${voice.label}, Quality: ${quality}/10, ${isSelected ? 'Selected' : 'Not selected'}`}
           onKeyDown={
             accessibility.enableKeyboardNav !== false
-              ? (e: React.KeyboardEvent<HTMLDivElement>) => handleKeyDown(e, voice.id)
+              ? (e: React.KeyboardEvent<HTMLDivElement>) =>
+                  handleKeyDown(e, voice.id)
               : undefined
           }
         >
@@ -261,7 +261,9 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
 
             {/* Favorite Button */}
             <button
-              onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleFavoriteToggle(voice.id, e)}
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+                handleFavoriteToggle(voice.id, e)
+              }
               className={`absolute top-2 right-2 p-1 rounded-full transition-colors ${
                 isFavorite
                   ? 'text-yellow-500 hover:text-yellow-600'

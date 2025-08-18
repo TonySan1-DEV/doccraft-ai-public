@@ -1,13 +1,10 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { Sparkles, ArrowRight, Play } from "lucide-react";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Sparkles, ArrowRight, Play } from 'lucide-react';
 
 export const LandingHero: React.FC = () => {
-  console.log("🎯 LandingHero component loading...");
-
   try {
     const navigate = useNavigate();
-    console.log("🎯 LandingHero component rendered successfully");
 
     return (
       <section className="relative py-12 px-8 overflow-hidden">
@@ -41,7 +38,7 @@ export const LandingHero: React.FC = () => {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <button
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate('/signup')}
               className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
             >
               Get Started
@@ -49,7 +46,7 @@ export const LandingHero: React.FC = () => {
             </button>
 
             <button
-              onClick={() => navigate("/demo")}
+              onClick={() => navigate('/demo')}
               className="inline-flex items-center px-8 py-4 bg-white/90 dark:bg-slate-800/90 text-gray-900 dark:text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 border border-gray-200 dark:border-slate-700"
             >
               <Play className="w-5 h-5 mr-2" />
@@ -88,7 +85,7 @@ export const LandingHero: React.FC = () => {
       </section>
     );
   } catch (error) {
-    console.error("❌ Error in LandingHero component:", error);
+    console.error('❌ Error in LandingHero component:', error);
     return (
       <div className="py-20 px-8 text-center">
         <h1 className="text-2xl font-bold text-red-600 mb-4">

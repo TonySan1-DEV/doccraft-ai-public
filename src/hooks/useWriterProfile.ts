@@ -1,14 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { 
-  saveWriterProfile, 
-  getWriterProfile, 
-  updateWriterProfile, 
+import {
+  saveWriterProfile,
+  getWriterProfile,
+  updateWriterProfile,
   analyzeWriterProfile,
   generatePersonalizedSuggestions,
-  learnFromUserAction
+  learnFromUserAction,
 } from '../services/profileTrainer';
-import { WriterProfile, ProfileUpdateData, ProfileAnalytics, PersonalizedSuggestion } from '../types/WriterProfile';
+import {
+  WriterProfile,
+  ProfileUpdateData,
+  ProfileAnalytics,
+  PersonalizedSuggestion,
+} from '../types/WriterProfile';
 import toast from 'react-hot-toast';
 
 interface UseWriterProfileReturn {
@@ -18,8 +23,15 @@ interface UseWriterProfileReturn {
   error: string | null;
   saveProfile: (profile: WriterProfile) => Promise<void>;
   updateProfile: (updateData: ProfileUpdateData) => Promise<void>;
-  getSuggestions: (context: string, currentContent?: string) => Promise<PersonalizedSuggestion[]>;
-  recordAction: (action: string, context: string, outcome: 'success' | 'failure') => Promise<void>;
+  getSuggestions: (
+    context: string,
+    currentContent?: string
+  ) => Promise<PersonalizedSuggestion[]>;
+  recordAction: (
+    action: string,
+    context: string,
+    outcome: 'success' | 'failure'
+  ) => Promise<void>;
   refreshAnalytics: () => Promise<void>;
   setProfile: (profile: WriterProfile | null) => void;
 }
@@ -74,93 +86,111 @@ export function useWriterProfile(userId?: string): UseWriterProfileReturn {
     }
   }, [targetUserId]);
 
-  const saveProfile = useCallback(async (newProfile: WriterProfile) => {
-    if (!targetUserId) {
-      toast.error('You must be logged in to save your profile');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      await saveWriterProfile(targetUserId, newProfile);
-      setProfile(newProfile);
-      toast.success('Writer profile saved successfully!');
-      
-      // Refresh analytics after profile update
-      await loadAnalytics();
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to save writer profile';
-      setError(errorMessage);
-      toast.error(errorMessage);
-      console.error('Error saving profile:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [targetUserId, loadAnalytics]);
-
-  const updateProfile = useCallback(async (updateData: ProfileUpdateData) => {
-    if (!targetUserId) {
-      toast.error('You must be logged in to update your profile');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      await updateWriterProfile(targetUserId, updateData);
-      
-      // Update local state
-      if (profile) {
-        const updatedProfile = { ...profile, ...updateData };
-        setProfile(updatedProfile);
+  const saveProfile = useCallback(
+    async (newProfile: WriterProfile) => {
+      if (!targetUserId) {
+        toast.error('You must be logged in to save your profile');
+        return;
       }
-      
-      toast.success('Profile updated successfully!');
-      
-      // Refresh analytics after profile update
-      await loadAnalytics();
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to update writer profile';
-      setError(errorMessage);
-      toast.error(errorMessage);
-      console.error('Error updating profile:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [targetUserId, profile, loadAnalytics]);
 
-  const getSuggestions = useCallback(async (context: string, currentContent?: string): Promise<PersonalizedSuggestion[]> => {
-    if (!targetUserId) {
-      return [];
-    }
+      setLoading(true);
+      setError(null);
 
-    try {
-      const suggestions = await generatePersonalizedSuggestions(targetUserId, context, currentContent);
-      return suggestions;
-    } catch (err: any) {
-      console.error('Error getting suggestions:', err);
-      return [];
-    }
-  }, [targetUserId]);
+      try {
+        await saveWriterProfile(targetUserId, newProfile);
+        setProfile(newProfile);
+        toast.success('Writer profile saved successfully!');
 
-  const recordAction = useCallback(async (action: string, context: string, outcome: 'success' | 'failure') => {
-    if (!targetUserId) return;
-
-    try {
-      await learnFromUserAction(targetUserId, action, context, outcome);
-      
-      // Optionally show feedback for successful learning
-      if (outcome === 'success') {
-        console.log('Action recorded and learned from:', action);
+        // Refresh analytics after profile update
+        await loadAnalytics();
+      } catch (err: any) {
+        const errorMessage = err.message || 'Failed to save writer profile';
+        setError(errorMessage);
+        toast.error(errorMessage);
+        console.error('Error saving profile:', err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err: any) {
-      console.error('Error recording action:', err);
-      // Don't show error to user as this is background learning
-    }
-  }, [targetUserId]);
+    },
+    [targetUserId, loadAnalytics]
+  );
+
+  const updateProfile = useCallback(
+    async (updateData: ProfileUpdateData) => {
+      if (!targetUserId) {
+        toast.error('You must be logged in to update your profile');
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        await updateWriterProfile(targetUserId, updateData);
+
+        // Update local state
+        if (profile) {
+          const updatedProfile = { ...profile, ...updateData };
+          setProfile(updatedProfile);
+        }
+
+        toast.success('Profile updated successfully!');
+
+        // Refresh analytics after profile update
+        await loadAnalytics();
+      } catch (err: any) {
+        const errorMessage = err.message || 'Failed to update writer profile';
+        setError(errorMessage);
+        toast.error(errorMessage);
+        console.error('Error updating profile:', err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [targetUserId, profile, loadAnalytics]
+  );
+
+  const getSuggestions = useCallback(
+    async (
+      context: string,
+      currentContent?: string
+    ): Promise<PersonalizedSuggestion[]> => {
+      if (!targetUserId) {
+        return [];
+      }
+
+      try {
+        const suggestions = await generatePersonalizedSuggestions(
+          targetUserId,
+          context,
+          currentContent
+        );
+        return suggestions;
+      } catch (err: any) {
+        console.error('Error getting suggestions:', err);
+        return [];
+      }
+    },
+    [targetUserId]
+  );
+
+  const recordAction = useCallback(
+    async (action: string, context: string, outcome: 'success' | 'failure') => {
+      if (!targetUserId) return;
+
+      try {
+        await learnFromUserAction(targetUserId, action, context, outcome);
+
+        // Optionally show feedback for successful learning
+        if (outcome === 'success') {
+        }
+      } catch (err: any) {
+        console.error('Error recording action:', err);
+        // Don't show error to user as this is background learning
+      }
+    },
+    [targetUserId]
+  );
 
   const refreshAnalytics = useCallback(async () => {
     await loadAnalytics();
@@ -176,7 +206,7 @@ export function useWriterProfile(userId?: string): UseWriterProfileReturn {
     getSuggestions,
     recordAction,
     refreshAnalytics,
-    setProfile
+    setProfile,
   };
 }
 
@@ -226,6 +256,6 @@ export function useProfileSetup() {
     isSetup,
     setupLoading,
     initializeProfile,
-    checkProfileSetup
+    checkProfileSetup,
   };
-} 
+}

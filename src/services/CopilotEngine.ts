@@ -40,7 +40,9 @@ class CopilotEngine {
   static isEnabled: () => boolean;
   static setTone: (tone: AgentTone) => void;
   static setLanguage: (language: SupportedLanguage) => void;
-  static generateSuggestions: (context: SuggestionContext) => Promise<CopilotSuggestion[]>;
+  static generateSuggestions: (
+    context: SuggestionContext
+  ) => Promise<CopilotSuggestion[]>;
   static getCurrentSuggestions: () => CopilotSuggestion[];
   static clearSuggestions: () => void;
   static shouldShowSuggestions: () => boolean;
@@ -51,14 +53,12 @@ class CopilotEngine {
   // Enable copilot suggestions
   enable(): void {
     this.enabled = true;
-    console.log('CopilotEngine: Suggestions enabled');
   }
 
   // Disable copilot suggestions
   disable(): void {
     this.enabled = false;
     this.suggestions = [];
-    console.log('CopilotEngine: Suggestions disabled');
   }
 
   // Check if copilot is enabled
@@ -69,19 +69,16 @@ class CopilotEngine {
   // Set tone for suggestions
   setTone(tone: AgentTone): void {
     this.currentTone = tone;
-    console.log(`CopilotEngine: Tone set to ${tone}`);
   }
 
   // Set language for suggestions
   setLanguage(language: SupportedLanguage): void {
     this.currentLanguage = language;
-    console.log(`CopilotEngine: Language set to ${language}`);
   }
 
   // Generate suggestions based on context
   async generateSuggestions(): Promise<CopilotSuggestion[]> {
     if (!this.enabled) {
-      console.log('CopilotEngine: Suggestions disabled, returning empty array');
       return [];
     }
 
@@ -93,15 +90,17 @@ class CopilotEngine {
           text: this.formatSuggestion('How can I help you with your story?'),
           type: 'auto-reply',
           confidence: 0.8,
-          context: 'General assistance'
+          context: 'General assistance',
         },
         {
           id: `suggestion-${Date.now()}-2`,
-          text: this.formatSuggestion('Would you like me to analyze this scene?'),
+          text: this.formatSuggestion(
+            'Would you like me to analyze this scene?'
+          ),
           type: 'quick-prompt',
           confidence: 0.7,
-          context: 'Scene analysis'
-        }
+          context: 'Scene analysis',
+        },
       ];
 
       this.suggestions = suggestions;
@@ -147,7 +146,6 @@ class CopilotEngine {
   // Clear all suggestions
   clearSuggestions(): void {
     this.suggestions = [];
-    console.log('CopilotEngine: Suggestions cleared');
   }
 
   // Check if suggestions should be shown in UI
@@ -175,7 +173,7 @@ class CopilotEngine {
         suggestionId,
         accepted,
         enabled: this.enabled,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
   }
@@ -189,14 +187,20 @@ CopilotEngine.enable = () => copilotEngine.enable();
 CopilotEngine.disable = () => copilotEngine.disable();
 CopilotEngine.isEnabled = () => copilotEngine.isEnabled();
 CopilotEngine.setTone = (tone: AgentTone) => copilotEngine.setTone(tone);
-CopilotEngine.setLanguage = (language: SupportedLanguage) => copilotEngine.setLanguage(language);
+CopilotEngine.setLanguage = (language: SupportedLanguage) =>
+  copilotEngine.setLanguage(language);
 CopilotEngine.generateSuggestions = () => copilotEngine.generateSuggestions();
-CopilotEngine.getCurrentSuggestions = () => copilotEngine.getCurrentSuggestions();
+CopilotEngine.getCurrentSuggestions = () =>
+  copilotEngine.getCurrentSuggestions();
 CopilotEngine.clearSuggestions = () => copilotEngine.clearSuggestions();
-CopilotEngine.shouldShowSuggestions = () => copilotEngine.shouldShowSuggestions();
-CopilotEngine.getSuggestionById = (id: string) => copilotEngine.getSuggestionById(id);
-CopilotEngine.updateSuggestionConfidence = (id: string, confidence: number) => copilotEngine.updateSuggestionConfidence(id, confidence);
-CopilotEngine.logSuggestionUsage = (suggestionId: string, accepted: boolean) => copilotEngine.logSuggestionUsage(suggestionId, accepted);
+CopilotEngine.shouldShowSuggestions = () =>
+  copilotEngine.shouldShowSuggestions();
+CopilotEngine.getSuggestionById = (id: string) =>
+  copilotEngine.getSuggestionById(id);
+CopilotEngine.updateSuggestionConfidence = (id: string, confidence: number) =>
+  copilotEngine.updateSuggestionConfidence(id, confidence);
+CopilotEngine.logSuggestionUsage = (suggestionId: string, accepted: boolean) =>
+  copilotEngine.logSuggestionUsage(suggestionId, accepted);
 
 // Export class for testing
-export { CopilotEngine }; 
+export { CopilotEngine };

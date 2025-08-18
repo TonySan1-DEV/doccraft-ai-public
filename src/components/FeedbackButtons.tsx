@@ -308,7 +308,6 @@ export function FeedbackWrapper({
     (_type: 'positive' | 'negative', success: boolean) => {
       if (success) {
         // Feedback was submitted successfully
-        console.log('Feedback submitted successfully');
       }
     },
     []

@@ -30,28 +30,22 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  logger.info('AuthProvider initializing');
-
   const [user, setUser] = useState<ExtendedUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Function to load user profile data including tier
   const loadUserProfile = async (supabaseUser: User): Promise<ExtendedUser> => {
     try {
-      logger.info('Loading user profile', { userId: supabaseUser.id });
-
       // Check if UserService is available (Supabase connection)
       if (supabase.auth && typeof supabase.auth.getSession === 'function') {
         const profile = await UserService.getCurrentUser();
 
         if (profile) {
-          logger.info('User profile loaded with tier', { tier: profile.tier });
           return {
             ...supabaseUser,
             tier: profile.tier,
           } as ExtendedUser;
         } else {
-          logger.info('No profile found, using default tier');
           return {
             ...supabaseUser,
             tier: 'Free', // Default tier for new users
@@ -59,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         // Demo mode - return mock user
-        logger.info('Demo mode - using mock user profile');
+
         return {
           ...supabaseUser,
           tier: 'Pro', // Demo tier
@@ -77,11 +71,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    logger.info('AuthProvider useEffect running');
-
     // Set a timeout to prevent infinite loading
     const timeout = setTimeout(() => {
-      logger.info('Auth timeout reached, setting loading to false');
       setLoading(false);
     }, 3000); // Reduced to 3 seconds for better UX
 
@@ -91,8 +82,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       supabase.auth
         .getSession()
         .then(async ({ data: { session } }: { data: { session: any } }) => {
-          logger.info('Session loaded', { hasSession: !!session });
-
           if (session?.user) {
             // Load user profile data including tier
             const extendedUser = await loadUserProfile(session.user);

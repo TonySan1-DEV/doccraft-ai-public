@@ -41,9 +41,6 @@ export class AuditLogger {
         return false;
       }
 
-      console.log(
-        `Audit: Logged '${event.action}' on '${event.resource}' for user ${event.userId}`
-      );
       return true;
     } catch (error) {
       console.error('Audit: Error logging event:', error);

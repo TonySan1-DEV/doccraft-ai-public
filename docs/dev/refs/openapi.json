@@ -1,0 +1,11 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DocCraft-AI API (skeleton)",
+    "version": "2025-08-18T21:43:15.154Z",
+    "description": "Placeholder OpenAPI spec. Will be replaced with real route extraction."
+  },
+  "servers": [],
+  "paths": {},
+  "components": {}
+}

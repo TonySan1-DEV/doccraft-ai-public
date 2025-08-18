@@ -162,24 +162,24 @@ const DocBuilder = () => {
       icon: FileDown,
       label: 'PDF',
       format: 'pdf',
-      action: () => console.log('Export PDF'),
+      action: () => {},
     },
     {
       icon: FileText,
       label: 'DOCX',
       format: 'docx',
-      action: () => console.log('Export DOCX'),
+      action: () => {},
     },
     {
       icon: BookOpen,
       label: 'EPUB',
       format: 'epub',
-      action: () => console.log('Export EPUB'),
+      action: () => {},
     },
     {
       icon: Share2,
       label: 'Share',
-      action: () => console.log('Share Document'),
+      action: () => {},
     },
   ];
 

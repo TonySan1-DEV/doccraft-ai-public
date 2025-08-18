@@ -5,9 +5,11 @@ import { MarketTrend } from '../types/MarketTrend';
 import { PublishingTrend } from '../types/PublishingTrend';
 
 export async function syncMarketTrends(): Promise<void> {
-  console.log('Starting market trends sync job...');
   const publishingTrends: PublishingTrend[] = await fetchPublishingTrends();
-  let added = 0, updated = 0, skipped = 0, invalid = 0;
+  let added = 0,
+    updated = 0,
+    skipped = 0,
+    invalid = 0;
   const upsertPayload: MarketTrend[] = [];
 
   for (const trend of publishingTrends) {
@@ -29,7 +31,7 @@ export async function syncMarketTrends(): Promise<void> {
     .from('market_trends')
     .upsert(upsertPayload, {
       onConflict: 'genre,trend_type,label',
-      ignoreDuplicates: false
+      ignoreDuplicates: false,
     });
 
   if (error) {
@@ -55,8 +57,6 @@ export async function syncMarketTrends(): Promise<void> {
   }
 
   skipped = publishingTrends.length - upsertPayload.length;
-
-  console.log(`Market trends sync complete. Added: ${added}, Updated: ${updated}, Skipped: ${skipped}, Invalid: ${invalid}`);
 }
 
 // If run directly (node src/jobs/syncMarketTrends.ts), execute the job
@@ -65,4 +65,4 @@ if (require.main === module) {
     console.error('Market trends sync failed:', err);
     process.exit(1);
   });
-} 
+}

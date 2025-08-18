@@ -44,8 +44,6 @@ interface AlertService {
   ): Promise<void>;
 }
 
-
-
 export class PerformanceMonitor extends EventEmitter {
   private metrics: Map<string, MetricTimeSeries> = new Map();
   private realTimeStreams: Map<string, RealtimeStream> = new Map();
@@ -506,7 +504,6 @@ export class PerformanceMonitor extends EventEmitter {
   private notifySubscribers(metricName: string, data: any): void {
     // This would integrate with WebSocket or Server-Sent Events
     // For now, just log the update
-    console.log(`Real-time update for ${metricName}:`, data);
   }
 
   private startMetricCollection(): void {
@@ -860,9 +857,7 @@ export const performanceMonitor = new PerformanceMonitor(
       severity: string,
       message: string,
       data: any
-    ) => {
-      console.log(`Alert: ${type} - ${severity}: ${message}`, data);
-    },
+    ) => {},
   } as AlertService
 );
 
@@ -871,12 +866,10 @@ class DashboardUpdater {
   async updateMetrics(performanceData: any): Promise<void> {
     // Update dashboard with new performance data
     // This would integrate with your dashboard system
-    console.log('Dashboard updated with performance data:', performanceData);
   }
 
   async updateSecurityMetrics(securityData: any): Promise<void> {
     // Update security dashboard with new metrics
     // This would integrate with your security dashboard
-    console.log('Security dashboard updated:', securityData);
   }
 }

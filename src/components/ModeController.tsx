@@ -824,7 +824,6 @@ const ModeController: React.FC<ModeControllerProps> = ({
         toast.error('Mode system encountered an error. Please try again.');
       }}
       onRecovery={recoveredMode => {
-        console.log('ModeController recovered to mode:', recoveredMode);
         setCurrentMode(recoveredMode);
         toast.success(`System recovered to ${recoveredMode} mode`);
       }}

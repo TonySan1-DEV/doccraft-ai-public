@@ -1,2119 +1,1271 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+// 🔧 DOCCRAFT-AI V3 DEMO INTEGRATION GUIDE
+// Complete integration steps for your existing codebase
+
+// =============================================================================
+// STEP 1: Create the Enhanced Demo Page Component
+// =============================================================================
+// File: src/pages/Demo.tsx
+
+import React, { useState, useEffect } from 'react';
 import {
-  FileText,
-  Sparkles,
+  Play,
   Brain,
   Users,
-  ArrowRight,
-  Play,
-  Pause,
-  RotateCcw,
-  CheckCircle,
-  BarChart3,
-  BookOpen,
-  Settings,
-  Palette,
-  MessageCircle,
-  Lightbulb,
-  Zap,
-  User,
-  Bot,
-  Eye,
-  Code,
-  Crown,
-  Rocket,
   Target,
-  TrendingUp,
-  Clock,
-  Star,
-  Layers,
-  Activity,
-  PieChart,
-  LineChart,
-  Target as TargetIcon,
-  Zap as ZapIcon,
-  Shield as ShieldIcon,
-  Brain as BrainIcon,
+  Zap,
+  BookOpen,
+  Eye,
+  Settings,
+  MessageCircle,
+  Send,
   X,
+  HelpCircle,
+  Minimize2,
+  Maximize2,
 } from 'lucide-react';
-import { useDocCraftAgent } from '../contexts/AgentContext';
-import ModeController from '../components/ModeController';
-import { ModeErrorBoundary } from '../components/ModeErrorBoundary';
-import { SystemMode } from '../types/systemModes';
-import { useAgentPreferences } from '../contexts/AgentPreferencesContext';
-// import DocCraftAgentChat from "../../modules/agent/components/DocCraftAgentChat";
-// import { useMCP } from "../useMCP"; // Available for future MCP integration
+import { toast } from 'react-hot-toast'; // Using your existing toast system
+import { useAuth } from '../contexts/AuthContext'; // Integration with your auth system
 
-// Enhanced demo interfaces for mode system showcase
-interface DemoScenario {
-  id: string;
-  title: string;
-  description: string;
-  content: string;
-  targetMode: SystemMode;
-  expectedBehavior: string;
-  demoSteps: DemoStep[];
-  estimatedDuration: number;
+// Professional Robot Head Line Icon Component
+const RobotHeadIcon = ({ className = 'w-6 h-6' }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <rect x="6" y="8" width="12" height="10" rx="2" fill="none" />
+    <rect x="10" y="6" width="4" height="2" rx="1" fill="none" />
+    <circle cx="12" cy="4" r="1" fill="none" />
+    <line x1="12" y1="5" x2="12" y2="6" />
+    <circle cx="9" cy="11" r="1" fill="currentColor" />
+    <circle cx="15" cy="11" r="1" fill="currentColor" />
+    <line x1="10" y1="14" x2="14" y2="14" strokeLinecap="round" />
+    <line x1="10.5" y1="15.5" x2="13.5" y2="15.5" strokeLinecap="round" />
+    <line x1="5" y1="10" x2="5" y2="13" strokeLinecap="round" />
+    <line x1="19" y1="10" x2="19" y2="13" strokeLinecap="round" />
+    <line x1="8" y1="17" x2="9" y2="17" strokeLinecap="round" />
+    <line x1="15" y1="17" x2="16" y2="17" strokeLinecap="round" />
+  </svg>
+);
+
+// AI Demo Assistant Component
+interface DemoAssistantProps {
+  demoStep: number;
+  mode: string;
+  activeAgents: string[];
+  responses: Record<string, any>;
+  hasClickedStartDemo: boolean;
 }
 
-interface DemoStep {
-  id: string;
-  action: string;
-  description: string;
-  expectedResult: string;
-  mode: SystemMode;
-  delay: number;
-}
-
-interface ModeComparisonData {
-  features: Array<{
-    feature: string;
-    manual: string;
-    hybrid: string;
-    fullyAuto: string;
-    highlight: 'manual' | 'hybrid' | 'fullyAuto';
-  }>;
-  performance: Array<{
-    metric: string;
-    manual: number;
-    hybrid: number;
-    fullyAuto: number;
-    unit: string;
-  }>;
-  ux: Array<{
-    aspect: string;
-    manual: string;
-    hybrid: string;
-    fullyAuto: string;
-    rating: number;
-  }>;
-}
-
-interface Particle {
+interface Message {
   id: number;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  color: string;
-  size: number;
-  rotation: number;
-  rotationSpeed: number;
-  shape: 'circle' | 'square' | 'triangle' | 'star';
+  type: string;
+  content: string;
+  timestamp: Date;
 }
 
-// Confetti Explosion Component
-const ConfettiExplosion = () => {
-  const [particles, setParticles] = useState<
-    Array<{
-      id: number;
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      color: string;
-      size: number;
-      rotation: number;
-      rotationSpeed: number;
-      shape: 'circle' | 'square' | 'triangle' | 'star';
-    }>
-  >([]);
+const DemoAssistant = ({
+  demoStep,
+  mode,
+  activeAgents,
+  responses,
+  hasClickedStartDemo,
+}: DemoAssistantProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [hasShownInitialInstructions, setHasShownInitialInstructions] =
+    useState(false);
 
-  useEffect(() => {
-    // Get the demo section element to confine confetti to that area
-    const demoSection = document.querySelector(
-      '.lg\\:col-span-2'
-    ) as HTMLElement;
-    if (!demoSection) return;
-
-    const demoRect = demoSection.getBoundingClientRect();
-
-    // Create confetti particles that explode from the center of the demo section
-    const newParticles = Array.from({ length: 300 }, (_, i) => {
-      const centerX = demoRect.left + demoRect.width / 2;
-      const centerY = demoRect.top + demoRect.height / 2;
-
-      return {
-        id: i,
-        x: centerX + (Math.random() - 0.5) * demoRect.width, // Spread across demo section width
-        y: centerY + (Math.random() - 0.5) * demoRect.height, // Spread across demo section height
-        vx: (Math.random() - 0.5) * 4, // Slower horizontal spread
-        vy: Math.random() * 2 + 1.5, // Slower upward explosion then gentle fall
-        color: [
-          '#ff6b6b',
-          '#4ecdc4',
-          '#45b7d1',
-          '#96ceb4',
-          '#feca57',
-          '#ff9ff3',
-          '#54a0ff',
-          '#5f27cd',
-          '#ff9f43',
-          '#00d2d3',
-          '#ff6348',
-          '#2ed573',
-          '#1e90ff',
-          '#ffa502',
-          '#ff4757',
-        ][Math.floor(Math.random() * 15)],
-        size: Math.random() * 8 + 4, // Reverted to original size
-        rotation: Math.random() * 360,
-        rotationSpeed: (Math.random() - 0.5) * 6, // Slower rotation
-        shape: ['circle', 'square', 'triangle', 'star'][
-          Math.floor(Math.random() * 4)
-        ] as 'circle' | 'square' | 'triangle' | 'star',
-      };
-    });
-    setParticles(newParticles);
-
-    // Animate confetti with explosion effect then gentle fall
-    const interval = setInterval(() => {
-      setParticles(prev =>
-        prev
-          .map(particle => ({
-            ...particle,
-            x: particle.x + particle.vx,
-            y: particle.y + particle.vy,
-            vy: particle.vy + 0.08, // Gentler gravity for slower fall
-            rotation: particle.rotation + particle.rotationSpeed,
-          }))
-          .filter(particle => particle.y < window.innerHeight + 50)
-      );
-    }, 24); // Slower animation (was 16)
-
-    // Clean up after 6 seconds
-    const cleanup = setTimeout(() => {
-      setParticles([]);
-    }, 6000);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(cleanup);
-    };
-  }, []);
-
-  const renderParticle = (particle: Particle) => {
-    const baseStyle = {
-      left: particle.x,
-      top: particle.y,
-      width: particle.size,
-      height: particle.size,
-      backgroundColor: particle.color,
-      transform: `rotate(${particle.rotation}deg)`,
-      position: 'absolute' as const,
-    };
-
-    switch (particle.shape) {
-      case 'circle':
-        return (
-          <div
-            key={particle.id}
-            className="rounded-full animate-bounce"
-            style={baseStyle}
-          />
-        );
-      case 'square':
-        return (
-          <div key={particle.id} className="animate-spin" style={baseStyle} />
-        );
-      case 'triangle':
-        return (
-          <div
-            key={particle.id}
-            className="animate-pulse"
-            style={{
-              ...baseStyle,
-              clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
-            }}
-          />
-        );
-      case 'star':
-        return (
-          <div
-            key={particle.id}
-            className="animate-ping"
-            style={{
-              ...baseStyle,
-              clipPath:
-                'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
-            }}
-          />
-        );
-      default:
-        return (
-          <div
-            key={particle.id}
-            className="rounded-full animate-bounce"
-            style={baseStyle}
-          />
-        );
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 pointer-events-none z-50">
-      {particles.map(renderParticle)}
-    </div>
-  );
-};
-
-export default function Demo() {
-  return (
-    <ModeErrorBoundary>
-      <DemoContent />
-    </ModeErrorBoundary>
-  );
-}
-
-function DemoContent() {
-  const navigate = useNavigate();
-
-  /* MCP: { role: "curator", allowedActions: ["refactor", "animate", "style", "organize", "present"] } */
-  // const ctx = useMCP("Demo.tsx"); // MCP context available for future use
-
-  // Add error handling for the agent context
-  let sendAgentGreeting: (message: string) => void = () => {};
-  try {
-    const agentContext = useDocCraftAgent();
-    sendAgentGreeting = agentContext.sendAgentGreeting || (() => {});
-  } catch (error) {
-    console.warn('Agent context not available:', error);
-  }
-
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [showResults, setShowResults] = useState(false);
-  const [agentActivated, setAgentActivated] = useState(false);
-  const [agentOpen, setAgentOpen] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-
-  // Use ref to track current step for the timeout
-  const currentStepRef = useRef(currentStep);
-  currentStepRef.current = currentStep;
-
-  // Listen for agent state changes
-  useEffect(() => {
-    const handleAgentToggle = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      setAgentOpen(customEvent.detail.isOpen);
-    };
-
-    window.addEventListener('agent-toggle', handleAgentToggle);
-    return () => window.removeEventListener('agent-toggle', handleAgentToggle);
-  }, []);
-
-  // Auto-open AI agent after reading time
+  // Auto-open assistant after 7 seconds and show initial instructions
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!agentActivated) {
-        setAgentActivated(true);
-        console.log('Agent activated - will auto-open with welcome message');
+      if (!hasShownInitialInstructions) {
+        setIsOpen(true);
+        setHasShownInitialInstructions(true);
+
+        const initialMessages = [
+          {
+            id: 1,
+            type: 'assistant',
+            content:
+              "👋 Hello! I'm your AI Demo Assistant. I'll guide you through DocCraft-AI's powerful features step by step.",
+            timestamp: new Date(),
+          },
+        ];
+
+        if (!hasClickedStartDemo) {
+          initialMessages.push({
+            id: 2,
+            type: 'assistant',
+            content:
+              "🚀 Let's begin! First, click the blue 'Start Interactive Demo' button above to see our AI agents in action. I'll explain each step as we go!",
+            timestamp: new Date(),
+          });
+        }
+
+        setMessages(initialMessages);
       }
-    }, 30000); // 30 seconds - adequate time for average to slow readers
+    }, 7000);
 
     return () => clearTimeout(timer);
-  }, [agentActivated]);
+  }, [hasShownInitialInstructions, hasClickedStartDemo]);
 
-  // Enhanced demo scenarios for mode system showcase
-  const demoScenarios: DemoScenario[] = useMemo(
-    () => [
-      {
-        id: 'creative-writing',
-        title: 'Creative Writing: Three Different Experiences',
-        description:
-          'See how the same creative writing task feels completely different in each mode',
-        content:
-          'The old lighthouse stood abandoned on the rocky cliff, its beacon long since extinguished...',
-        targetMode: 'MANUAL',
-        expectedBehavior: 'AI waits silently until explicitly asked for help',
-        estimatedDuration: 45,
-        demoSteps: [
-          {
-            id: 'manual-typing',
-            action: 'Type creative content',
-            description: 'User types freely without AI interruption',
-            expectedResult: 'AI remains silent, preserving creative flow',
-            mode: 'MANUAL',
-            delay: 2000,
-          },
-          {
-            id: 'manual-request',
-            action: 'Request AI assistance',
-            description: 'User explicitly asks for help with description',
-            expectedResult: 'AI provides focused, requested assistance',
-            mode: 'MANUAL',
-            delay: 3000,
-          },
-          {
-            id: 'hybrid-switch',
-            action: 'Switch to Hybrid mode',
-            description: 'Experience collaborative writing assistance',
-            expectedResult: 'AI begins offering contextual suggestions',
-            mode: 'HYBRID',
-            delay: 2000,
-          },
-          {
-            id: 'hybrid-suggestions',
-            action: 'Continue writing',
-            description: 'AI provides smart suggestions with options',
-            expectedResult:
-              'Multiple suggestion options appear for user choice',
-            mode: 'HYBRID',
-            delay: 4000,
-          },
-          {
-            id: 'auto-switch',
-            action: 'Switch to Fully Auto',
-            description: 'Experience maximum AI assistance',
-            expectedResult: 'AI actively enhances and optimizes writing',
-            mode: 'FULLY_AUTO',
-            delay: 2000,
-          },
-          {
-            id: 'auto-enhancement',
-            action: 'Continue writing',
-            description: 'AI proactively improves and enhances content',
-            expectedResult:
-              'Real-time enhancements and optimization suggestions',
-            mode: 'FULLY_AUTO',
-            delay: 5000,
-          },
-        ],
+  // Handle clicks on different demo elements
+  const handleElementClick = (elementType: string, elementId: string) => {
+    if (demoStep < 3) return; // Only active after initial demo is complete
+
+    const explanations = {
+      agent: {
+        research:
+          "🔍 **Research Agent**: This AI specializes in gathering relevant information for your writing project. It can find character archetypes, plot inspirations, historical context, and thematic elements. In real use, it connects to databases and references to provide accurate, contextual research that enhances your story's authenticity and depth.",
+        outline:
+          "🎯 **Structure Agent**: This agent focuses on narrative architecture and story pacing. It analyzes plot structures like the Hero's Journey, Three-Act Structure, or Save the Cat! method. It ensures your story has proper tension curves, character arcs, and dramatic beats positioned for maximum impact.",
+        writing:
+          "✍️ **Writing Agent**: The creative powerhouse that helps with actual prose composition. It maintains your voice and style while suggesting improvements to dialogue, descriptions, and narrative flow. It can help overcome writer's block, suggest alternative phrasings, and ensure consistency in tone throughout your work.",
+        character:
+          '👥 **Character Agent**: Specializes in psychological depth and character development. It creates detailed personality profiles, analyzes character motivations, suggests realistic dialogue patterns, and ensures character consistency. It can map character arcs and suggest how personality traits influence plot decisions.',
+        emotion:
+          "💭 **Emotion Agent**: Maps the emotional journey of your story and characters. It analyzes pacing of emotional beats, suggests where to add tension or relief, and ensures your story has a compelling emotional arc that keeps readers engaged. It's particularly useful for identifying flat emotional moments.",
+        style:
+          "🎨 **Style Agent**: Your consistency guardian that maintains voice, tone, and stylistic elements throughout your work. It checks for genre consistency, suggests style improvements, and ensures your writing matches your intended audience and purpose. It's like having a professional editor focused solely on style.",
       },
-      {
-        id: 'business-writing',
-        title: 'Business Communication: Professional Efficiency',
-        description:
-          'Discover how AI modes adapt to professional writing needs',
-        content:
-          'Dear Mr. Johnson, I am writing to discuss the quarterly performance...',
-        targetMode: 'HYBRID',
-        expectedBehavior:
-          'AI provides professional writing assistance with tone optimization',
-        estimatedDuration: 30,
-        demoSteps: [
-          {
-            id: 'business-start',
-            action: 'Begin business letter',
-            description: 'Start writing professional communication',
-            expectedResult: 'AI recognizes business context and adapts',
-            mode: 'HYBRID',
-            delay: 2000,
-          },
-          {
-            id: 'business-suggestions',
-            action: 'Receive tone suggestions',
-            description: 'AI offers professional tone optimization',
-            expectedResult: 'Multiple tone options for business context',
-            mode: 'HYBRID',
-            delay: 3000,
-          },
-        ],
+      mode: {
+        MANUAL:
+          "🎛️ **Manual Mode**: You're in complete control. Each AI agent waits for your specific instructions before taking action. Perfect for writers who want full control over the creative process while having AI assistance available on demand. Click individual 'Run Analysis' buttons to activate specific agents.",
+        HYBRID:
+          "⚖️ **Hybrid Mode**: The perfect balance between AI assistance and human control. AI agents proactively suggest next steps and improvements, but you review and approve each suggestion before it's implemented. Ideal for collaborative writing where you want intelligent guidance without losing creative control.",
+        FULLY_AUTO:
+          "🚀 **Full Auto Mode**: All AI agents work collaboratively in the background, analyzing and improving your content in real-time. Best for rapid prototyping, overcoming writer's block, or when you want comprehensive AI assistance throughout your entire writing process. You can still override any suggestions.",
       },
-      {
-        id: 'academic-research',
-        title: 'Academic Research: Scholarly Precision',
-        description: 'See how modes support rigorous academic writing',
-        content:
-          'This study examines the correlation between artificial intelligence integration...',
-        targetMode: 'FULLY_AUTO',
-        expectedBehavior:
-          'AI provides comprehensive research support and citation assistance',
-        estimatedDuration: 40,
-        demoSteps: [
-          {
-            id: 'academic-start',
-            action: 'Begin academic writing',
-            description: 'Start research paper with AI assistance',
-            expectedResult: 'AI provides research structure and citation help',
-            mode: 'FULLY_AUTO',
-            delay: 2000,
-          },
-          {
-            id: 'academic-enhancement',
-            action: 'Receive academic enhancements',
-            description: 'AI enhances academic rigor and clarity',
-            expectedResult: 'Improved academic language and structure',
-            mode: 'FULLY_AUTO',
-            delay: 4000,
-          },
-        ],
+      feature: {
+        collaboration:
+          '👥 **Real-Time Collaboration**: Multiple writers can work on the same document simultaneously with intelligent conflict resolution. Changes are synced in real-time, and our AI helps merge different writing styles seamlessly while maintaining narrative consistency.',
+        psychology:
+          '🧠 **Psychological Analysis**: Deep character psychology mapping using established personality frameworks. Creates realistic character behaviors, dialogue patterns, and decision-making processes based on psychological profiles and motivations.',
+        plot: '📊 **Plot Structure**: Intelligent story pacing analysis using proven narrative frameworks. Ensures proper tension curves, character development arcs, and dramatic beats positioned for maximum reader engagement and satisfaction.',
+        adaptive:
+          '⚡ **Adaptive AI**: Our AI learns your writing style, preferences, and patterns over time. It adapts its suggestions to match your voice, genre preferences, and storytelling approach, becoming more personalized with each project.',
       },
-    ],
-    []
-  );
-
-  // Legacy demo steps for backward compatibility
-  const demoSteps: DemoStep[] = useMemo(
-    () => [
-      {
-        id: 'document-upload',
-        action: 'Document Upload & Analysis',
-        description:
-          'Upload your document and watch AI analyze its structure, tone, and content',
-        expectedResult: 'AI analyzes document and provides insights',
-        mode: 'MANUAL',
-        delay: 15000,
-      },
-      {
-        id: 'ai-enhancement',
-        action: 'AI-Powered Enhancement',
-        description:
-          'See how AI improves your content with intelligent suggestions and corrections',
-        expectedResult: 'Enhanced content with AI assistance',
-        mode: 'HYBRID',
-        delay: 12000,
-      },
-      {
-        id: 'ebook-analysis',
-        action: 'Ebook Analysis & Creation',
-        description:
-          'Analyze existing ebooks and create compelling new content with AI assistance',
-        expectedResult: 'Comprehensive ebook analysis and creation guidance',
-        mode: 'HYBRID',
-        delay: 14000,
-      },
-      {
-        id: 'character-development',
-        action: 'Character Development',
-        description:
-          'Create rich, multi-dimensional characters with AI-powered development tools',
-        expectedResult: 'Rich character development with AI insights',
-        mode: 'FULLY_AUTO',
-        delay: 12000,
-      },
-      {
-        id: 'collaboration',
-        action: 'Real-Time Collaboration',
-        description:
-          'Work together seamlessly with real-time editing and feedback integration',
-        expectedResult: 'Seamless team collaboration experience',
-        mode: 'HYBRID',
-        delay: 10000,
-      },
-      {
-        id: 'analytics',
-        action: 'Advanced Analytics',
-        description:
-          'Track performance and engagement with comprehensive analytics and insights',
-        expectedResult: 'Detailed performance analytics and insights',
-        mode: 'FULLY_AUTO',
-        delay: 12000,
-      },
-      {
-        id: 'personalization',
-        action: 'AI Personalization',
-        description:
-          'Experience personalized content recommendations and adaptive AI responses',
-        expectedResult: 'Personalized AI experience adapted to user',
-        mode: 'FULLY_AUTO',
-        delay: 10000,
-      },
-    ],
-    []
-  );
-
-  // Auto-activate AI assistant on page load
-  useEffect(() => {
-    if (!agentActivated) {
-      const timer = setTimeout(() => {
-        setAgentActivated(true);
-        // The original code had a duplicate welcome message here.
-        // It's removed as per the edit hint to remove duplicate welcome messages.
-      }, 1500); // 1.5 second delay for better UX
-
-      return () => clearTimeout(timer);
-    }
-  }, [agentActivated]);
-
-  // Handle step selection
-  const handleStepClick = (stepIndex: number) => {
-    console.log(
-      `User clicked step panel ${stepIndex + 1}, activating demo content`
-    );
-
-    // Update current step and progress immediately
-    setCurrentStep(stepIndex);
-    setProgress((stepIndex / demoSteps.length) * 100);
-
-    console.log(`Current step updated to: ${stepIndex + 1}`);
-
-    // Stop auto-progression when user manually clicks a step
-    if (isPlaying) {
-      console.log('Stopping auto-progression due to manual step selection');
-      setIsPlaying(false);
-    }
-
-    // Force immediate re-render
-    setTimeout(() => {
-      console.log(`Demo content should now display for step ${stepIndex + 1}`);
-      console.log(`Current step state: ${currentStep + 1}`);
-    }, 0);
-
-    // Send step-specific guidance to the agent
-    const stepGuidance = getStepGuidance(stepIndex);
-    if (stepGuidance) {
-      console.log(
-        `User clicked step ${stepIndex + 1}:`,
-        stepGuidance.substring(0, 100) + '...'
-      );
-      try {
-        sendAgentGreeting(stepGuidance);
-        console.log('Agent guidance sent successfully');
-      } catch (error) {
-        console.error('Failed to send agent guidance:', error);
-      }
-    }
-
-    // Force a re-render to ensure demo content updates
-    setTimeout(() => {
-      console.log(`Demo content should now display for step ${stepIndex + 1}`);
-    }, 100);
-  };
-
-  // Demo progression logic - auto-advance through steps
-  useEffect(() => {
-    if (!isPlaying) return;
-
-    console.log(
-      `Starting timer for step ${currentStep + 1},         delay: ${
-        demoSteps[currentStep].delay
-      }ms`
-    );
-
-    const stepTimer = setTimeout(() => {
-      console.log(
-        `Timer completed for step ${currentStep + 1}, advancing to next step`
-      );
-
-      if (currentStep < demoSteps.length - 1) {
-        const nextStep = currentStep + 1;
-        console.log(
-          `Advancing from step ${currentStep + 1} to step ${nextStep + 1}`
-        );
-        setCurrentStep(nextStep);
-
-        // Send step-specific guidance to the agent
-        const stepGuidance = getStepGuidance(nextStep);
-        if (stepGuidance) {
-          setTimeout(() => {
-            console.log(
-              `Auto-advancing to step ${nextStep + 1}:`,
-              stepGuidance.substring(0, 100) + '...'
-            );
-            try {
-              sendAgentGreeting(stepGuidance);
-              console.log('Agent guidance sent successfully');
-            } catch (error) {
-              console.error('Failed to send agent guidance:', error);
-            }
-          }, 500); // Small delay to let the step transition complete
-        }
-      } else {
-        // Demo completed
-        console.log('Demo completed - all steps finished');
-        setIsPlaying(false);
-        setShowResults(true);
-        setShowConfetti(true); // Trigger confetti explosion
-
-        // Send completion message
-        setTimeout(() => {
-          sendAgentGreeting(`🎉 **Demo Complete!** 
-
-Congratulations! You've just witnessed the full power of DocCraft-AI in action. Here's what we've demonstrated:
-
-✅ **Document Upload & Analysis** - AI analyzed your document structure and provided actionable insights
-✅ **AI-Powered Enhancement** - Intelligent suggestions improved your content quality
-✅ **Ebook Analysis & Creation** - Deep insights into existing content and creation guidance
-✅ **Character Development** - Rich, multi-dimensional character creation with AI
-✅ **Real-Time Collaboration** - Seamless teamwork and feedback integration
-✅ **Advanced Analytics** - Performance insights and engagement metrics
-✅ **Personalized Experience** - AI adapting to your unique writing style
-
-**Ready to experience this with your own documents?** 
-
-Do you have any questions about what you've seen or how DocCraft-AI can help with your specific projects?`);
-        }, 1000);
-      }
-    }, demoSteps[currentStep].delay);
-
-    return () => {
-      console.log(`Clearing timer for step ${currentStep + 1}`);
-      clearTimeout(stepTimer);
     };
-  }, [isPlaying, currentStep, demoSteps]);
 
-  // Progress calculation
+    const explanation = explanations[elementType]?.[elementId];
+    if (explanation) {
+      const explanationMessage = {
+        id: Date.now(),
+        type: 'assistant',
+        content: explanation,
+        timestamp: new Date(),
+      };
+
+      // Clear chat and show only the explanation
+      setMessages([
+        {
+          id: 1,
+          type: 'assistant',
+          content:
+            "💡 **Explanation Mode** - Here's detailed information about the feature you clicked:",
+          timestamp: new Date(),
+        },
+        explanationMessage,
+      ]);
+
+      if (!isOpen) setIsOpen(true);
+      if (isMinimized) setIsMinimized(false);
+    }
+  };
+
+  // Helper function to check if we're in explanation mode
+  const isInExplanationMode =
+    messages.length === 2 &&
+    messages[0]?.content?.includes('💡 **Explanation Mode**');
+
+  // Function to return to normal demo chat
+  const returnToDemoChat = () => {
+    const welcomeMessage = {
+      id: 1,
+      type: 'assistant',
+      content:
+        "👋 Welcome back! I'm ready to help with any questions about DocCraft-AI. You can click on any demo element for detailed explanations, or ask me anything!",
+      timestamp: new Date(),
+    };
+    setMessages([welcomeMessage]);
+  };
+
+  // Optional: Add explanation category to the header
+  const getExplanationCategory = () => {
+    if (messages[1]?.content?.includes('Research Agent')) return 'AI Agent';
+    if (messages[1]?.content?.includes('Structure Agent')) return 'AI Agent';
+    if (messages[1]?.content?.includes('Writing Agent')) return 'AI Agent';
+    if (messages[1]?.content?.includes('Character Agent')) return 'AI Agent';
+    if (messages[1]?.content?.includes('Emotion Agent')) return 'AI Agent';
+    if (messages[1]?.content?.includes('Style Agent')) return 'AI Agent';
+    if (messages[1]?.content?.includes('Manual Mode'))
+      return 'Collaboration Mode';
+    if (messages[1]?.content?.includes('Hybrid Mode'))
+      return 'Collaboration Mode';
+    if (messages[1]?.content?.includes('Full Auto Mode'))
+      return 'Collaboration Mode';
+    if (messages[1]?.content?.includes('Real-Time Collaboration'))
+      return 'Platform Feature';
+    if (messages[1]?.content?.includes('Psychological Analysis'))
+      return 'Platform Feature';
+    if (messages[1]?.content?.includes('Plot Structure'))
+      return 'Platform Feature';
+    if (messages[1]?.content?.includes('Adaptive AI'))
+      return 'Platform Feature';
+    return 'Feature';
+  };
+
+  // Real-time demo step guidance
   useEffect(() => {
-    if (!isPlaying) return;
+    if (!hasShownInitialInstructions) return;
 
-    const interval = setInterval(() => {
-      setProgress(() => {
-        const stepProgress =
-          (Date.now() % demoSteps[currentStep].delay) /
-          demoSteps[currentStep].delay;
-        return ((currentStep + stepProgress) / demoSteps.length) * 100;
-      });
-    }, 100);
+    let guidanceMessage = null;
 
-    return () => clearInterval(interval);
-  }, [isPlaying, currentStep, demoSteps]);
+    if (demoStep === 1) {
+      guidanceMessage = {
+        id: Date.now(),
+        type: 'assistant',
+        content:
+          "🎯 Excellent! You've started the demo in Hybrid mode. Notice the Research and Outline agents are now active (highlighted in blue and green). In Hybrid mode, these agents analyze your content and provide suggestions that you can review and approve before proceeding. This gives you control while leveraging AI insights.",
+        timestamp: new Date(),
+      };
+    } else if (demoStep === 2) {
+      guidanceMessage = {
+        id: Date.now(),
+        type: 'assistant',
+        content:
+          "🚀 Perfect timing! We've automatically switched to Full Auto mode. Watch as all 6 AI agents collaborate simultaneously - Research, Outline, Writing, Character, Emotion, and Style agents are all working together. This mode is ideal for rapid prototyping, brainstorming, or when you want comprehensive AI assistance throughout your entire writing process.",
+        timestamp: new Date(),
+      };
+    } else if (demoStep === 3) {
+      guidanceMessage = {
+        id: Date.now(),
+        type: 'assistant',
+        content:
+          "✨ Demo complete! You've experienced how our multi-agent AI system transforms writing. Each agent contributed unique expertise: Research gathered relevant information, Outline structured the narrative, Writing crafted prose, Character developed personalities, Emotion mapped story arcs, and Style ensured consistency. 🖱️ **Try clicking on any agent panel or feature tile below to learn more about how each component works!**",
+        timestamp: new Date(),
+      };
+    }
 
-  const handlePlay = () => {
-    setIsPlaying(true);
-    setCurrentStep(0);
-    setProgress(0);
-    setShowResults(false);
+    if (guidanceMessage) {
+      setTimeout(() => {
+        setMessages(prev => [...prev, guidanceMessage]);
+      }, 1500);
+    }
+  }, [demoStep, hasShownInitialInstructions]);
 
-    // Send initial Step 1 guidance
-    setTimeout(() => {
-      const stepGuidance = getStepGuidance(0);
-      if (stepGuidance) {
-        console.log(
-          'Sending initial Step 1 guidance:',
-          stepGuidance.substring(0, 100) + '...'
-        );
-        try {
-          sendAgentGreeting(stepGuidance);
-          console.log('Initial agent guidance sent successfully');
-        } catch (error) {
-          console.error('Failed to send initial agent guidance:', error);
-        }
+  // Predefined responses for common questions
+  const responses_db = {
+    pricing:
+      'Our pricing is flexible: Free tier (1 document/month), Pro ($29/month with unlimited documents), and Enterprise (custom pricing). All tiers include our AI agents!',
+    features:
+      'DocCraft-AI includes 6 specialized AI agents: Research, Structure, Writing, Character Development, Emotion Analysis, and Style Consistency. Plus real-time collaboration!',
+    security:
+      'We use enterprise-grade security with Supabase authentication, row-level security, and audit logging. Your content is encrypted and never used to train AI models.',
+    integration:
+      'We integrate with popular tools like Google Docs, Notion, and Scrivener. Plus our API allows custom integrations with your existing workflow.',
+    collaboration:
+      'Yes! Multiple writers can work on the same document simultaneously with intelligent conflict resolution and real-time sync.',
+    ai_accuracy:
+      'Our AI agents achieve 94% accuracy in style consistency and 89% user satisfaction. They learn from your writing style to provide personalized suggestions.',
+    export:
+      'Export to PDF, DOCX, Markdown, or HTML. We also support direct publishing to platforms like Medium, WordPress, and Ghost.',
+    support:
+      'We offer 24/7 chat support, comprehensive documentation, video tutorials, and weekly live training sessions for all users.',
+    demo_guide:
+      'I can guide you through our demo! We have three modes: Manual (you control each agent), Hybrid (AI suggests, you approve), and Full Auto (agents collaborate automatically).',
+  };
+
+  const getAIResponse = userMessage => {
+    const message = userMessage.toLowerCase();
+
+    // Context-aware responses based on demo state
+    if (
+      demoStep === 0 &&
+      (message.includes('start') ||
+        message.includes('demo') ||
+        message.includes('begin'))
+    ) {
+      return "Great! Click the 'Start Interactive Demo' button above. I'll guide you through each step as we explore how our AI agents work together.";
+    }
+
+    if (
+      demoStep > 0 &&
+      message.includes('what') &&
+      message.includes('happening')
+    ) {
+      if (mode === 'HYBRID') {
+        return "Right now you're seeing Hybrid mode in action! The Research and Outline agents are analyzing your story concept and providing suggestions. You'd normally approve each step before proceeding.";
+      } else if (mode === 'FULLY_AUTO') {
+        return "We've switched to Full Auto mode! Watch as all 6 AI agents collaborate automatically. Each agent contributes their expertise - research, structure, writing, character development, emotion, and style.";
       }
-    }, 1000); // 1 second delay to let the demo start
+    }
 
-    // Auto-scroll to progress bar after a short delay
-    setTimeout(() => {
-      // Specifically target the Demo Progress section
-      const progressSection = document.getElementById('demo-progress');
-      if (progressSection) {
-        progressSection.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start', // Position at top of viewing area
-          inline: 'nearest',
-        });
-      } else {
-        // Fallback: look for any element containing "Demo Progress" text
-        const elements = document.querySelectorAll('*');
-        for (const element of elements) {
-          if (
-            element.textContent &&
-            element.textContent.includes('Demo Progress')
-          ) {
-            element.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start',
-              inline: 'nearest',
-            });
-            break;
-          }
-        }
+    // ENHANCED QUESTION RESPONSES - Add these new response categories:
+
+    // Platform capabilities
+    if (
+      message.includes('what') &&
+      (message.includes('do') || message.includes('can'))
+    ) {
+      return 'DocCraft-AI is a multi-agent writing platform with 6 specialized AI agents: Research (finds relevant information), Structure (organizes narrative), Writing (crafts prose), Character (develops personalities), Emotion (maps story arcs), and Style (ensures consistency). Each agent can work independently or collaboratively to enhance your writing.';
+    }
+
+    // Writing process questions
+    if (
+      message.includes('how') &&
+      (message.includes('work') || message.includes('write'))
+    ) {
+      return 'Our writing process adapts to your style: 1) Choose your collaboration mode (Manual, Hybrid, or Full Auto), 2) Our AI agents analyze your content and provide targeted assistance, 3) You review and integrate suggestions, 4) The system learns your preferences for future projects. Each agent specializes in different aspects of storytelling.';
+    }
+
+    // Comparison questions
+    if (
+      message.includes('different') ||
+      message.includes('compare') ||
+      message.includes('versus') ||
+      message.includes('vs')
+    ) {
+      return 'Unlike single AI writing tools, DocCraft-AI uses 6 specialized agents working together. Think of it as having a complete writing team: a researcher, story architect, prose writer, character psychologist, emotion specialist, and style editor - all powered by AI and coordinated intelligently.';
+    }
+
+    // Getting started questions
+    if (
+      message.includes('start') ||
+      message.includes('begin') ||
+      message.includes('try')
+    ) {
+      return 'Ready to start? You can begin with our free tier (1 document/month) to experience all 6 AI agents. Simply sign up, create your first project, choose your collaboration mode, and watch our agents enhance your writing. No credit card required for the free trial!';
+    }
+
+    // Use cases and examples
+    if (
+      message.includes('example') ||
+      message.includes('use case') ||
+      message.includes('for what')
+    ) {
+      return 'DocCraft-AI works for novels, short stories, screenplays, marketing copy, technical writing, and more. For example: writing a mystery novel? Research agent finds crime archetypes, Structure agent maps tension curves, Character agent develops suspect profiles, Emotion agent ensures reader engagement, Writing agent crafts atmospheric prose, and Style agent maintains noir consistency.';
+    }
+
+    // Team and collaboration
+    if (
+      message.includes('team') ||
+      message.includes('multiple') ||
+      message.includes('collaborate')
+    ) {
+      return 'Yes! Multiple writers can collaborate on the same document in real-time. Our intelligent conflict resolution merges different writing styles seamlessly while maintaining narrative consistency. Perfect for co-authors, writing teams, or editor-writer collaboration.';
+    }
+
+    // Learning and improvement
+    if (
+      message.includes('learn') ||
+      message.includes('improve') ||
+      message.includes('better')
+    ) {
+      return 'Our AI learns your writing style, genre preferences, and creative patterns over time. The more you use DocCraft-AI, the more personalized the suggestions become. Each agent adapts to your voice while maintaining their specialized expertise.';
+    }
+
+    // Original keyword matching for common questions
+    for (const [key, response] of Object.entries(responses_db)) {
+      if (
+        message.includes(key.replace('_', ' ')) ||
+        (key === 'pricing' &&
+          (message.includes('cost') || message.includes('price'))) ||
+        (key === 'demo_guide' &&
+          (message.includes('help') || message.includes('guide'))) ||
+        (key === 'ai_accuracy' &&
+          (message.includes('accurate') || message.includes('quality')))
+      ) {
+        return response;
       }
-    }, 300);
-  };
-
-  const handlePause = () => {
-    setIsPlaying(false);
-  };
-
-  const handleRestart = () => {
-    setIsPlaying(false);
-    setCurrentStep(0);
-    setProgress(0);
-    setShowResults(false);
-  };
-
-  const getStepStatus = (index: number) => {
-    // If demo is completed (showResults is true), all steps should be accessible
-    if (showResults) {
-      if (index === currentStep) return 'active';
-      return 'completed'; // All steps are considered completed but clickable
     }
 
-    // During demo progression
-    if (index < currentStep) return 'completed';
-    if (index === currentStep) return 'active';
-    return 'pending';
-  };
-
-  // Enhanced step highlighting with animation states
-  const getStepHighlightClass = (index: number) => {
-    const status = getStepStatus(index);
-    const baseClasses =
-      'transition-all duration-500 ease-in-out transform cursor-pointer hover:scale-105';
-
-    if (status === 'active') {
-      return `${baseClasses} scale-105 shadow-lg ring-2 ring-blue-400 ring-opacity-50 animate-pulse`;
-    } else if (status === 'completed') {
-      return `${baseClasses} scale-100 shadow-md hover:shadow-lg`;
-    } else {
-      return `${baseClasses} scale-95 opacity-75 hover:opacity-100`;
-    }
-  };
-
-  const getStepIconClass = (index: number) => {
-    const status = getStepStatus(index);
-    const baseClasses = 'transition-all duration-300 ease-in-out';
-
-    if (status === 'active') {
-      return `${baseClasses} text-blue-600 dark:text-blue-400 animate-bounce`;
-    } else if (status === 'completed') {
-      return `${baseClasses} text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300`;
-    } else {
-      return `${baseClasses} text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400`;
-    }
-  };
-
-  // Function to get step icon based on step index
-  const getStepIcon = (stepIndex: number) => {
-    const icons = [
-      <FileText className="w-6 h-6" key="file" />,
-      <Sparkles className="w-6 h-6" key="sparkles" />,
-      <BookOpen className="w-6 h-6" key="book" />,
-      <Brain className="w-6 h-6" key="brain" />,
-      <Users className="w-6 h-6" key="users" />,
-      <BarChart3 className="w-6 h-6" key="chart" />,
-      <Settings className="w-6 h-6" key="settings" />,
+    // Enhanced fallback responses
+    const fallbacks = [
+      'Great question! DocCraft-AI combines 6 specialized AI agents to enhance every aspect of writing. What specific area interests you most - story structure, character development, writing style, or collaboration features?',
+      "I'd love to help! Our platform uses multi-agent AI to assist with research, outlining, writing, character development, emotional pacing, and style consistency. What would you like to know more about?",
+      'Thanks for asking! DocCraft-AI is designed for writers who want intelligent collaboration throughout their creative process. Would you like to know about our AI agents, collaboration modes, or specific use cases?',
     ];
-    return icons[stepIndex] || <FileText className="w-6 h-6" />;
+
+    return fallbacks[Math.floor(Math.random() * fallbacks.length)];
   };
 
-  // Function to get step-specific guidance
-  const getStepGuidance = (stepIndex: number) => {
-    const stepMessages = {
-      0: `📄 **Step 1: Document Upload & Analysis**
+  const sendMessage = async () => {
+    if (!inputMessage.trim()) return;
 
-Watch how DocCraft-AI intelligently analyzes your document! Right now, we're:
-
-🔍 **Analyzing Structure** - AI is examining your document's organization and flow
-🎯 **Detecting Tone** - Understanding the emotional and stylistic elements
-💡 **Finding Insights** - Identifying key areas for improvement and enhancement
-
-The AI is processing "The Great Gatsby" (45,000 words) and will provide:
-• Engagement score and readability metrics
-• Specific improvement opportunities
-• Actionable recommendations for enhancement
-
-This is just the beginning - wait until you see how AI can transform your content!
-
-Do you have any questions about the document analysis process?`,
-
-      1: `✨ **Step 2: AI-Powered Enhancement**
-
-Now we're seeing AI's magic in action! The system is:
-
-🚀 **Generating Improvements** - AI is suggesting enhancements to make your content more engaging
-📝 **Refining Language** - Transforming basic text into compelling prose
-🎨 **Enhancing Style** - Adding sophistication while maintaining your voice
-
-Watch how "The quick brown fox jumps over the lazy dog" becomes "The swift brown fox leaps gracefully over the slumbering canine" - more vivid, more engaging, more professional.
-
-This is where AI becomes your writing partner, helping you create content that truly resonates with readers.
-
-Do you have any questions about how AI enhancement works?`,
-
-      2: `📚 **Step 3: Ebook Analysis & Creation**
-
-This is where DocCraft-AI really shines! We're now:
-
-📖 **Analyzing Existing Content** - AI is examining ebook structure and narrative flow
-🎯 **Identifying Patterns** - Finding what makes content successful and engaging
-🔄 **Generating Insights** - Creating actionable recommendations for improvement
-
-The AI has analyzed your ebook and found:
-• Strong narrative arc with engaging characters
-• Well-executed plot twists and perfect pacing
-• Opportunities for deeper character development
-
-This analysis helps you understand what works and how to make it even better!
-
-Do you have any questions about ebook analysis and creation?`,
-
-      3: `👥 **Step 4: Character Development**
-
-Now we're diving into character creation! DocCraft-AI is:
-
-🎭 **Analyzing Character Depth** - Understanding personality, motivations, and growth arcs
-🧠 **Creating Backstories** - Developing rich, believable character histories
-💫 **Building Relationships** - Crafting dynamic interactions between characters
-
-The AI has identified:
-• Complex, multi-dimensional protagonist with clear backstory
-• Equally compelling antagonist with strong motivations
-• Opportunities for deeper character development
-
-This is where your characters come to life with AI assistance!
-
-Do you have any questions about character development with AI?`,
-
-      4: `🤝 **Step 5: Real-Time Collaboration**
-
-Experience seamless teamwork! Right now we're demonstrating:
-
-👥 **Team Integration** - Multiple users working on the same document
-💬 **Live Feedback** - Real-time comments and suggestions
-🔄 **Version Control** - Tracking changes and maintaining document integrity
-
-Watch how team members can:
-• Add suggestions and improvements
-• Provide instant feedback
-• Collaborate without conflicts
-
-This is how modern teams create amazing content together!
-
-Do you have any questions about real-time collaboration features?`,
-
-      5: `📊 **Step 6: Advanced Analytics**
-
-Now we're exploring the data! DocCraft-AI is showing:
-
-📈 **Performance Metrics** - Engagement scores, readability, and audience response
-🎯 **Content Insights** - What's working and what can be improved
-📋 **Trend Analysis** - Understanding patterns in successful content
-
-The analytics reveal:
-• Engagement patterns and reader behavior
-• Content performance across different metrics
-• Opportunities for optimization
-
-This data helps you create content that truly connects with your audience!
-
-Do you have any questions about the analytics and insights?`,
-
-      6: `🎯 **Step 7: Personalized Experience**
-
-The final step shows AI adaptation! We're demonstrating:
-
-🧠 **Learning Your Style** - AI adapting to your unique writing preferences
-🎨 **Personalized Suggestions** - Recommendations tailored to your voice
-🔄 **Continuous Improvement** - AI getting better at helping you over time
-
-The system has learned:
-• Your preferred writing style and tone
-• Your common patterns and preferences
-• How to enhance your work while maintaining your voice
-
-This is where AI becomes your personal writing assistant!
-
-Do you have any questions about the personalized AI experience?`,
+    const userMessage = {
+      id: Date.now(),
+      type: 'user',
+      content: inputMessage,
+      timestamp: new Date(),
     };
 
-    return stepMessages[stepIndex as keyof typeof stepMessages];
+    setMessages(prev => [...prev, userMessage]);
+    setInputMessage('');
+    setIsTyping(true);
+
+    // Simulate AI thinking time
+    setTimeout(
+      () => {
+        const aiResponse = {
+          id: Date.now() + 1,
+          type: 'assistant',
+          content: getAIResponse(inputMessage),
+          timestamp: new Date(),
+        };
+
+        setMessages(prev => [...prev, aiResponse]);
+        setIsTyping(false);
+      },
+      1000 + Math.random() * 1500
+    );
   };
+
+  const handleKeyPress = e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  // Expose the handleElementClick function for use by parent component
+  window.demoAssistantHandleClick = handleElementClick;
+
+  if (!isOpen) {
+    return (
+      <div className="fixed bottom-6 right-6 z-[9999]">
+        <button
+          onClick={() => setIsOpen(true)}
+          className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 flex items-center justify-center group animate-pulse hover:animate-none"
+          style={{ zIndex: 9999 }}
+        >
+          <RobotHeadIcon className="w-8 h-8 group-hover:scale-110 transition-transform" />
+
+          <div className="absolute inset-0 rounded-full bg-blue-500 opacity-30 animate-ping"></div>
+
+          <div className="absolute -top-14 right-0 bg-gray-900 text-white text-sm px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg">
+            💬 Chat with AI Assistant
+            <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+          </div>
+
+          <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+            !
+          </div>
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Simple error boundary */}
-      <div className="w-full h-full">
-        {/* Header */}
-        <div
-          className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 transition-all duration-300 ${
-            agentOpen ? 'mr-80 md:mr-96' : ''
-          }`}
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-4">
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => navigate('/')}
-                  className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >
-                  ← Back to Home
-                </button>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  DocCraft-AI Demo
-                </h1>
-              </div>
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={handlePlay}
-                  disabled={isPlaying}
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  Start Demo
-                </button>
-                <button
-                  onClick={handlePause}
-                  disabled={!isPlaying}
-                  className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Pause className="w-4 h-4 mr-2" />
-                  Pause
-                </button>
-                <button
-                  onClick={handleRestart}
-                  className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Restart
-                </button>
-              </div>
+    <div
+      className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 bg-white rounded-2xl shadow-2xl border border-gray-200 z-[9999] transition-all duration-300 ${
+        isMinimized
+          ? 'w-56 h-16'
+          : 'w-60 sm:w-60 md:w-60 lg:w-60 xl:w-64 h-[500px]'
+      }`}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-2xl">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+            <RobotHeadIcon className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900">
+              {isInExplanationMode
+                ? 'Feature Explanation'
+                : 'AI Demo Assistant'}
+            </h3>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-xs text-gray-600">
+                {isInExplanationMode
+                  ? `Explaining ${getExplanationCategory()}`
+                  : 'Online'}
+              </span>
             </div>
           </div>
         </div>
-
-        <div
-          className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-all duration-300 ${
-            agentOpen ? 'mr-80 md:mr-96' : ''
-          }`}
-        >
-          {/* Agent Status Indicator */}
-          {agentOpen && (
-            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-blue-700 dark:text-blue-300">
-                  💬 AI Assistant is active - Ask me anything about the demo!
-                </span>
-              </div>
-            </div>
+        <div className="flex items-center gap-2">
+          {isInExplanationMode && (
+            <button
+              onClick={returnToDemoChat}
+              className="px-3 py-1 text-xs bg-blue-600/20 text-blue-600 rounded-md hover:bg-blue-600/30 transition-colors"
+            >
+              Back to Chat
+            </button>
           )}
-          {/* Demo Instructions */}
-          <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-700">
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <Lightbulb className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                  Welcome to the DocCraft-AI Demo! 🤖
-                </h2>
-                <div className="space-y-3 text-gray-700 dark:text-gray-300">
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Welcome to DocCraft-AI. Here&apos;s how to get the most out
-                    of it:
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <div className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-sm">
-                        Click <strong>&quot;Start Demo&quot;</strong> to begin
-                        the automated walkthrough
-                      </p>
-                    </div>
-                    <div className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-sm">
-                        Use <strong>&quot;Pause&quot;</strong> and{' '}
-                        <strong>&quot;Restart&quot;</strong> to control the demo
-                      </p>
-                    </div>
-                    <div className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-sm">
-                        Watch the <strong>progress bar</strong> to track demo
-                        completion
-                      </p>
-                    </div>
-                    <div className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-sm">
-                        Our <strong>AI Assistant</strong> is here to help - just
-                        ask questions!
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700">
-                    <div className="flex items-center space-x-2">
-                      <MessageCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                        💡 Pro Tip: The AI Assistant will automatically greet
-                        you and offer to guide you through the demo. Feel free
-                        to ask questions about any feature!
-                      </span>
-                    </div>
-                  </div>
+          <button
+            onClick={() => setIsMinimized(!isMinimized)}
+            className="p-1 hover:bg-gray-200 rounded-md transition-colors"
+          >
+            {isMinimized ? (
+              <Maximize2 className="w-4 h-4" />
+            ) : (
+              <Minimize2 className="w-4 h-4" />
+            )}
+          </button>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="p-1 hover:bg-gray-200 rounded-md transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
 
-                  <div className="mt-4 p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg border border-purple-200 dark:border-purple-700">
-                    <div className="flex items-center space-x-2">
-                      <Crown className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                      <span className="text-sm font-medium text-purple-800 dark:text-purple-200">
-                        🚀 New: Experience our revolutionary three-mode system!
-                        See how AI adapts from silent assistance to proactive
-                        enhancement.
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div id="demo-progress" className="demo-progress-section mb-8">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Demo Progress
-              </span>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Step {currentStep + 1} of {demoSteps.length}
-                </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {Math.round(progress)}%
-                </span>
-              </div>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 relative overflow-hidden">
+      {!isMinimized && (
+        <>
+          {/* Messages */}
+          <div
+            className="flex-1 overflow-y-auto p-3 space-y-4"
+            style={{ height: '360px' }}
+          >
+            {messages.map(message => (
               <div
-                className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 h-3 rounded-full transition-all duration-500 ease-in-out shadow-lg"
-                style={{ width: `${progress}%` }}
-              />
-              {/* Step markers */}
-              <div className="absolute inset-0 flex justify-between items-center px-2">
-                {demoSteps.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      index <= currentStep
-                        ? 'bg-white shadow-sm'
-                        : 'bg-gray-400 dark:bg-gray-600'
+                key={message.id}
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[90%] p-2 rounded-lg ${
+                    message.type === 'user'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                      : 'bg-gray-100 text-gray-900'
+                  }`}
+                >
+                  <p className="text-xs whitespace-pre-wrap leading-relaxed break-words">
+                    {message.content}
+                  </p>
+                  <p
+                    className={`text-xs mt-1 opacity-75 ${
+                      message.type === 'user'
+                        ? 'text-blue-100'
+                        : 'text-gray-500'
                     }`}
-                  />
-                ))}
+                  >
+                    {message.timestamp.toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
+            ))}
 
-          {/* Enhanced Mode System Demo */}
-          <div className="mb-8">
-            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-purple-200 dark:border-purple-700">
-              <div className="text-center mb-6">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                  🚀 Revolutionary Mode System
-                </h2>
-                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  Experience three distinct AI writing modes that adapt to your
-                  needs. From silent assistance to proactive enhancement, choose
-                  your perfect writing experience.
-                </p>
-              </div>
-
-              {/* Mode Controller Showcase */}
-              <div className="mb-8">
-                <ModeController
-                  showAdvancedSettings={false}
-                  className="max-w-4xl mx-auto"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Demo Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Demo Area */}
-            <div className="lg:col-span-2">
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 relative overflow-hidden">
-                {/* Step Indicator - Positioned on demo content */}
-                <div className="absolute top-4 right-4 z-10">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-3">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Step {currentStep + 1} of {demoSteps.length}
-                      </span>
-                    </div>
-                    <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {demoSteps[currentStep]?.action}
-                    </div>
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 text-gray-900 p-3 rounded-xl">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div
+                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      style={{ animationDelay: '0.1s' }}
+                    ></div>
+                    <div
+                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      style={{ animationDelay: '0.2s' }}
+                    ></div>
                   </div>
                 </div>
-                {!showResults ? (
-                  <div className="text-center relative">
-                    {currentStep < demoSteps.length && (
-                      <div className="space-y-6">
-                        {/* Active Step Highlight Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 via-transparent to-purple-50/50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl pointer-events-none transition-opacity duration-1000"></div>
-
-                        <div className="flex justify-center relative z-10">
-                          <div
-                            className={`p-6 rounded-full transition-all duration-500 ease-in-out transform ${
-                              getStepStatus(currentStep) === 'active'
-                                ? 'bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-800 dark:to-purple-800 text-blue-600 dark:text-blue-400 shadow-lg ring-4 ring-blue-200 dark:ring-blue-700 scale-110 animate-pulse'
-                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                            }`}
-                          >
-                            {getStepIcon(currentStep)}
-                          </div>
-                        </div>
-                        <div className="relative z-10">
-                          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                            {demoSteps[currentStep].action}
-                          </h2>
-                          <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mb-4 rounded-full"></div>
-                          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                            {demoSteps[currentStep].description}
-                          </p>
-                        </div>
-
-                        {/* Animated Demo Content */}
-                        <div className="mt-8 relative">
-                          <div className="transition-all duration-700 ease-in-out transform hover:scale-105">
-                            {currentStep === 0 && (
-                              <div>
-                                <div className="text-sm font-bold text-blue-600 dark:text-blue-400 mb-4 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
-                                  🎯 ACTIVE: Step 1 - Document Upload & Analysis
-                                </div>
-                                <DocumentUploadDemo />
-                              </div>
-                            )}
-                            {currentStep === 1 && (
-                              <div>
-                                <div className="text-sm font-bold text-purple-600 dark:text-purple-400 mb-4 p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
-                                  🎯 ACTIVE: Step 2 - AI-Powered Enhancement
-                                </div>
-                                <AIEnhancementDemo />
-                              </div>
-                            )}
-                            {currentStep === 2 && (
-                              <div>
-                                <div className="text-sm font-bold text-green-600 dark:text-green-400 mb-4 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
-                                  🎯 ACTIVE: Step 3 - Ebook Analysis & Creation
-                                </div>
-                                <EbookAnalysisDemo />
-                              </div>
-                            )}
-                            {currentStep === 3 && (
-                              <div>
-                                <div className="text-sm font-bold text-orange-600 dark:text-orange-400 mb-4 p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-700">
-                                  🎯 ACTIVE: Step 4 - Character Development
-                                </div>
-                                <CharacterDevelopmentDemo />
-                              </div>
-                            )}
-                            {currentStep === 4 && (
-                              <div>
-                                <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mb-4 p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-200 dark:border-indigo-700">
-                                  🎯 ACTIVE: Step 5 - Real-Time Collaboration
-                                </div>
-                                <CollaborationDemo />
-                              </div>
-                            )}
-                            {currentStep === 5 && (
-                              <div>
-                                <div className="text-sm font-bold text-teal-600 dark:text-teal-400 mb-4 p-2 bg-teal-50 dark:bg-teal-900/20 rounded-lg border border-teal-200 dark:border-teal-700">
-                                  🎯 ACTIVE: Step 6 - Advanced Analytics
-                                </div>
-                                <AnalyticsDemo />
-                              </div>
-                            )}
-                            {currentStep === 6 && (
-                              <div>
-                                <div className="text-sm font-bold text-pink-600 dark:text-pink-400 mb-4 p-2 bg-pink-50 dark:bg-pink-900/20 rounded-lg border border-pink-200 dark:border-pink-700">
-                                  🎯 ACTIVE: Step 7 - Personalized Experience
-                                </div>
-                                <PersonalizationDemo />
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Step transition overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-purple-50/30 dark:from-blue-900/10 dark:to-purple-900/10 rounded-lg pointer-events-none transition-opacity duration-1000"></div>
-
-                          {/* Active step indicator */}
-                          <div className="absolute top-2 right-2">
-                            <div className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
-                              {currentStep + 1}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <DemoResults />
-                )}
               </div>
-            </div>
+            )}
+          </div>
 
-            {/* Steps Sidebar */}
-            <div className="lg:col-span-1">
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  Demo Steps
-                </h3>
-                <div className="space-y-4">
-                  {demoSteps.map((step, index) => (
-                    <div
-                      key={step.id}
-                      onClick={() => handleStepClick(index)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          handleStepClick(index);
+          {/* Quick Questions - Always visible but more compact */}
+          <div className="px-3 py-2 border-t border-gray-100">
+            <p className="text-xs text-gray-500 mb-2">Quick:</p>
+            <div className="flex flex-wrap gap-1">
+              {['Price', 'Features', 'Security', 'Demo'].map(
+                (question, index) => {
+                  const fullQuestions = [
+                    'How does pricing work?',
+                    'Show me features',
+                    'Is it secure?',
+                    'Guide me through demo',
+                  ];
+                  return (
+                    <button
+                      key={question}
+                      onClick={() => {
+                        const fullQuestion = fullQuestions[index];
+                        if (fullQuestion) {
+                          setInputMessage(fullQuestion);
+                          setTimeout(() => sendMessage(), 100);
                         }
                       }}
-                      role="button"
-                      tabIndex={0}
-                      className={`flex items-center space-x-3 p-4 rounded-lg transition-all duration-500 ease-in-out transform cursor-pointer hover:scale-105 ${getStepHighlightClass(
-                        index
-                      )} ${
-                        getStepStatus(index) === 'completed'
-                          ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200 dark:border-green-800 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-800/30 dark:hover:to-emerald-800/30'
-                          : getStepStatus(index) === 'active'
-                            ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-800 hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-800/30 dark:hover:to-purple-800/30'
-                            : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                      }`}
+                      className="text-xs px-1.5 py-0.5 bg-blue-600/10 text-blue-600 rounded hover:bg-blue-600/20 transition-colors"
                     >
-                      <div
-                        className={`flex-shrink-0 ${getStepIconClass(index)}`}
-                      >
-                        {getStepStatus(index) === 'completed' ? (
-                          <CheckCircle className="w-6 h-6" />
-                        ) : (
-                          <div className="w-6 h-6">{getStepIcon(index)}</div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className={`text-sm font-medium transition-colors duration-300 ${
-                            getStepStatus(index) === 'completed'
-                              ? 'text-green-800 dark:text-green-200'
-                              : getStepStatus(index) === 'active'
-                                ? 'text-blue-800 dark:text-blue-200'
-                                : 'text-gray-700 dark:text-gray-300'
-                          }`}
-                        >
-                          {step.action}
-                        </p>
-                        <p
-                          className={`text-xs transition-colors duration-300 ${
-                            getStepStatus(index) === 'completed'
-                              ? 'text-green-600 dark:text-green-400'
-                              : getStepStatus(index) === 'active'
-                                ? 'text-blue-600 dark:text-blue-400'
-                                : 'text-gray-500 dark:text-gray-400'
-                          }`}
-                        >
-                          {step.description}
-                        </p>
-                        {getStepStatus(index) === 'active' && (
-                          <div className="mt-2 flex items-center space-x-1">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                            <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                              Active
-                            </span>
-                          </div>
-                        )}
-                        {/* Show "Click to Review" for completed steps after demo completion */}
-                        {showResults &&
-                          getStepStatus(index) === 'completed' && (
-                            <div className="mt-2 flex items-center space-x-1">
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                              <span className="text-xs text-green-600 dark:text-green-400 font-medium">
-                                Click to Review
-                              </span>
-                            </div>
-                          )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                      {question}
+                    </button>
+                  );
+                }
+              )}
             </div>
           </div>
 
-          {/* Performance Showcase */}
-          <div className="mt-12 mb-8">
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-6 border border-green-200 dark:border-green-700">
-              <div className="text-center mb-6">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                  ⚡ Unmatched Performance
-                </h2>
-                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  Experience lightning-fast AI responses and seamless mode
-                  transitions. Our optimized system delivers enterprise-grade
-                  performance.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg text-center">
-                  <BarChart3 className="w-12 h-12 text-green-500 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
-                    &lt;500ms
-                  </div>
-                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Mode Transition
-                  </div>
-                  <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-                    ✓ Under target
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg text-center">
-                  <Zap className="w-12 h-12 text-blue-500 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-                    &lt;300ms
-                  </div>
-                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    AI Response
-                  </div>
-                  <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                    ✓ Lightning fast
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg text-center">
-                  <Code className="w-12 h-12 text-purple-500 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-                    95%
-                  </div>
-                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Cache Hit Rate
-                  </div>
-                  <div className="text-xs text-purple-600 dark:text-purple-400 mt-1">
-                    ✓ Highly optimized
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg text-center">
-                  <BarChart3 className="w-12 h-12 text-orange-500 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
-                    40MB
-                  </div>
-                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Memory Usage
-                  </div>
-                  <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">
-                    ✓ Efficient
-                  </div>
-                </div>
-              </div>
+          {/* Input - Always visible with optimized layout */}
+          <div className="p-3 border-t border-gray-100">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={inputMessage}
+                onChange={e => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={
+                  isInExplanationMode
+                    ? 'Ask follow-up questions...'
+                    : 'Ask about DocCraft-AI...'
+                }
+                className="flex-1 px-2 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
+              />
+              <button
+                onClick={sendMessage}
+                disabled={!inputMessage.trim() || isTyping}
+                className="px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex-shrink-0"
+              >
+                <Send className="w-4 h-4" />
+              </button>
             </div>
           </div>
-
-          {/* Mode Comparison */}
-          <div className="mb-8">
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-700">
-              <div className="text-center mb-6">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                  🔄 Live Mode Comparison
-                </h2>
-                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  See how each mode transforms your writing experience. From
-                  complete control to maximum assistance, find your perfect
-                  balance.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg border-2 border-gray-200 dark:border-gray-600">
-                  <div className="text-center mb-4">
-                    <User className="w-12 h-12 text-gray-500 mx-auto mb-3" />
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                      Manual Mode
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      You're in complete control
-                    </p>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        AI waits silently
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        No interruptions
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        Explicit requests only
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg border-2 border-blue-200 dark:border-blue-600">
-                  <div className="text-center mb-4">
-                    <Users className="w-12 h-12 text-blue-500 mx-auto mb-3" />
-                    <h3 className="text-xl font-bold text-blue-900 dark:text-blue-200 mb-2">
-                      Hybrid Mode
-                    </h3>
-                    <p className="text-sm text-blue-600 dark:text-blue-400">
-                      Collaborative assistance
-                    </p>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-sm text-blue-600 dark:text-blue-400">
-                        Contextual suggestions
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-sm text-blue-600 dark:text-blue-400">
-                        User choice options
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-sm text-blue-600 dark:text-blue-400">
-                        Balanced assistance
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg border-2 border-purple-200 dark:border-purple-600">
-                  <div className="text-center mb-4">
-                    <Bot className="w-12 h-12 text-purple-500 mx-auto mb-3" />
-                    <h3 className="text-xl font-bold text-purple-900 dark:text-purple-200 mb-2">
-                      Fully Auto Mode
-                    </h3>
-                    <p className="text-sm text-purple-600 dark:text-purple-400">
-                      Maximum AI assistance
-                    </p>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                      <span className="text-sm text-purple-600 dark:text-purple-400">
-                        Proactive enhancement
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                      <span className="text-sm text-purple-600 dark:text-purple-400">
-                        Real-time optimization
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                      <span className="text-sm text-purple-600 dark:text-purple-400">
-                        Continuous improvement
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Interactive Demo Section */}
-          <div className="mb-8">
-            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl p-6 border border-yellow-200 dark:border-yellow-700">
-              <div className="text-center mb-6">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                  🎯 Try It Yourself
-                </h2>
-                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  Experience the different modes with your own writing sample.
-                  See how AI adapts to your content and style.
-                </p>
-              </div>
-
-              <div className="max-w-4xl mx-auto">
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                        Your Content
-                      </h3>
-                      <textarea
-                        placeholder="Start typing your story, article, or any content..."
-                        className="w-full h-32 p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                      />
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                        Mode Selection
-                      </h3>
-                      <div className="space-y-3">
-                        <label className="flex items-center space-x-3 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="demoMode"
-                            value="MANUAL"
-                            className="text-blue-600"
-                            defaultChecked
-                          />
-                          <span className="text-sm text-gray-700 dark:text-gray-300">
-                            Manual Mode
-                          </span>
-                        </label>
-                        <label className="flex items-center space-x-3 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="demoMode"
-                            value="HYBRID"
-                            className="text-blue-600"
-                          />
-                          <span className="text-sm text-gray-700 dark:text-gray-300">
-                            Hybrid Mode
-                          </span>
-                        </label>
-                        <label className="flex items-center space-x-3 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="demoMode"
-                            value="FULLY_AUTO"
-                            className="text-blue-600"
-                          />
-                          <span className="text-sm text-gray-700 dark:text-gray-300">
-                            Fully Auto Mode
-                          </span>
-                        </label>
-                      </div>
-
-                      <button className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
-                        <Zap className="w-5 h-5 inline mr-2" />
-                        Experience AI Response
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
-                    <div className="flex items-center space-x-2">
-                      <Lightbulb className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                      <span className="text-sm text-blue-800 dark:text-blue-200">
-                        💡 Pro Tip: Try the same content in different modes to
-                        see how AI behavior changes dramatically!
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* CTA Section */}
-          <div className="mt-12 text-center">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                Ready to Experience the Future of AI Writing?
-              </h2>
-              <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-                You've just witnessed the revolutionary three-mode system that
-                adapts to your writing style. From complete control to maximum
-                assistance, DocCraft-AI transforms how you create content.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button
-                  onClick={() => navigate('/signup')}
-                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
-                >
-                  Get Started Free
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </button>
-                <button
-                  onClick={() => navigate('/login')}
-                  className="inline-flex items-center px-8 py-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 border border-gray-200 dark:border-gray-600"
-                >
-                  Sign In
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* AI Assistant */}
-        {/* <DocCraftAgentChat autoOpen={agentActivated} /> */}
-        {showConfetti && <ConfettiExplosion />}
-      </div>
+        </>
+      )}
     </div>
   );
-}
+};
 
-// Demo Components
-const DocumentUploadDemo = () => (
-  <div className="space-y-6">
-    {/* Step 1: Upload Animation */}
-    <div className="border-2 border-dashed border-blue-300 dark:border-blue-600 rounded-lg p-8 text-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
-      <div className="animate-bounce mb-4">
-        <FileText className="w-16 h-16 mx-auto text-blue-500" />
-      </div>
-      <p className="text-blue-800 dark:text-blue-200 font-medium mb-2">
-        📄 Uploading your document...
-      </p>
-      <div className="w-full bg-blue-200 dark:bg-blue-700 rounded-full h-2 mb-4">
-        <div
-          className="bg-blue-500 h-2 rounded-full animate-pulse"
-          style={{ width: '85%' }}
-        ></div>
-      </div>
-      <p className="text-sm text-blue-600 dark:text-blue-300">
-        &quot;The Great Gatsby&quot; - 45,000 words
-      </p>
-    </div>
+// AI Agent Demo Component with Click Explanation
+const AIAgentDemo = ({
+  mode,
+  isActive,
+  agentType,
+  onResponse,
+  onAgentClick,
+}) => {
+  const [processing, setProcessing] = useState(false);
+  const [response, setResponse] = useState('');
 
-    {/* Step 2: AI Analysis Animation */}
-    <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg p-6 border border-purple-200 dark:border-purple-700">
-      <div className="flex items-center justify-center mb-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mr-3"></div>
-        <span className="text-purple-800 dark:text-purple-200 font-semibold">
-          AI Analysis in Progress...
-        </span>
-      </div>
+  const simulateResponse = async () => {
+    if (!isActive) return;
 
-      {/* Analysis Results Animation */}
-      <div className="space-y-3">
-        <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
-          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-sm text-gray-700 dark:text-gray-300">
-            Structure Analysis: Complete
-          </span>
-        </div>
-        <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
-          <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-          <span className="text-sm text-gray-700 dark:text-gray-300">
-            Tone Detection: In Progress
-          </span>
-        </div>
-        <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
-          <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-          <span className="text-sm text-gray-700 dark:text-gray-300">
-            Content Insights: Analyzing
-          </span>
-        </div>
-      </div>
-    </div>
+    setProcessing(true);
 
-    {/* Step 3: Analysis Results */}
-    <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-6 border border-green-200 dark:border-green-700">
-      <h4 className="text-green-800 dark:text-green-200 font-semibold mb-4 flex items-center">
-        <CheckCircle className="w-5 h-5 mr-2" />
-        Analysis Complete!
-      </h4>
+    // Simulate AI processing delay
+    await new Promise(resolve =>
+      setTimeout(resolve, 1500 + Math.random() * 1000)
+    );
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-            85%
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Engagement Score
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-            12
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Key Insights Found
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-            3
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Enhancement Opportunities
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-            2.5min
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Processing Time
-          </div>
-        </div>
-      </div>
-    </div>
+    const responses = {
+      research:
+        "Found 3 relevant character archetypes for your detective story. The 'World-Weary Investigator' archetype shows strong emotional depth with internal conflict between justice and cynicism.",
+      outline:
+        "Generated 15-point story structure following the Hero's Journey. Key plot points include the inciting incident at 12% mark and the climax positioned at 80% for maximum impact.",
+      writing:
+        "Crafted opening paragraph with atmospheric tension: 'Rain drummed against the precinct windows like impatient fingers, each drop carrying the weight of another unsolved case...'",
+      character:
+        'Developed psychological profile: Detective Sarah Chen - INTJ personality, motivated by childhood trauma, fears emotional vulnerability, speaks in clipped, precise sentences.',
+      emotion:
+        'Emotional arc analysis: Story peaks at 85% tension during confrontation scene. Recommended adding relief moment at 60% to prevent reader fatigue.',
+      style:
+        'Style consistency score: 94%. Voice matches noir genre conventions with modern urban elements. Suggested maintaining present-tense narrative throughout.',
+    };
 
-    {/* Key Insight Highlight */}
-    <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-700">
-      <div className="flex items-start space-x-3">
-        <Lightbulb className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
-        <div>
-          <p className="text-yellow-800 dark:text-yellow-200 font-medium text-sm">
-            💡 Key Insight: Your narrative structure is strong, but character
-            development could be enhanced for deeper reader engagement.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-);
+    const agentResponse = responses[agentType] || 'AI analysis complete.';
+    setResponse(agentResponse);
+    setProcessing(false);
+    onResponse(agentType, agentResponse);
+  };
 
-const AIEnhancementDemo = () => (
-  <div className="space-y-6">
-    {/* Step 1: Original Content */}
-    <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-600">
-      <h4 className="text-gray-800 dark:text-gray-200 font-semibold mb-3 flex items-center">
-        <FileText className="w-4 h-4 mr-2" />
-        Original Content
-      </h4>
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-        <p className="text-gray-700 dark:text-gray-300 text-sm italic">
-          &quot;The quick brown fox jumps over the lazy dog.&quot;
-        </p>
-        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-          Basic sentence - needs enhancement
-        </div>
-      </div>
-    </div>
+  useEffect(() => {
+    if (isActive && mode === 'FULLY_AUTO') {
+      simulateResponse();
+    }
+  }, [isActive, mode]);
 
-    {/* Step 2: AI Processing Animation */}
-    <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg p-6 border border-yellow-200 dark:border-yellow-700">
-      <div className="flex items-center justify-center mb-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500 mr-3"></div>
-        <span className="text-yellow-800 dark:text-yellow-200 font-semibold">
-          AI Enhancement in Progress...
-        </span>
-      </div>
+  const agentConfig = {
+    research: {
+      name: 'Research Agent',
+      icon: Eye,
+      color: 'blue',
+      bgColor: 'bg-blue-500',
+      hoverColor: 'hover:bg-blue-600',
+      borderColor: 'border-blue-300',
+      bgLight: 'bg-blue-50',
+    },
+    outline: {
+      name: 'Structure Agent',
+      icon: Target,
+      color: 'green',
+      bgColor: 'bg-green-500',
+      hoverColor: 'hover:bg-green-600',
+      borderColor: 'border-green-300',
+      bgLight: 'bg-green-50',
+    },
+    writing: {
+      name: 'Writing Agent',
+      icon: BookOpen,
+      color: 'purple',
+      bgColor: 'bg-purple-500',
+      hoverColor: 'hover:bg-purple-600',
+      borderColor: 'border-purple-300',
+      bgLight: 'bg-purple-50',
+    },
+    character: {
+      name: 'Character Agent',
+      icon: Users,
+      color: 'orange',
+      bgColor: 'bg-orange-500',
+      hoverColor: 'hover:bg-orange-600',
+      borderColor: 'border-orange-300',
+      bgLight: 'bg-orange-50',
+    },
+    emotion: {
+      name: 'Emotion Agent',
+      icon: Brain,
+      color: 'rose',
+      bgColor: 'bg-rose-500',
+      hoverColor: 'hover:bg-rose-600',
+      borderColor: 'border-rose-300',
+      bgLight: 'bg-rose-50',
+    },
+    style: {
+      name: 'Style Agent',
+      icon: Settings,
+      color: 'indigo',
+      bgColor: 'bg-indigo-500',
+      hoverColor: 'hover:bg-indigo-600',
+      borderColor: 'border-indigo-300',
+      bgLight: 'bg-indigo-50',
+    },
+  };
 
-      {/* Enhancement Steps Animation */}
-      <div className="space-y-3">
-        <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
-          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-sm text-gray-700 dark:text-gray-300">
-            Vocabulary Enhancement: Complete
-          </span>
-        </div>
-        <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
-          <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-          <span className="text-sm text-gray-700 dark:text-gray-300">
-            Style Refinement: In Progress
-          </span>
-        </div>
-        <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
-          <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
-          <span className="text-sm text-gray-700 dark:text-gray-300">
-            Engagement Optimization: Analyzing
-          </span>
-        </div>
-      </div>
-    </div>
+  const config = agentConfig[agentType];
+  const IconComponent = config.icon;
 
-    {/* Step 3: Enhanced Result */}
-    <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-6 border border-green-200 dark:border-green-700">
-      <h4 className="text-green-800 dark:text-green-200 font-semibold mb-3 flex items-center">
-        <Sparkles className="w-4 h-4 mr-2" />
-        AI Enhanced Content
-      </h4>
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-green-200 dark:border-green-600">
-        <p className="text-green-800 dark:text-green-200 text-sm font-medium">
-          &quot;The swift brown fox leaps gracefully over the slumbering
-          canine.&quot;
-        </p>
-        <div className="mt-3 space-y-2">
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-xs text-green-600 dark:text-green-400">
-              Enhanced vocabulary
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span className="text-xs text-blue-600 dark:text-blue-400">
-              Improved flow and rhythm
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-            <span className="text-xs text-purple-600 dark:text-purple-400">
-              Better engagement potential
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {/* Enhancement Metrics */}
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm text-center">
-        <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-          +45%
-        </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400">
-          Engagement
-        </div>
-      </div>
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm text-center">
-        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-          +32%
-        </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400">
-          Readability
-        </div>
-      </div>
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm text-center">
-        <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-          +28%
-        </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400">Impact</div>
-      </div>
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm text-center">
-        <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-          0.8s
-        </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400">
-          Processing
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const EbookAnalysisDemo = () => (
-  <div className="space-y-4">
-    <div className="bg-purple-50 dark:bg-purple-900/30 rounded-lg p-4">
-      <p className="text-purple-800 dark:text-purple-200 text-sm">
-        &quot;This ebook has a strong narrative arc and engaging characters. The
-        plot twists are well-executed and the pacing is perfect.&quot;
-      </p>
-    </div>
-    <div className="flex justify-center">
-      <BookOpen className="w-8 h-8 text-purple-500 animate-pulse" />
-    </div>
-    <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
-      <p className="text-blue-800 dark:text-blue-200 text-sm">
-        &quot;The analysis reveals a clear structure, excellent pacing, and a
-        compelling plot. The character development is particularly strong.&quot;
-      </p>
-    </div>
-  </div>
-);
-
-const CharacterDevelopmentDemo = () => (
-  <div className="space-y-4">
-    <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-lg p-4">
-      <p className="text-indigo-800 dark:text-indigo-200 text-sm">
-        &quot;The protagonist is a complex, multi-dimensional character with a
-        clear backstory and a well-defined personality. The antagonist is
-        equally compelling.&quot;
-      </p>
-    </div>
-    <div className="flex justify-center">
-      <Users className="w-8 h-8 text-indigo-500 animate-pulse" />
-    </div>
-    <div className="bg-pink-50 dark:bg-pink-900/30 rounded-lg p-4">
-      <p className="text-pink-800 dark:text-pink-200 text-sm">
-        &quot;The AI has successfully developed a character that resonates with
-        readers, capturing their attention and making them care about their
-        journey.&quot;
-      </p>
-    </div>
-  </div>
-);
-
-const CollaborationDemo = () => (
-  <div className="space-y-4">
-    <div className="flex items-center space-x-4">
-      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-        <span className="text-white text-xs font-bold">A</span>
-      </div>
-      <div className="flex-1 bg-blue-50 dark:bg-blue-900/30 rounded-lg p-3">
-        <p className="text-blue-800 dark:text-blue-200 text-sm">
-          Great suggestion!
-        </p>
-      </div>
-    </div>
-    <div className="flex items-center space-x-4 justify-end">
-      <div className="flex-1 bg-green-50 dark:bg-green-900/30 rounded-lg p-3 text-right">
-        <p className="text-green-800 dark:text-green-200 text-sm">
-          Thanks! I&apos;ll implement that.
-        </p>
-      </div>
-      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-        <span className="text-white text-xs font-bold">B</span>
-      </div>
-    </div>
-  </div>
-);
-
-const AnalyticsDemo = () => (
-  <div className="space-y-4">
-    <div className="grid grid-cols-3 gap-4">
-      <div className="text-center">
-        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-          95%
-        </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400">
-          Readability
-        </div>
-      </div>
-      <div className="text-center">
-        <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-          8.5
-        </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400">
-          Engagement
-        </div>
-      </div>
-      <div className="text-center">
-        <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-          12
-        </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400">
-          Suggestions
-        </div>
-      </div>
-    </div>
-    <div className="h-20 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-end justify-around p-2">
-      <div
-        className="w-4 bg-blue-500 rounded-t"
-        style={{ height: '60%' }}
-      ></div>
-      <div
-        className="w-4 bg-green-500 rounded-t"
-        style={{ height: '80%' }}
-      ></div>
-      <div
-        className="w-4 bg-purple-500 rounded-t"
-        style={{ height: '40%' }}
-      ></div>
-      <div
-        className="w-4 bg-yellow-500 rounded-t"
-        style={{ height: '90%' }}
-      ></div>
-    </div>
-  </div>
-);
-
-const PersonalizationDemo = () => (
-  <div className="space-y-4">
-    <div className="flex items-center space-x-4">
-      <Settings className="w-5 h-5 text-gray-400" />
-      <span className="text-gray-700 dark:text-gray-300 text-sm">
-        Writing Style: Professional
-      </span>
-    </div>
-    <div className="flex items-center space-x-4">
-      <Palette className="w-5 h-5 text-gray-400" />
-      <span className="text-gray-700 dark:text-gray-300 text-sm">
-        Tone: Formal
-      </span>
-    </div>
-    <div className="flex items-center space-x-4">
-      <Brain className="w-5 h-5 text-gray-400" />
-      <span className="text-gray-700 dark:text-gray-300 text-sm">
-        AI Learning: Active
-      </span>
-    </div>
-    <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-3">
-      <p className="text-blue-800 dark:text-blue-200 text-sm">
-        AI has learned your preferences and will suggest content that matches
-        your style.
-      </p>
-    </div>
-  </div>
-);
-
-const DemoResults = () => {
-  const navigate = useNavigate();
-
-  const handleStartHere = () => {
-    navigate('/signup');
+  const handleClick = () => {
+    onAgentClick(agentType);
   };
 
   return (
-    <div className="text-center space-y-8">
-      {/* Congratulations Message */}
-      <div className="space-y-4">
-        <div className="relative">
-          <CheckCircle className="w-20 h-20 text-green-500 mx-auto animate-bounce" />
-          <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full animate-ping"></div>
+    <div
+      onClick={handleClick}
+      className={`border rounded-lg p-4 transition-all duration-300 cursor-pointer hover:shadow-lg ${
+        isActive
+          ? `${config.borderColor} ${config.bgLight}`
+          : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+      }`}
+    >
+      <div className="flex items-center gap-3 mb-3">
+        <div
+          className={`w-8 h-8 rounded-full flex items-center justify-center ${
+            isActive
+              ? `${config.bgColor} text-white`
+              : 'bg-gray-300 text-gray-600'
+          }`}
+        >
+          <IconComponent className="w-4 h-4" />
         </div>
+        <div>
+          <h3 className="font-semibold text-sm">{config.name}</h3>
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                processing
+                  ? 'bg-yellow-500 animate-pulse'
+                  : isActive
+                    ? 'bg-green-500'
+                    : 'bg-gray-400'
+              }`}
+            />
+            <span className="text-xs text-gray-600">
+              {processing ? 'Processing...' : isActive ? 'Active' : 'Standby'}
+            </span>
+          </div>
+        </div>
+      </div>
 
-        <div className="space-y-2">
-          <h2 className="text-4xl font-bold bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent animate-pulse">
-            🎉 Congratulations! 🎉
+      {mode === 'MANUAL' && (
+        <button
+          onClick={e => {
+            e.stopPropagation();
+            simulateResponse();
+          }}
+          disabled={processing}
+          className={`w-full py-2 px-3 text-sm rounded-md transition-colors ${
+            processing
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : `${config.bgColor} text-white ${config.hoverColor}`
+          }`}
+        >
+          {processing ? 'Processing...' : 'Run Analysis'}
+        </button>
+      )}
+
+      {response && (
+        <div className="mt-3 p-3 bg-white rounded border text-sm">
+          <p className="text-gray-700">{response}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Main Demo Component
+const Demo = () => {
+  const { user } = useAuth(); // Integration with your auth context
+  const [mode, setMode] = useState('MANUAL');
+  const [activeAgents, setActiveAgents] = useState([]);
+  const [responses, setResponses] = useState({});
+  const [demoStep, setDemoStep] = useState(0);
+  const [hasClickedStartDemo, setHasClickedStartDemo] = useState(false);
+
+  const modes = [
+    {
+      value: 'MANUAL',
+      label: 'Manual',
+      description: 'You control each agent individually',
+    },
+    {
+      value: 'HYBRID',
+      label: 'Hybrid',
+      description: 'AI suggests next steps, you approve',
+    },
+    {
+      value: 'FULLY_AUTO',
+      label: 'Full Auto',
+      description: 'AI agents work collaboratively',
+    },
+  ];
+
+  const agentTypes = [
+    'research',
+    'outline',
+    'writing',
+    'character',
+    'emotion',
+    'style',
+  ];
+
+  const handleModeChange = newMode => {
+    setMode(newMode);
+    setResponses({});
+
+    if (newMode === 'FULLY_AUTO') {
+      setActiveAgents(agentTypes);
+    } else if (newMode === 'HYBRID') {
+      setActiveAgents(['research', 'outline']);
+    } else {
+      setActiveAgents([]);
+    }
+  };
+
+  const handleAgentResponse = (agentType, response) => {
+    setResponses(prev => ({
+      ...prev,
+      [agentType]: response,
+    }));
+  };
+
+  const handleAgentClick = agentType => {
+    if (window.demoAssistantHandleClick) {
+      window.demoAssistantHandleClick('agent', agentType);
+    }
+  };
+
+  const handleModeClick = mode => {
+    if (window.demoAssistantHandleClick) {
+      window.demoAssistantHandleClick('mode', mode);
+    }
+  };
+
+  const handleFeatureClick = featureType => {
+    if (window.demoAssistantHandleClick) {
+      window.demoAssistantHandleClick('feature', featureType);
+    }
+  };
+
+  const startDemo = () => {
+    setHasClickedStartDemo(true);
+    setDemoStep(1);
+    handleModeChange('HYBRID');
+    setTimeout(() => setDemoStep(2), 3000);
+    setTimeout(() => handleModeChange('FULLY_AUTO'), 5000);
+    setTimeout(() => setDemoStep(3), 8000);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
+      {/* Background Animations and Overlays */}
+      {/* Removed enhanced background animations, overlays, and visual effects */}
+
+      {/* AI Demo Assistant */}
+      <DemoAssistant
+        demoStep={demoStep}
+        mode={mode}
+        activeAgents={activeAgents}
+        responses={responses}
+        hasClickedStartDemo={hasClickedStartDemo}
+      />
+
+      {/* Hero Section */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="text-center">
+            <h1 className="text-5xl font-bold text-gray-900 mb-6">
+              DocCraft-AI v3
+              <span className="block text-3xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mt-2">
+                Multi-Agent Writing Platform
+              </span>
+            </h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+              Experience the power of collaborative AI agents working together
+              to transform your writing process. From research to final draft,
+              our intelligent system adapts to your creative workflow.
+            </p>
+
+            {demoStep === 0 && (
+              <button
+                onClick={startDemo}
+                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
+              >
+                <Play className="w-5 h-5" />
+                Start Interactive Demo
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Demo Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Mode Selection */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+            Choose Your AI Collaboration Mode
           </h2>
-          <h3 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            You have completed the DocCraft-AI Demo!
-          </h3>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            You&apos;ve just witnessed the full power of AI-driven content
-            creation. Ready to transform your writing experience?
-          </p>
-        </div>
-      </div>
-
-      {/* Feature Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl p-6 border border-blue-200 dark:border-blue-700">
-          <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-            7
-          </div>
-          <div className="text-sm font-medium text-blue-800 dark:text-blue-200">
-            Powerful Features
-          </div>
-          <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-            Demonstrated
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-xl p-6 border border-green-200 dark:border-green-700">
-          <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
-            100%
-          </div>
-          <div className="text-sm font-medium text-green-800 dark:text-green-200">
-            AI Powered
-          </div>
-          <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-            Intelligent
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+            {modes.map(modeOption => (
+              <button
+                key={modeOption.value}
+                onClick={() => {
+                  handleModeChange(modeOption.value);
+                  if (demoStep >= 3) handleModeClick(modeOption.value);
+                }}
+                className={`p-6 rounded-xl border-2 transition-all duration-300 text-left hover:shadow-lg ${
+                  mode === modeOption.value
+                    ? 'border-blue-600 bg-blue-600/10 shadow-lg scale-105'
+                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+                } ${demoStep >= 3 ? 'cursor-pointer' : ''}`}
+              >
+                <h3 className="font-bold text-lg mb-2">{modeOption.label}</h3>
+                <p className="text-gray-600 text-sm">
+                  {modeOption.description}
+                </p>
+                {demoStep >= 3 && (
+                  <p className="text-blue-600 text-xs mt-2">
+                    💡 Click to learn more
+                  </p>
+                )}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 rounded-xl p-6 border border-purple-200 dark:border-purple-700">
-          <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-            24/7
-          </div>
-          <div className="text-sm font-medium text-purple-800 dark:text-purple-200">
-            Available
-          </div>
-          <div className="text-xs text-purple-600 dark:text-purple-400 mt-1">
-            Always Ready
-          </div>
-        </div>
-      </div>
-
-      {/* Start Here Button */}
-      <div className="space-y-4">
-        <div className="relative">
-          <button
-            onClick={handleStartHere}
-            className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 animate-pulse"
-          >
-            {/* Animated background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-            {/* Shimmer effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-
-            {/* Button content */}
-            <div className="relative flex items-center space-x-3">
-              <span className="text-2xl">🚀</span>
-              <span>Start Here</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+        {/* Demo Steps */}
+        {demoStep > 0 && (
+          <div className="mb-8 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-100 border border-yellow-300 rounded-full">
+              <Zap className="w-4 h-4 text-yellow-600" />
+              <span className="text-yellow-800 font-medium">
+                {demoStep === 1 &&
+                  'Demo: Starting with Hybrid mode - AI suggests, you approve'}
+                {demoStep === 2 &&
+                  'Demo: Switching to Full Auto - Watch agents collaborate'}
+                {demoStep === 3 &&
+                  'Demo: Complete! All agents have contributed to your story'}
+              </span>
             </div>
-          </button>
+          </div>
+        )}
 
-          {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300 -z-10"></div>
+        {/* AI Agents Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {agentTypes.map(agentType => (
+            <AIAgentDemo
+              key={agentType}
+              mode={mode}
+              isActive={activeAgents.includes(agentType)}
+              agentType={agentType}
+              onResponse={handleAgentResponse}
+              onAgentClick={handleAgentClick}
+            />
+          ))}
         </div>
 
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Join thousands of writers already using DocCraft-AI
-        </p>
-      </div>
+        {/* Results Summary */}
+        {Object.keys(responses).length > 0 && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              AI Collaboration Results
+            </h3>
+            <div className="space-y-4">
+              {Object.entries(responses).map(([agentType, response]) => (
+                <div
+                  key={agentType}
+                  className="border-l-4 border-blue-600 pl-4"
+                >
+                  <h4 className="font-semibold text-gray-900 capitalize mb-1">
+                    {agentType} Agent Output
+                  </h4>
+                  <p className="text-gray-700 text-sm">{response}</p>
+                </div>
+              ))}
+            </div>
 
-      {/* Additional CTA */}
-      <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6 border border-gray-200 dark:border-gray-600">
-        <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          What&apos;s Next?
-        </h4>
-        <p className="text-gray-600 dark:text-gray-300 text-sm">
-          Create your account and start experiencing the future of AI-powered
-          content creation. Your first document analysis is on us!
-        </p>
+            {Object.keys(responses).length >= 3 && (
+              <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+                <h4 className="font-semibold text-green-900 mb-2">
+                  🎉 Collaborative Success!
+                </h4>
+                <p className="text-green-800 text-sm">
+                  Your AI agents have successfully collaborated to enhance your
+                  writing project. The multi-modal approach ensures
+                  comprehensive story development from multiple perspectives.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Feature Highlights */}
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            {
+              icon: Brain,
+              title: 'Psychological Analysis',
+              description:
+                'Deep character psychology and emotional arc mapping',
+              featureType: 'psychology',
+            },
+            {
+              icon: Target,
+              title: 'Plot Structure',
+              description: 'Intelligent story pacing and narrative framework',
+              featureType: 'plot',
+            },
+            {
+              icon: Users,
+              title: 'Real-time Collaboration',
+              description: 'Multi-user editing with conflict resolution',
+              featureType: 'collaboration',
+            },
+            {
+              icon: Zap,
+              title: 'Adaptive AI',
+              description:
+                'Context-aware assistance that evolves with your style',
+              featureType: 'adaptive',
+            },
+          ].map((feature, index) => (
+            <div
+              key={index}
+              onClick={() =>
+                demoStep >= 3 && handleFeatureClick(feature.featureType)
+              }
+              className={`text-center p-6 transition-all duration-300 rounded-lg ${
+                demoStep >= 3
+                  ? 'cursor-pointer hover:bg-gray-50 hover:shadow-md'
+                  : ''
+              }`}
+            >
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <feature.icon className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                {feature.title}
+              </h3>
+              <p className="text-gray-600 text-sm">{feature.description}</p>
+              {demoStep >= 3 && (
+                <p className="text-blue-600 text-xs mt-2">
+                  💡 Click to learn more
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* CTA Section */}
+        <div className="mt-16 text-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
+          <h2 className="text-3xl font-bold mb-4">
+            Ready to Transform Your Writing?
+          </h2>
+          <p className="text-xl opacity-90 mb-6">
+            Join thousands of writers using AI-powered collaboration to create
+            better stories.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {user ? (
+              <button
+                onClick={() => (window.location.href = '/dashboard')}
+                className="px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                Go to Dashboard
+              </button>
+            ) : (
+              <button
+                onClick={() => (window.location.href = '/signup')}
+                className="px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                Start Free Trial
+              </button>
+            )}
+            <button
+              onClick={() => (window.location.href = '/pricing')}
+              className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-blue-600 transition-colors"
+            >
+              View Pricing
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
+
+export default Demo;
+
+// =============================================================================
+// STEP 2: Update Your App.tsx Route Configuration
+// =============================================================================
+// Make sure your routing in src/App.tsx includes the demo route:
+
+/*
+// In your App.tsx file, ensure you have:
+import Demo from './pages/Demo';
+
+// In your routes configuration:
+<Route path="/demo" element={<Demo />} />
+*/
+
+// =============================================================================
+// STEP 3: Update Your Navigation Component
+// =============================================================================
+// Add demo link to your navigation (likely in src/components/Header.tsx or similar):
+
+/*
+// Add this to your navigation links:
+<Link 
+  to="/demo" 
+  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+>
+  Demo
+</Link>
+*/
+
+// =============================================================================
+// STEP 4: Ensure Required Dependencies
+// =============================================================================
+// Make sure these packages are installed (they should already be in your project):
+
+/*
+npm install react-hot-toast lucide-react
+*/
+
+// =============================================================================
+// STEP 5: Optional - Add Demo Analytics Tracking
+// =============================================================================
+// If you want to track demo interactions, add this to your Demo component:
+
+/*
+import { AuditLogger } from '../services/AuditLogger'; // Your existing audit service
+
+// Add these tracking calls in your Demo component:
+const trackDemoEvent = (event, data) => {
+  AuditLogger.logAuditEvent({
+    action: `demo_${event}`,
+    resource: 'demo_page',
+    details: data,
+    user_id: user?.id || 'anonymous'
+  });
+};
+
+// Then call trackDemoEvent at key points:
+// - When demo starts: trackDemoEvent('started', { mode: 'HYBRID' })
+// - When user clicks agents: trackDemoEvent('agent_clicked', { agent: agentType })
+// - When demo completes: trackDemoEvent('completed', { responses: Object.keys(responses) })
+*/
+
+// =============================================================================
+// STEP 6: CSS Considerations for Your Existing Styles
+// =============================================================================
+// The demo uses Tailwind classes that should work with your existing setup.
+// If you have custom CSS that might conflict, add this to your global CSS:
+
+// =============================================================================
+// STEP 7: Error Boundary Integration
+// =============================================================================
+// Wrap the Demo page in your existing error boundary to handle the ModeErrorBoundary issue:
+
+/*
+// In your App.tsx or wherever you define routes:
+import { ErrorBoundary } from './components/ErrorBoundary'; // Your existing error boundary
+
+<Route 
+  path="/demo" 
+  element={
+    <ErrorBoundary>
+      <Demo />
+    </ErrorBoundary>
+  } 
+/>
+*/
+
+// =============================================================================
+// STEP 8: Testing Checklist
+// =============================================================================
+/*
+✅ Demo page loads without errors
+✅ AI Assistant appears after 7 seconds
+✅ Start Demo button works and triggers mode changes
+✅ All 6 agent panels display correctly
+✅ Click explanations work after demo completion
+✅ Mode selection panels are clickable post-demo
+✅ Feature tiles provide explanations when clicked
+✅ Chat functionality works (send messages, quick questions)
+✅ Assistant can be minimized/maximized/closed
+✅ Responsive design works on mobile
+✅ Navigation to/from demo page works
+✅ CTA buttons redirect correctly based on auth state
+*/
+
+// =============================================================================
+// STEP 9: Optional Customizations
+// =============================================================================
+// You can customize these aspects to match your brand:
+
+/*
+// Color scheme - update these CSS classes:
+from-blue-600 to-purple-600  // Main gradient
+bg-blue-50                   // Light background
+border-blue-500              // Active borders
+text-blue-600               // Accent text
+
+// Timing adjustments:
+7000  // Assistant auto-open delay (7 seconds)
+3000  // Demo step 1 duration
+5000  // Demo step 2 start time
+8000  // Demo step 3 start time
+
+// Content customization:
+- Update the explanations in the `explanations` object
+- Modify the agent response simulations
+- Customize the quick question buttons
+- Adjust the CTA section content
+*/

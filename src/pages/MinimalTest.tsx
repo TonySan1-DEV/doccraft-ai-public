@@ -1,8 +1,6 @@
 import React from 'react';
 
 export default function MinimalTest() {
-  console.log('🧪 MinimalTest component loading...');
-
   return (
     <div
       style={{

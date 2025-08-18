@@ -44,31 +44,47 @@ class PromptBuilder {
   static setLanguage: (language: SupportedLanguage) => void;
   static setMemoryEnabled: (enabled: boolean) => void;
   static generatePromptHeader: (options?: PromptHeaderOptions) => string;
-  static buildMCPPrompt: (context: PromptContext, options?: MCPPromptOptions) => string;
+  static buildMCPPrompt: (
+    context: PromptContext,
+    options?: MCPPromptOptions
+  ) => string;
   static buildSimplePrompt: (context: PromptContext) => string;
-  static buildConversationPrompt: (userMessage: string, conversationHistory?: string[], options?: MCPPromptOptions) => string;
+  static buildConversationPrompt: (
+    userMessage: string,
+    conversationHistory?: string[],
+    options?: MCPPromptOptions
+  ) => string;
   static formatResponse: (response: string) => string;
-  static getCurrentConfig: () => { tone: AgentTone; language: SupportedLanguage; memoryEnabled: boolean };
+  static getCurrentConfig: () => {
+    tone: AgentTone;
+    language: SupportedLanguage;
+    memoryEnabled: boolean;
+  };
   static reset: () => void;
-  static needsRegeneration: (oldTone: AgentTone, oldLanguage: SupportedLanguage) => boolean;
-  static getPromptStats: () => { currentTone: AgentTone; currentLanguage: SupportedLanguage; memoryEnabled: boolean; lastUpdate: number };
+  static needsRegeneration: (
+    oldTone: AgentTone,
+    oldLanguage: SupportedLanguage
+  ) => boolean;
+  static getPromptStats: () => {
+    currentTone: AgentTone;
+    currentLanguage: SupportedLanguage;
+    memoryEnabled: boolean;
+    lastUpdate: number;
+  };
 
   // Set tone for prompt formatting
   setTone(tone: AgentTone): void {
     this.currentTone = tone;
-    console.log(`PromptBuilder: Tone set to ${tone}`);
   }
 
   // Set language for prompt formatting
   setLanguage(language: SupportedLanguage): void {
     this.currentLanguage = language;
-    console.log(`PromptBuilder: Language set to ${language}`);
   }
 
   // Set memory preference
   setMemoryEnabled(enabled: boolean): void {
     this.memoryEnabled = enabled;
-    console.log(`PromptBuilder: Memory ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   // Generate prompt header with tone and language
@@ -77,7 +93,7 @@ class PromptBuilder {
       tone = this.currentTone,
       language = this.currentLanguage,
       includeTranslationCue = true,
-      customHeaders = {}
+      customHeaders = {},
     } = options;
 
     let header = '';
@@ -107,7 +123,7 @@ class PromptBuilder {
       includeTone = true,
       includeLanguage = true,
       includeMemory = true,
-      customHeaders = {}
+      customHeaders = {},
     } = options;
 
     let prompt = '';
@@ -128,7 +144,7 @@ class PromptBuilder {
       prompt += this.generatePromptHeader({
         tone: includeTone ? this.currentTone : undefined,
         language: includeLanguage ? this.currentLanguage : undefined,
-        customHeaders
+        customHeaders,
       });
     }
 
@@ -225,8 +241,6 @@ class PromptBuilder {
     }
   }
 
-
-
   // Get memory instructions
   private getMemoryInstructions(): string {
     return '// Include relevant session context and previous interactions\n';
@@ -292,7 +306,7 @@ class PromptBuilder {
     return {
       tone: this.currentTone,
       language: this.currentLanguage,
-      memoryEnabled: this.memoryEnabled
+      memoryEnabled: this.memoryEnabled,
     };
   }
 
@@ -301,11 +315,13 @@ class PromptBuilder {
     this.currentTone = 'friendly';
     this.currentLanguage = 'en';
     this.memoryEnabled = true;
-    console.log('PromptBuilder: Reset to defaults');
   }
 
   // Utility to check if prompt needs regeneration
-  needsRegeneration(oldTone: AgentTone, oldLanguage: SupportedLanguage): boolean {
+  needsRegeneration(
+    oldTone: AgentTone,
+    oldLanguage: SupportedLanguage
+  ): boolean {
     return oldTone !== this.currentTone || oldLanguage !== this.currentLanguage;
   }
 
@@ -320,7 +336,7 @@ class PromptBuilder {
       currentTone: this.currentTone,
       currentLanguage: this.currentLanguage,
       memoryEnabled: this.memoryEnabled,
-      lastUpdate: Date.now()
+      lastUpdate: Date.now(),
     };
   }
 }
@@ -330,17 +346,37 @@ export const promptBuilder = new PromptBuilder();
 
 // Add static methods to the class for global access
 PromptBuilder.setTone = (tone: AgentTone) => promptBuilder.setTone(tone);
-PromptBuilder.setLanguage = (language: SupportedLanguage) => promptBuilder.setLanguage(language);
-PromptBuilder.setMemoryEnabled = (enabled: boolean) => promptBuilder.setMemoryEnabled(enabled);
-PromptBuilder.generatePromptHeader = (options?: PromptHeaderOptions) => promptBuilder.generatePromptHeader(options);
-PromptBuilder.buildMCPPrompt = (context: PromptContext, options?: MCPPromptOptions) => promptBuilder.buildMCPPrompt(context, options);
-PromptBuilder.buildSimplePrompt = (context: PromptContext) => promptBuilder.buildSimplePrompt(context);
-PromptBuilder.buildConversationPrompt = (userMessage: string, conversationHistory?: string[], options?: MCPPromptOptions) => promptBuilder.buildConversationPrompt(userMessage, conversationHistory, options);
-PromptBuilder.formatResponse = (response: string) => promptBuilder.formatResponse(response);
+PromptBuilder.setLanguage = (language: SupportedLanguage) =>
+  promptBuilder.setLanguage(language);
+PromptBuilder.setMemoryEnabled = (enabled: boolean) =>
+  promptBuilder.setMemoryEnabled(enabled);
+PromptBuilder.generatePromptHeader = (options?: PromptHeaderOptions) =>
+  promptBuilder.generatePromptHeader(options);
+PromptBuilder.buildMCPPrompt = (
+  context: PromptContext,
+  options?: MCPPromptOptions
+) => promptBuilder.buildMCPPrompt(context, options);
+PromptBuilder.buildSimplePrompt = (context: PromptContext) =>
+  promptBuilder.buildSimplePrompt(context);
+PromptBuilder.buildConversationPrompt = (
+  userMessage: string,
+  conversationHistory?: string[],
+  options?: MCPPromptOptions
+) =>
+  promptBuilder.buildConversationPrompt(
+    userMessage,
+    conversationHistory,
+    options
+  );
+PromptBuilder.formatResponse = (response: string) =>
+  promptBuilder.formatResponse(response);
 PromptBuilder.getCurrentConfig = () => promptBuilder.getCurrentConfig();
 PromptBuilder.reset = () => promptBuilder.reset();
-PromptBuilder.needsRegeneration = (oldTone: AgentTone, oldLanguage: SupportedLanguage) => promptBuilder.needsRegeneration(oldTone, oldLanguage);
+PromptBuilder.needsRegeneration = (
+  oldTone: AgentTone,
+  oldLanguage: SupportedLanguage
+) => promptBuilder.needsRegeneration(oldTone, oldLanguage);
 PromptBuilder.getPromptStats = () => promptBuilder.getPromptStats();
 
 // Export class for testing
-export { PromptBuilder }; 
+export { PromptBuilder };

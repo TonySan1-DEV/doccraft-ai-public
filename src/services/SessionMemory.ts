@@ -13,7 +13,7 @@
 interface MemoryEntry {
   id: string;
   timestamp: number;
-  type: "conversation" | "preference" | "context" | "scene";
+  type: 'conversation' | 'preference' | 'context' | 'scene';
   content: string;
   metadata?: Record<string, unknown>;
 }
@@ -38,12 +38,12 @@ class SessionMemory {
   static clear: () => void;
   static isEnabled: () => boolean;
   static addEntry: (
-    type: MemoryEntry["type"],
+    type: MemoryEntry['type'],
     content: string,
     metadata?: Record<string, unknown>
   ) => void;
   static getRecentEntries: (
-    type?: MemoryEntry["type"],
+    type?: MemoryEntry['type'],
     limit?: number
   ) => MemoryEntry[];
   static getSessionContext: () => SessionContext;
@@ -65,7 +65,7 @@ class SessionMemory {
   static getMemorySummary: () => string;
   static searchMemory: (
     query: string,
-    type?: MemoryEntry["type"]
+    type?: MemoryEntry['type']
   ) => MemoryEntry[];
   static getMemoryStats: () => {
     totalEntries: number;
@@ -88,20 +88,17 @@ class SessionMemory {
   // Enable session memory
   enable(): void {
     this.enabled = true;
-    console.log("SessionMemory: Memory enabled");
   }
 
   // Disable session memory
   disable(): void {
     this.enabled = false;
-    console.log("SessionMemory: Memory disabled");
   }
 
   // Clear all memory
   clear(): void {
     this.memory = [];
     this.sessionContext = {};
-    console.log("SessionMemory: Memory cleared");
   }
 
   // Check if memory is enabled
@@ -111,12 +108,11 @@ class SessionMemory {
 
   // Add memory entry
   addEntry(
-    type: MemoryEntry["type"],
+    type: MemoryEntry['type'],
     content: string,
     metadata?: Record<string, unknown>
   ): void {
     if (!this.enabled) {
-      console.log("SessionMemory: Memory disabled, skipping entry");
       return;
     }
 
@@ -133,17 +129,12 @@ class SessionMemory {
     // Maintain memory limit
     if (this.memory.length > this.maxEntries) {
       this.memory = this.memory.slice(-this.maxEntries);
-      console.log(
-        "SessionMemory: Memory limit reached, removed oldest entries"
-      );
     }
-
-    console.log(`SessionMemory: Added ${type} entry`);
   }
 
   // Get recent memory entries
   getRecentEntries(
-    type?: MemoryEntry["type"],
+    type?: MemoryEntry['type'],
     limit: number = 10
   ): MemoryEntry[] {
     if (!this.enabled) {
@@ -152,7 +143,7 @@ class SessionMemory {
 
     let entries = this.memory;
     if (type) {
-      entries = entries.filter((entry) => entry.type === type);
+      entries = entries.filter(entry => entry.type === type);
     }
 
     return entries.slice(-limit);
@@ -170,22 +161,21 @@ class SessionMemory {
   // Update session context
   updateSessionContext(context: Partial<SessionContext>): void {
     if (!this.enabled) {
-      console.log("SessionMemory: Memory disabled, skipping context update");
+      console.log('SessionMemory: Memory disabled, skipping context update');
       return;
     }
 
     this.sessionContext = { ...this.sessionContext, ...context };
-    console.log("SessionMemory: Session context updated");
   }
 
   // Get conversation history
   getConversationHistory(limit: number = 20): MemoryEntry[] {
-    return this.getRecentEntries("conversation", limit);
+    return this.getRecentEntries('conversation', limit);
   }
 
   // Add conversation entry
   addConversationEntry(content: string, isUser: boolean = false): void {
-    this.addEntry("conversation", content, { isUser });
+    this.addEntry('conversation', content, { isUser });
   }
 
   // Get scene context
@@ -200,8 +190,8 @@ class SessionMemory {
     }
 
     return this.memory.filter(
-      (entry) =>
-        entry.type === "scene" && entry.metadata?.sceneId === targetSceneId
+      entry =>
+        entry.type === 'scene' && entry.metadata?.sceneId === targetSceneId
     );
   }
 
@@ -211,7 +201,7 @@ class SessionMemory {
     content: string,
     metadata?: Record<string, unknown>
   ): void {
-    this.addEntry("scene", content, { sceneId, ...metadata });
+    this.addEntry('scene', content, { sceneId, ...metadata });
   }
 
   // Get character context
@@ -226,7 +216,7 @@ class SessionMemory {
     }
 
     return this.memory.filter(
-      (entry) => entry.metadata?.characterId === targetCharacterId
+      entry => entry.metadata?.characterId === targetCharacterId
     );
   }
 
@@ -236,35 +226,35 @@ class SessionMemory {
     content: string,
     metadata?: Record<string, unknown>
   ): void {
-    this.addEntry("context", content, { characterId, ...metadata });
+    this.addEntry('context', content, { characterId, ...metadata });
   }
 
   // Get memory summary for LLM context
   getMemorySummary(): string {
     if (!this.enabled || this.memory.length === 0) {
-      return "No session memory available.";
+      return 'No session memory available.';
     }
 
     const recentEntries = this.getRecentEntries(undefined, 5);
     const summary = recentEntries
-      .map((entry) => `[${entry.type.toUpperCase()}] ${entry.content}`)
-      .join("\n");
+      .map(entry => `[${entry.type.toUpperCase()}] ${entry.content}`)
+      .join('\n');
 
     return `Session Memory:\n${summary}`;
   }
 
   // Search memory by content
-  searchMemory(query: string, type?: MemoryEntry["type"]): MemoryEntry[] {
+  searchMemory(query: string, type?: MemoryEntry['type']): MemoryEntry[] {
     if (!this.enabled) {
       return [];
     }
 
     let entries = this.memory;
     if (type) {
-      entries = entries.filter((entry) => entry.type === type);
+      entries = entries.filter(entry => entry.type === type);
     }
 
-    return entries.filter((entry) =>
+    return entries.filter(entry =>
       entry.content.toLowerCase().includes(query.toLowerCase())
     );
   }
@@ -277,10 +267,13 @@ class SessionMemory {
     oldestEntry: number;
     newestEntry: number;
   } {
-    const types = this.memory.reduce((acc, entry) => {
-      acc[entry.type] = (acc[entry.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const types = this.memory.reduce(
+      (acc, entry) => {
+        acc[entry.type] = (acc[entry.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     return {
       totalEntries: this.memory.length,
@@ -310,19 +303,19 @@ class SessionMemory {
     sessionContext: SessionContext;
   }): void {
     if (!this.enabled) {
-      console.log("SessionMemory: Memory disabled, skipping import");
+      console.log('SessionMemory: Memory disabled, skipping import');
       return;
     }
 
     this.memory = [...data.memory];
     this.sessionContext = { ...data.sessionContext };
-    console.log("SessionMemory: Memory imported");
+    console.log('SessionMemory: Memory imported');
   }
 
   // Log memory usage for telemetry
   logMemoryUsage(action: string, entryCount?: number): void {
     if (window.logTelemetryEvent) {
-      window.logTelemetryEvent("session_memory_used", {
+      window.logTelemetryEvent('session_memory_used', {
         action,
         enabled: this.enabled,
         entryCount: entryCount || this.memory.length,
@@ -341,11 +334,11 @@ SessionMemory.disable = () => sessionMemory.disable();
 SessionMemory.clear = () => sessionMemory.clear();
 SessionMemory.isEnabled = () => sessionMemory.isEnabled();
 SessionMemory.addEntry = (
-  type: MemoryEntry["type"],
+  type: MemoryEntry['type'],
   content: string,
   metadata?: Record<string, unknown>
 ) => sessionMemory.addEntry(type, content, metadata);
-SessionMemory.getRecentEntries = (type?: MemoryEntry["type"], limit?: number) =>
+SessionMemory.getRecentEntries = (type?: MemoryEntry['type'], limit?: number) =>
   sessionMemory.getRecentEntries(type, limit);
 SessionMemory.getSessionContext = () => sessionMemory.getSessionContext();
 SessionMemory.updateSessionContext = (context: Partial<SessionContext>) =>
@@ -369,7 +362,7 @@ SessionMemory.addCharacterContext = (
   metadata?: Record<string, unknown>
 ) => sessionMemory.addCharacterContext(characterId, content, metadata);
 SessionMemory.getMemorySummary = () => sessionMemory.getMemorySummary();
-SessionMemory.searchMemory = (query: string, type?: MemoryEntry["type"]) =>
+SessionMemory.searchMemory = (query: string, type?: MemoryEntry['type']) =>
   sessionMemory.searchMemory(query, type);
 SessionMemory.getMemoryStats = () => sessionMemory.getMemoryStats();
 SessionMemory.exportMemory = () => sessionMemory.exportMemory();
