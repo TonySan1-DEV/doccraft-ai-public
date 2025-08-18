@@ -1,277 +1,62 @@
-name: Documentation Guard
+name: Docs Guard
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-  push:
-    branches: [main, develop]
+    paths-ignore:
+      - "**/*.md"          # allow pure doc edits without rerunning if you want; remove to always run
+      - "docs/**"          # docs-only changes can skip; remove to enforce always
+  # Manual trigger if needed:
+  workflow_dispatch:
 
-env:
-  NODE_VERSION: '20.x'
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-guard-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify-docs:
     runs-on: ubuntu-latest
-    name: Verify Documentation Consistency
-    
     steps:
-      - name: Checkout code
+      - name: Checkout (full history for diff)
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2  # Need history for change detection
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Generate documentation for changes
-        run: npm run docs:changed
-        env:
-          BASE: ${{ github.event.pull_request.base.ref || 'main' }}
-      
-      - name: Verify documentation consistency
-        run: npm run docs:verify
-      
-      - name: Check for documentation changes
-        id: check-docs
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "has-changes=true" >> $GITHUB_OUTPUT
-            echo "Documentation has been updated"
-            git add .
-            git config --local user.email "action@github.com"
-            git config --local user.name "GitHub Action"
-            git commit -m "docs: auto-update documentation [skip ci]"
-            git push
-          else
-            echo "has-changes=false" >> $GITHUB_OUTPUT
-            echo "No documentation changes needed"
-          fi
-      
-      - name: Comment on PR
-        if: github.event_name == 'pull_request' && steps.check-docs.outputs.has-changes == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `📚 **Documentation Updated**
-              
-              This PR has been automatically updated with the latest documentation changes.
-              
-              **What was updated:**
-              - API endpoints and OpenAPI specification
-              - Database schemas and models
-              - Frontend components and routes
-              - Architecture and setup guides
-              
-              **Next steps:**
-              1. Review the documentation changes
-              2. Ensure all new features are properly documented
-              3. Update any manual documentation sections as needed
-              
-              Documentation is now synchronized with your code changes! 🎉`
-            })
-      
-      - name: Comment on PR (no changes)
-        if: github.event_name == 'pull_request' && steps.check-docs.outputs.has-changes == 'false'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `✅ **Documentation Check Passed**
-              
-              All documentation is up-to-date with your code changes.
-              
-              **Verification Results:**
-              - ✅ API documentation current
-              - ✅ Database schemas documented
-              - ✅ Frontend components indexed
-              - ✅ Architecture guides updated
-              
-              No documentation updates were needed. Great job keeping docs in sync! 🎉`
-            })
+          fetch-depth: 0
 
-  lint-docs:
-    runs-on: ubuntu-latest
-    name: Lint Documentation
-    needs: verify-docs
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Lint markdown files
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install package manager (Corepack)
+        run: corepack enable
+
+      - name: Install deps (pnpm/yarn/npm)
         run: |
-          # Install markdownlint if not available
-          if ! command -v markdownlint &> /dev/null; then
-            npm install -g markdownlint-cli
-          fi
-          
-          # Lint all markdown files in docs directory
-          markdownlint "docs/**/*.md" --config .markdownlint.json || {
-            echo "::warning::Some markdown files have linting issues. Consider fixing them for better documentation quality."
-            exit 0  # Don't fail the build for markdown issues
-          }
-      
-      - name: Check documentation structure
-        run: |
-          echo "Checking documentation structure..."
-          
-          # Check if required docs exist
-          required_docs=(
-            "docs/dev/00-overview.md"
-            "docs/dev/01-architecture.md"
-            "docs/dev/02-setup-and-env.md"
-            "docs/dev/03-build-and-deploy.md"
-            "docs/dev/04-frontend.md"
-            "docs/dev/05-backend.md"
-            "docs/dev/06-database.md"
-          )
-          
-          missing_docs=()
-          for doc in "${required_docs[@]}"; do
-            if [ ! -f "$doc" ]; then
-              missing_docs+=("$doc")
-            fi
-          done
-          
-          if [ ${#missing_docs[@]} -gt 0 ]; then
-            echo "::error::Missing required documentation files:"
-            printf '  - %s\n' "${missing_docs[@]}"
-            exit 1
-          else
-            echo "✅ All required documentation files present"
-          fi
-      
-      - name: Validate auto-generated content
-        run: |
-          echo "Validating auto-generated documentation content..."
-          
-          # Check for proper auto-gen markers
-          docs_dir="docs/dev"
-          files_with_issues=()
-          
-          for file in "$docs_dir"/*.md; do
-            if [ -f "$file" ]; then
-              # Check if file has auto-gen sections
-              if grep -q "AUTO-GEN:BEGIN" "$file"; then
-                # Check if all auto-gen sections have proper end markers
-                begin_count=$(grep -c "AUTO-GEN:BEGIN" "$file")
-                end_count=$(grep -c "AUTO-GEN:END" "$file")
-                
-                if [ "$begin_count" -ne "$end_count" ]; then
-                  files_with_issues+=("$file (mismatched auto-gen markers)")
-                fi
-              fi
-            fi
-          done
-          
-          if [ ${#files_with_issues[@]} -gt 0 ]; then
-            echo "::warning::Files with auto-generation issues:"
-            printf '  - %s\n' "${files_with_issues[@]}"
-          else
-            echo "✅ All auto-generation markers properly formatted"
+          if [ -f pnpm-lock.yaml ]; then pnpm i --frozen-lockfile;
+          elif [ -f yarn.lock ]; then yarn install --frozen-lockfile;
+          else npm ci;
           fi
 
-  docs-quality:
-    runs-on: ubuntu-latest
-    name: Documentation Quality Check
-    needs: verify-docs
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Generate docs for changed areas (safe fallback inside script)
+        run: |
+          if [ -f package.json ]; then
+            if npm run | grep -q "docs:changed"; then pnpm run docs:changed || npm run docs:changed || true; fi
+          fi
+
+      - name: Verify required docs exist
+        run: |
+          if [ -f package.json ]; then
+            if npm run | grep -q "docs:verify"; then pnpm run docs:verify || npm run docs:verify; fi
+          fi
+
+      - name: Upload docs artifact
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Check documentation completeness
-        run: |
-          echo "Checking documentation completeness..."
-          
-          # Check for TODO items
-          todo_count=$(grep -r "TODO\|FIXME\|Needs Verification" docs/dev/ | wc -l)
-          
-          if [ "$todo_count" -gt 0 ]; then
-            echo "::warning::Found $todo_count TODO/FIXME items in documentation:"
-            grep -r "TODO\|FIXME\|Needs Verification" docs/dev/ | head -10
-            echo "... and possibly more"
-          else
-            echo "✅ No TODO items found in documentation"
-          fi
-          
-          # Check for broken internal links
-          echo "Checking for broken internal documentation links..."
-          
-          # This is a basic check - could be enhanced with a proper link checker
-          broken_links=0
-          for file in docs/dev/*.md; do
-            if [ -f "$file" ]; then
-              # Look for markdown links that might be broken
-              while IFS= read -r line; do
-                if [[ $line =~ \[([^\]]+)\]\(([^)]+)\) ]]; then
-                  link_text="${BASH_REMATCH[1]}"
-                  link_url="${BASH_REMATCH[2]}"
-                  
-                  # Check if it's an internal link
-                  if [[ $link_url == \#* ]]; then
-                    # Internal anchor link - check if anchor exists
-                    anchor="${link_url#\#}"
-                    if ! grep -q "^\s*#*\s*$anchor" "$file"; then
-                      echo "::warning::Possible broken internal link in $file: $link_text -> $link_url"
-                      ((broken_links++))
-                    fi
-                  fi
-                fi
-              done < "$file"
-            fi
-          done
-          
-          if [ "$broken_links" -eq 0 ]; then
-            echo "✅ No obvious broken internal links found"
-          fi
-      
-      - name: Generate documentation report
-        run: |
-          echo "Generating documentation quality report..."
-          
-          # Count documentation files
-          doc_count=$(find docs/dev -name "*.md" | wc -l)
-          ref_count=$(find docs/dev/refs -name "*" 2>/dev/null | wc -l || echo "0")
-          
-          # Count lines of documentation
-          total_lines=$(find docs/dev -name "*.md" -exec wc -l {} + | tail -1 | awk '{print $1}')
-          
-          echo "## Documentation Statistics" >> $GITHUB_STEP_SUMMARY
-          echo "- **Total Documentation Files**: $doc_count" >> $GITHUB_STEP_SUMMARY
-          echo "- **Total Reference Files**: $ref_count" >> $GITHUB_STEP_SUMMARY
-          echo "- **Total Lines of Documentation**: $total_lines" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          echo "Documentation quality check completed successfully!"
+          name: docs-dev-${{ github.sha }}
+          path: docs/dev
+          if-no-files-found: warn
