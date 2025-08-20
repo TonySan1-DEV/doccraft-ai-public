@@ -1,0 +1,8 @@
+{
+  "type": "tool_call",
+  "id": "example-123",
+  "name": "search_docs",
+  "arguments": {
+    "query": "doccraft ai deployment"
+  }
+}

@@ -6,7 +6,7 @@
 // =============================================================================
 // File: src/pages/Demo.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Play,
   Brain,
@@ -16,15 +16,24 @@ import {
   BookOpen,
   Eye,
   Settings,
-  MessageCircle,
   Send,
   X,
-  HelpCircle,
   Minimize2,
   Maximize2,
+  AlertCircle,
+  CheckCircle,
+  Loader,
 } from 'lucide-react';
-import { toast } from 'react-hot-toast'; // Using your existing toast system
-import { useAuth } from '../contexts/AuthContext'; // Integration with your auth system
+import { toast } from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext';
+import {
+  ResearchAgent,
+  OutlineAgent,
+  WritingAgent,
+  CharacterAgent,
+  EmotionAgent,
+  StyleAgent,
+} from '../services/agenticAI';
 
 // Professional Robot Head Line Icon Component
 const RobotHeadIcon = ({ className = 'w-6 h-6' }) => (
@@ -70,8 +79,8 @@ interface Message {
 const DemoAssistant = ({
   demoStep,
   mode,
-  activeAgents,
-  responses,
+  _activeAgents,
+  _responses,
   hasClickedStartDemo,
 }: DemoAssistantProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -650,37 +659,88 @@ const AIAgentDemo = ({
 }) => {
   const [processing, setProcessing] = useState(false);
   const [response, setResponse] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const simulateResponse = async () => {
+  // Get the appropriate agent instance
+  const getAgentInstance = useCallback(() => {
+    const agentMap = {
+      research: new ResearchAgent(),
+      outline: new OutlineAgent(),
+      writing: new WritingAgent(),
+      character: new CharacterAgent(),
+      emotion: new EmotionAgent(),
+      style: new StyleAgent(),
+    };
+    return agentMap[agentType as keyof typeof agentMap];
+  }, [agentType]);
+
+  const executeAgent = async () => {
     if (!isActive) return;
 
     setProcessing(true);
+    setError(null);
 
-    // Simulate AI processing delay
-    await new Promise(resolve =>
-      setTimeout(resolve, 1500 + Math.random() * 1000)
-    );
+    try {
+      const agent = getAgentInstance();
+      const context = {
+        content: 'Detective story opening with mysterious crime scene',
+        characters: [{ id: '1', name: 'Detective Sarah Chen' }],
+        storyStructure: 'linear_progressive',
+        genre: 'detective_noir',
+        complexity: 3,
+        audience: 'adult_readers',
+        scenes: [{ id: '1', content: 'Crime scene investigation' }],
+        plotPoints: ['opening', 'conflict', 'climax', 'resolution'],
+        readerFeedback: 'positive_engagement',
+        storyProgress: 'early_development',
+        sections: ['chapter1', 'chapter2'],
+        chapters: ['chapter1', 'chapter2'],
+      };
 
-    const responses = {
-      research:
-        "Found 3 relevant character archetypes for your detective story. The 'World-Weary Investigator' archetype shows strong emotional depth with internal conflict between justice and cynicism.",
-      outline:
-        "Generated 15-point story structure following the Hero's Journey. Key plot points include the inciting incident at 12% mark and the climax positioned at 80% for maximum impact.",
-      writing:
-        "Crafted opening paragraph with atmospheric tension: 'Rain drummed against the precinct windows like impatient fingers, each drop carrying the weight of another unsolved case...'",
-      character:
-        'Developed psychological profile: Detective Sarah Chen - INTJ personality, motivated by childhood trauma, fears emotional vulnerability, speaks in clipped, precise sentences.',
-      emotion:
-        'Emotional arc analysis: Story peaks at 85% tension during confrontation scene. Recommended adding relief moment at 60% to prevent reader fatigue.',
-      style:
-        'Style consistency score: 94%. Voice matches noir genre conventions with modern urban elements. Suggested maintaining present-tense narrative throughout.',
-    };
+      const result = await agent.execute(context, mode);
 
-    const agentResponse = responses[agentType] || 'AI analysis complete.';
-    setResponse(agentResponse);
-    setProcessing(false);
-    onResponse(agentType, agentResponse);
+      // Format the response based on agent type
+      let formattedResponse = '';
+      switch (agentType) {
+        case 'research':
+          formattedResponse = `Found ${result.findings?.length || 0} relevant insights. ${result.insights?.[0]?.insight || 'Research analysis complete.'}`;
+          break;
+        case 'outline':
+          formattedResponse = `Generated ${result.outline?.sections?.length || 0}-point story structure. ${result.writingGuidance?.[0] || 'Structure analysis complete.'}`;
+          break;
+        case 'writing':
+          formattedResponse = result.content || 'Writing enhancement complete.';
+          break;
+        case 'character':
+          formattedResponse = `Character analysis: ${result.characterProfiles?.[0]?.personality || 'Profile'} personality with ${result.consistencyChecks?.overallConsistency || 0.8} consistency.`;
+          break;
+        case 'emotion':
+          formattedResponse = `Emotional arc: ${result.tensionCurves?.overallTension || 0.8} tension with ${result.optimizationSuggestions?.[0] || 'optimal pacing'}.`;
+          break;
+        case 'style':
+          formattedResponse = `Style consistency: ${result.consistencyScore?.overallConsistency || 0.9} score. ${result.improvementSuggestions?.[0] || 'Style analysis complete.'}`;
+          break;
+        default:
+          formattedResponse = 'AI analysis complete.';
+      }
+
+      setResponse(formattedResponse);
+      onResponse(agentType, formattedResponse);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(errorMessage);
+      toast.error(`Error executing ${agentType} agent: ${errorMessage}`);
+    } finally {
+      setProcessing(false);
+    }
   };
+
+  useEffect(() => {
+    if (isActive && mode === 'FULLY_AUTO') {
+      executeAgent();
+    }
+  }, [isActive, mode, agentType, executeAgent]);
 
   useEffect(() => {
     if (isActive && mode === 'FULLY_AUTO') {
@@ -755,6 +815,14 @@ const AIAgentDemo = ({
   return (
     <div
       onClick={handleClick}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
       className={`border rounded-lg p-4 transition-all duration-300 cursor-pointer hover:shadow-lg ${
         isActive
           ? `${config.borderColor} ${config.bgLight}`
@@ -794,7 +862,7 @@ const AIAgentDemo = ({
         <button
           onClick={e => {
             e.stopPropagation();
-            simulateResponse();
+            executeAgent();
           }}
           disabled={processing}
           className={`w-full py-2 px-3 text-sm rounded-md transition-colors ${
@@ -803,12 +871,35 @@ const AIAgentDemo = ({
               : `${config.bgColor} text-white ${config.hoverColor}`
           }`}
         >
-          {processing ? 'Processing...' : 'Run Analysis'}
+          {processing ? (
+            <div className="flex items-center gap-2">
+              <Loader className="w-4 h-4 animate-spin" />
+              Processing...
+            </div>
+          ) : (
+            'Run Analysis'
+          )}
         </button>
       )}
 
-      {response && (
+      {error && (
+        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded text-sm">
+          <div className="flex items-center gap-2 text-red-700">
+            <AlertCircle className="w-4 h-4" />
+            <span className="font-medium">Error:</span>
+            <span>{error}</span>
+          </div>
+        </div>
+      )}
+
+      {response && !error && (
         <div className="mt-3 p-3 bg-white rounded border text-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <CheckCircle className="w-4 h-4 text-green-600" />
+            <span className="font-medium text-green-700">
+              Analysis Complete
+            </span>
+          </div>
           <p className="text-gray-700">{response}</p>
         </div>
       )}
@@ -818,12 +909,14 @@ const AIAgentDemo = ({
 
 // Main Demo Component
 const Demo = () => {
-  const { user } = useAuth(); // Integration with your auth context
+  const { user } = useAuth();
   const [mode, setMode] = useState('MANUAL');
-  const [activeAgents, setActiveAgents] = useState([]);
-  const [responses, setResponses] = useState({});
+  const [activeAgents, setActiveAgents] = useState<string[]>([]);
+  const [responses, setResponses] = useState<Record<string, any>>({});
   const [demoStep, setDemoStep] = useState(0);
   const [hasClickedStartDemo, setHasClickedStartDemo] = useState(false);
+  const [isStartingDemo, setIsStartingDemo] = useState(false);
+  const [demoError, setDemoError] = useState<string | null>(null);
 
   const modes = [
     {
@@ -865,12 +958,20 @@ const Demo = () => {
     }
   };
 
-  const handleAgentResponse = (agentType, response) => {
-    setResponses(prev => ({
-      ...prev,
-      [agentType]: response,
-    }));
-  };
+  const handleAgentResponse = useCallback(
+    (agentType: string, response: any) => {
+      setResponses(prev => ({
+        ...prev,
+        [agentType]: response,
+      }));
+
+      // Show success toast for completed agent work
+      toast.success(
+        `${agentType.charAt(0).toUpperCase() + agentType.slice(1)} agent completed analysis`
+      );
+    },
+    []
+  );
 
   const handleAgentClick = agentType => {
     if (window.demoAssistantHandleClick) {
@@ -890,13 +991,39 @@ const Demo = () => {
     }
   };
 
-  const startDemo = () => {
-    setHasClickedStartDemo(true);
-    setDemoStep(1);
-    handleModeChange('HYBRID');
-    setTimeout(() => setDemoStep(2), 3000);
-    setTimeout(() => handleModeChange('FULLY_AUTO'), 5000);
-    setTimeout(() => setDemoStep(3), 8000);
+  const startDemo = async () => {
+    try {
+      setIsStartingDemo(true);
+      setDemoError(null);
+      setHasClickedStartDemo(true);
+      setDemoStep(1);
+
+      // Start with Hybrid mode
+      handleModeChange('HYBRID');
+
+      // Progress through demo steps with proper timing
+      setTimeout(() => {
+        setDemoStep(2);
+        // Switch to Full Auto mode
+        setTimeout(() => {
+          handleModeChange('FULLY_AUTO');
+          // Complete demo
+          setTimeout(() => {
+            setDemoStep(3);
+            toast.success(
+              'Demo completed successfully! All agents have contributed to your story.'
+            );
+          }, 3000);
+        }, 2000);
+      }, 3000);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to start demo';
+      setDemoError(errorMessage);
+      toast.error(`Demo error: ${errorMessage}`);
+    } finally {
+      setIsStartingDemo(false);
+    }
   };
 
   return (
@@ -931,13 +1058,32 @@ const Demo = () => {
             </p>
 
             {demoStep === 0 && (
-              <button
-                onClick={startDemo}
-                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
-              >
-                <Play className="w-5 h-5" />
-                Start Interactive Demo
-              </button>
+              <div className="space-y-4">
+                <button
+                  onClick={startDemo}
+                  disabled={isStartingDemo}
+                  className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isStartingDemo ? (
+                    <>
+                      <Loader className="w-5 h-5 animate-spin" />
+                      Starting Demo...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5" />
+                      Start Interactive Demo
+                    </>
+                  )}
+                </button>
+
+                {demoError && (
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 border border-red-300 rounded-lg text-red-700">
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="text-sm">{demoError}</span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -1079,6 +1225,14 @@ const Demo = () => {
               onClick={() =>
                 demoStep >= 3 && handleFeatureClick(feature.featureType)
               }
+              onKeyDown={e => {
+                if (demoStep >= 3 && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  handleFeatureClick(feature.featureType);
+                }
+              }}
+              role={demoStep >= 3 ? 'button' : undefined}
+              tabIndex={demoStep >= 3 ? 0 : undefined}
               className={`text-center p-6 transition-all duration-300 rounded-lg ${
                 demoStep >= 3
                   ? 'cursor-pointer hover:bg-gray-50 hover:shadow-md'

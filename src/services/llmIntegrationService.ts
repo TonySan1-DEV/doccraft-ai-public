@@ -1,5 +1,6 @@
 // LLM Integration Service
 // MCP: { role: "admin", allowedActions: ["analyze", "process", "enhance"], theme: "llm_integration", contentSensitivity: "medium", tier: "Pro" }
+import { instrument } from '../utils/clientMonitoring';
 
 export interface LLMProvider {
   id: string;
@@ -616,54 +617,56 @@ export class LLMIntegrationService {
     config: LLMConfig,
     messages: ChatMessage[]
   ): Promise<LLMResponse> {
-    const response = await fetch(
-      `${config.baseUrl || 'https://api.openai.com/v1'}/chat/completions`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${config.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: config.model,
-          messages: messages.map(msg => ({
-            role: msg.role,
-            content: msg.content,
-          })),
-          temperature: config.temperature,
-          max_tokens: config.maxTokens,
-          top_p: config.topP,
-          frequency_penalty: config.frequencyPenalty,
-          presence_penalty: config.presencePenalty,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        `OpenAI API error: ${response.status} ${response.statusText}`
+    return await instrument('llm.openai_chat', async () => {
+      const response = await fetch(
+        `${config.baseUrl || 'https://api.openai.com/v1'}/chat/completions`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${config.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: config.model,
+            messages: messages.map(msg => ({
+              role: msg.role,
+              content: msg.content,
+            })),
+            temperature: config.temperature,
+            max_tokens: config.maxTokens,
+            top_p: config.topP,
+            frequency_penalty: config.frequencyPenalty,
+            presence_penalty: config.presencePenalty,
+          }),
+        }
       );
-    }
 
-    const data = await response.json();
-    const responseTime = Date.now();
+      if (!response.ok) {
+        throw new Error(
+          `OpenAI API error: ${response.status} ${response.statusText}`
+        );
+      }
 
-    return {
-      id: data.id,
-      provider: 'openai',
-      model: config.model,
-      content: data.choices[0].message.content,
-      usage: {
-        promptTokens: data.usage.prompt_tokens,
-        completionTokens: data.usage.completion_tokens,
-        totalTokens: data.usage.total_tokens,
-      },
-      metadata: {
-        finishReason: data.choices[0].finish_reason,
-        responseTime,
-        timestamp: new Date(),
-      },
-    };
+      const data = await response.json();
+      const responseTime = Date.now();
+
+      return {
+        id: data.id,
+        provider: 'openai',
+        model: config.model,
+        content: data.choices[0].message.content,
+        usage: {
+          promptTokens: data.usage.prompt_tokens,
+          completionTokens: data.usage.completion_tokens,
+          totalTokens: data.usage.total_tokens,
+        },
+        metadata: {
+          finishReason: data.choices[0].finish_reason,
+          responseTime,
+          timestamp: new Date(),
+        },
+      };
+    });
   }
 
   /**

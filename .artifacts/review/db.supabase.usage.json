@@ -1,0 +1,22 @@
+[
+  "scripts/cron/exportAuditLogs.ts",
+  "pages/api/patterns/approve.ts",
+  "pages/api/patterns/submit.ts",
+  "pages/api/patterns/reject.ts",
+  "scripts/run-account-migration.js",
+  "scripts/run-payment-migration.js",
+  "scripts/setup-environment.js",
+  "vite.config.ts",
+  "scripts/setup-supabase.js",
+  "scripts/encrypt-env.js",
+  "vite.config.optimized.ts",
+  "vite.config.ci.ts",
+  "scripts/secure-env-loader.js",
+  "scripts/setup-support-database.js",
+  "scripts/setup-complete-supabase.js",
+  "scripts/cron/utils/fallbackJsonLogger.ts",
+  "scripts/cron/utils/logSyncStatus.ts",
+  "scripts/cron/utils/reportSyncFailure.ts",
+  "scripts/test-complete-connections.js",
+  "scripts/test-supabase-connection.js"
+]

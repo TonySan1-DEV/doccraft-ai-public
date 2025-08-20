@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "required": ["type"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": ["tool_call", "tool_result", "resource", "response", "error"]
+    },
+    "id": {
+      "type": ["string", "number"]
+    },
+    "name": {
+      "type": "string"
+    },
+    "arguments": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

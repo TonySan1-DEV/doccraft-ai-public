@@ -1,0 +1,31 @@
+{
+  "packages/prompts": {
+    "name": "@doccraft/prompts",
+    "scripts": {
+      "build": "tsc",
+      "test": "vitest run",
+      "test:watch": "vitest",
+      "test:coverage": "vitest run --coverage",
+      "dev": "tsc --watch",
+      "clean": "rm -rf dist"
+    },
+    "deps": {},
+    "devDeps": {
+      "typescript": "^5.0.0",
+      "vitest": "^1.0.0",
+      "@vitest/coverage-v8": "^1.0.0"
+    }
+  },
+  "packages/pkg-a": {
+    "name": "pkg-a",
+    "scripts": {},
+    "deps": {},
+    "devDeps": {}
+  },
+  "packages/pkg-b": {
+    "name": "pkg-b", 
+    "scripts": {},
+    "deps": {},
+    "devDeps": {}
+  }
+}

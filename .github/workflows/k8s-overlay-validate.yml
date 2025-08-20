@@ -1,0 +1,18 @@
+name: K8s Overlay Validate (Staging YAML)
+
+on:
+  pull_request:
+    paths: ['k8s/staging/**']
+  workflow_dispatch: {}
+
+jobs:
+  kubeconform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Kubeconform (containerized)
+        run: |
+          docker run --rm -v "$PWD:/work" ghcr.io/yannh/kubeconform:latest \
+            -strict -summary -ignore-missing-schemas \
+            -kubernetes-version 1.32.2 \
+            /work/k8s/staging/doccraft-ai-staging.yml

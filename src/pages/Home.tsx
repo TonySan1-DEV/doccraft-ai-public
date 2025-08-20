@@ -447,9 +447,19 @@ const EnhancedBackgroundOverlay = () => {
   );
 };
 
+// Crash test component that will actually trigger ErrorBoundary
+function CrashTestComponent() {
+  // This component will crash during render, triggering the ErrorBoundary
+  if (true) {
+    throw new Error('Dev crash test: Home component crashed during render');
+  }
+  return null; // This line will never be reached
+}
+
 export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [crashTest, setCrashTest] = useState(false);
 
   // Navigation handlers for feature cards
   const handleFeatureCardClick = (route: string) => {
@@ -846,6 +856,28 @@ export default function Home() {
           </div>
         </section>
       </div>
+
+      {/* Dev-only crash test button */}
+      {import.meta.env.MODE !== 'production' && (
+        <div className="fixed bottom-4 left-4 z-50">
+          <button
+            className="px-3 py-2 rounded-xl bg-red-600/80 text-white text-sm font-medium hover:bg-red-600 transition-colors shadow-lg"
+            onClick={() => {
+              console.log('Crash test button clicked - about to throw error');
+              // Simulate a render error by setting state that will cause a crash
+              setCrashTest(true);
+            }}
+            title="Development only - Test error boundary"
+          >
+            Crash this view
+          </button>
+        </div>
+      )}
+
+      {/* Crash test component that will actually trigger ErrorBoundary */}
+      {import.meta.env.MODE !== 'production' && crashTest && (
+        <CrashTestComponent />
+      )}
 
       <Footer />
     </div>

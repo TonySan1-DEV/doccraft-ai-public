@@ -1,0 +1,8 @@
+{
+  "mcpVersion": "0.1.0",
+  "schemaVersion": "2024.1.0",
+  "supportedVersions": ["0.1.0"],
+  "pinned": "2025-06-18",
+  "source": "https://model-context-protocol.io",
+  "notes": "Update after changelog review."
+}

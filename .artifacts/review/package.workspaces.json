@@ -1,0 +1,5 @@
+[
+  "packages/prompts",
+  "packages/pkg-a", 
+  "packages/pkg-b"
+]

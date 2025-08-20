@@ -1,0 +1,323 @@
+{
+  "generatedBy": "generate-frontend-map",
+  "routes": [
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "*",
+      "component": "Home"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/",
+      "component": "Home"
+    },
+    {
+      "kind": "object",
+      "file": "src/utils/userRedirect.ts",
+      "path": "/",
+      "component": null
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/about",
+      "component": "AboutUs"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/analytics",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/analyzer",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "object",
+      "file": "src/components/Sidebar.tsx",
+      "path": "/analyzer",
+      "component": null
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/audit-logs",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "object",
+      "file": "src/components/Sidebar.tsx",
+      "path": "/audit-logs",
+      "component": null
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/auth/reset-password",
+      "component": "ResetPassword"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/billing",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/blog",
+      "component": "LayoutWrapper"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/book-outliner",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "object",
+      "file": "src/components/Sidebar.tsx",
+      "path": "/book-outliner",
+      "component": null
+    },
+    {
+      "kind": "object",
+      "file": "src/utils/userRedirect.ts",
+      "path": "/book-outliner",
+      "component": null
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/builder",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "object",
+      "file": "src/components/Sidebar.tsx",
+      "path": "/builder",
+      "component": null
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/character-development",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "object",
+      "file": "src/components/Sidebar.tsx",
+      "path": "/character-development",
+      "component": null
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/contact",
+      "component": "ContactUs"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/dashboard",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "object",
+      "file": "src/components/Sidebar.tsx",
+      "path": "/dashboard",
+      "component": null
+    },
+    {
+      "kind": "object",
+      "file": "src/utils/userRedirect.ts",
+      "path": "/dashboard",
+      "component": null
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/demo",
+      "component": "LayoutWrapper"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/pages/Demo.tsx",
+      "path": "/demo",
+      "component": "Demo"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/pages/Demo.tsx",
+      "path": "/demo",
+      "component": "ErrorBoundary"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/demo/editor",
+      "component": "DocumentEditorDemo"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/docs",
+      "component": "LayoutWrapper"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/ebook-analyzer",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "object",
+      "file": "src/components/Sidebar.tsx",
+      "path": "/ebook-analyzer",
+      "component": null
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/help",
+      "component": "Help"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/login",
+      "component": "Login"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/outliner",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/pricing",
+      "component": "LayoutWrapper"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/privacy",
+      "component": "PrivacyPolicy"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/process",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/processor",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "object",
+      "file": "src/components/Sidebar.tsx",
+      "path": "/processor",
+      "component": null
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/profile",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "object",
+      "file": "src/components/Sidebar.tsx",
+      "path": "/profile",
+      "component": null
+    },
+    {
+      "kind": "object",
+      "file": "src/utils/userRedirect.ts",
+      "path": "/profile",
+      "component": null
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/settings",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "object",
+      "file": "src/components/Sidebar.tsx",
+      "path": "/settings",
+      "component": null
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/share/:token",
+      "component": "ShareableAccessPage"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/signup",
+      "component": "SignUp"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/support",
+      "component": "Support"
+    },
+    {
+      "kind": "object",
+      "file": "src/components/Sidebar.tsx",
+      "path": "/support",
+      "component": null
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/terms",
+      "component": "TermsOfService"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/tutorials",
+      "component": "LayoutWrapper"
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/view",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "object",
+      "file": "src/components/Sidebar.tsx",
+      "path": "/view",
+      "component": null
+    },
+    {
+      "kind": "jsx",
+      "file": "src/App.tsx",
+      "path": "/workspace",
+      "component": "ProtectedRoute"
+    },
+    {
+      "kind": "object",
+      "file": "src/components/Sidebar.tsx",
+      "path": "/workspace",
+      "component": null
+    }
+  ]
+}

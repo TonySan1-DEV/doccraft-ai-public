@@ -1,4 +1,6 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
+pnpm run lint
+pnpm run typecheck
 pnpm run docs:changed
 pnpm run docs:verify 

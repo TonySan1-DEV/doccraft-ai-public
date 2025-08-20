@@ -151,6 +151,7 @@ export default [
       'no-console': 'off',
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
+      'no-use-before-define': ['error', { 'functions': false, 'classes': true, 'variables': false }],
 
       // Custom emotion scaling rule using custom plugin
       // This prevents inappropriate scaling operations on emotion-related fields

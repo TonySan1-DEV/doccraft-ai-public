@@ -1,0 +1,33 @@
+name: Railway Deploy Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      baseUrl:
+        description: 'Railway base URL (https://your-app.up.railway.app)'
+        required: true
+  schedule:
+    - cron: '0 * * * *' # hourly opt-in, remove if not desired
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RAILWAY_BASE_URL: ${{ inputs.baseUrl || secrets.RAILWAY_BASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify base URL present
+        run: |
+          if [ -z "${{ env.RAILWAY_BASE_URL }}" ]; then
+            echo "RAILWAY_BASE_URL not set (input or secret)"; exit 2;
+          fi
+          echo "Using ${RAILWAY_BASE_URL}"
+
+      - name: Node 20
+        uses: actions/setup-node@v4
+        with: { node-version: 20 }
+
+      - name: Run smoke
+        run: node scripts/deploy/smoke-railway.mjs

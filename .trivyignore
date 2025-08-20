@@ -1,0 +1,12 @@
+# Trivy ignore file for DocCraft AI
+# Add specific CVE IDs here when they are false positives or acceptable risks
+# Format: CVE-YYYY-NNNNN
+# Include rationale in PR comments when adding entries
+
+# Example (uncomment and modify as needed):
+# CVE-2023-12345  # False positive in development dependency, not in production image
+# CVE-2023-67890  # Acceptable risk for this specific use case
+
+# Note: Keep this file surgical and well-documented
+# Only ignore CVEs that are truly false positives or acceptable risks
+# Always include rationale in PR comments when adding entries

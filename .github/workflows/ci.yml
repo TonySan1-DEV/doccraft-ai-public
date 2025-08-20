@@ -2,27 +2,50 @@ name: DocCraft-AI Complete Deployment Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   NODE_VERSION: '20.x'
 
 jobs:
-  # Health check - always passes
-  health-check:
+  # Code quality gates
+  code-quality:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout complete codebase
         uses: actions/checkout@v4
-        
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Lint check
+        run: npm run lint
+
+      - name: TypeScript check
+        run: npm run typecheck
+
+  # Health check - always passes
+  health-check:
+    runs-on: ubuntu-latest
+    needs: code-quality
+    steps:
+      - name: Checkout complete codebase
+        uses: actions/checkout@v4
+
       - name: Complete codebase health check
         run: |
           echo "✅ Complete codebase checkout successful"
           echo "📊 Project: DocCraft-AI v3 - Full Codebase Deployment"
           echo "🎯 Status: Ready for complete deployment"
-          echo "🔧 TypeScript checking: DISABLED for deployment"
+          echo "🔧 TypeScript checking: ENABLED and PASSED"
           echo "📦 Playwright dependency fix: ACTIVE"
           echo "🚀 Complete codebase synchronization: ENABLED"
 
@@ -50,10 +73,10 @@ jobs:
           echo "🏗️ Building complete application without TypeScript checking..."
           echo "ℹ️ Skipping 'tsc' command to avoid type errors"
           echo "🎯 Focus: Successful Vite build for complete codebase deployment"
-          
+
           # Use Vite build directly, skipping TypeScript compilation
           npx vite build || echo "⚠️ Build completed with warnings (continuing)"
-          
+
           echo "✅ Complete application build process completed successfully"
           echo "📦 All build artifacts ready for deployment"
         env:

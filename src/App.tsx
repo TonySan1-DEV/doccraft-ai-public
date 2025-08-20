@@ -45,14 +45,10 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 
 import './index.css';
 
-// App.tsx loading...
-
 // Check if running in demo mode
 const isDemoMode =
   import.meta.env.VITE_SUPABASE_URL === 'https://placeholder.supabase.co' ||
   !import.meta.env.VITE_SUPABASE_URL;
-
-// Demo mode check
 
 // Sidebar layout handler
 const handleSidebarToggle = (event: CustomEvent) => {
@@ -102,8 +98,6 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({
 );
 
 function App() {
-  // App component rendering
-
   return (
     <div
       className="App"
@@ -156,16 +150,6 @@ function App() {
                     <ProtectedRoute>
                       <SidebarLayout>
                         <ProcessDocument />
-                      </SidebarLayout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/analyzer"
-                  element={
-                    <ProtectedRoute>
-                      <SidebarLayout>
-                        <Analyzer />
                       </SidebarLayout>
                     </ProtectedRoute>
                   }
@@ -224,9 +208,7 @@ function App() {
                   path="/profile"
                   element={
                     <ProtectedRoute>
-                      <SidebarLayout>
-                        <Profile />
-                      </SidebarLayout>
+                      <Profile />
                     </ProtectedRoute>
                   }
                 />
@@ -302,13 +284,10 @@ function App() {
                   path="/character-development"
                   element={
                     <ProtectedRoute>
-                      <SidebarLayout>
-                        <CharacterDevelopment />
-                      </SidebarLayout>
+                      <CharacterDevelopment />
                     </ProtectedRoute>
                   }
                 />
-                {/* Add missing routes for footer navigation */}
                 <Route
                   path="/docs"
                   element={
@@ -329,7 +308,7 @@ function App() {
                   element={
                     <LayoutWrapper>
                       <div className="py-20 px-8 text-center">
-                        <h1 className="text-3xl font-bold mb-4">Blog</h1>
+                        <h1 className="text-4xl font-bold mb-4">Blog</h1>
                         <p className="text-gray-600">
                           Blog posts coming soon...
                         </p>
@@ -342,7 +321,7 @@ function App() {
                   element={
                     <LayoutWrapper>
                       <div className="py-20 px-8 text-center">
-                        <h1 className="text-3xl font-bold mb-4">Tutorials</h1>
+                        <h1 className="text-4xl font-bold mb-4">Tutorials</h1>
                         <p className="text-gray-600">
                           Tutorials coming soon...
                         </p>

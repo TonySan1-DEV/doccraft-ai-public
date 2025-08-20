@@ -1,5 +1,8 @@
 # Dependencies
 node_modules/
+
+# Generated K8s secrets (do not commit)
+k8s/production/_generated.secret.*.yaml
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

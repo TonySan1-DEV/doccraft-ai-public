@@ -1,0 +1,19 @@
+{
+  "hasSrc": true,
+  "hasPrismaPg": false,
+  "hasPrismaMongo": false,
+  "artifacts": {
+    "dependencyGraph": true,
+    "openapi": true,
+    "prismaPg": true,
+    "prismaMongo": false,
+    "routeMap": true,
+    "componentMap": true,
+    "frontendMd": true
+  },
+  "counts": {
+    "routes": 0,
+    "components": 2,
+    "prismaModels": 2
+  }
+}

@@ -1,0 +1,221 @@
+groups:
+  - name: doccraft-ai-system-alerts
+    rules:
+      - alert: ServiceDown
+        expr: up{job="doccraft-ai"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: doccraft-ai
+        annotations:
+          summary: 'DocCraft-AI service is down'
+          description: 'DocCraft-AI service has been down for more than 1 minute'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/service-down'
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 5
+        for: 2m
+        labels:
+          severity: warning
+          service: doccraft-ai
+        annotations:
+          summary: 'High response time detected'
+          description: '95th percentile response time is {{ $value }}s'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/high-response-time'
+
+      - alert: CriticalResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 10
+        for: 1m
+        labels:
+          severity: critical
+          service: doccraft-ai
+        annotations:
+          summary: 'Critical response time detected'
+          description: '95th percentile response time is {{ $value }}s'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/critical-response-time'
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.01
+        for: 1m
+        labels:
+          severity: critical
+          service: doccraft-ai
+        annotations:
+          summary: 'High error rate detected'
+          description: 'Error rate is {{ $value | humanizePercentage }}'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/high-error-rate'
+
+      - alert: HighMemoryUsage
+        expr: (doccraft_memory_usage_bytes{type="heapUsed"} / doccraft_memory_usage_bytes{type="heapTotal"}) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: doccraft-ai
+        annotations:
+          summary: 'High memory usage detected'
+          description: 'Heap usage is {{ $value | humanizePercentage }}'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/high-memory-usage'
+
+  - name: doccraft-ai-ai-service-alerts
+    rules:
+      - alert: AIServiceHighLatency
+        expr: histogram_quantile(0.95, rate(ai_latency_seconds_bucket[5m])) > 30
+        for: 2m
+        labels:
+          severity: warning
+          service: ai-service
+        annotations:
+          summary: 'AI service high latency detected'
+          description: 'AI service 95th percentile latency is {{ $value }}s'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/ai-service-latency'
+
+      - alert: AIServiceErrors
+        expr: rate(ai_errors_total[5m]) > 0.1
+        for: 1m
+        labels:
+          severity: critical
+          service: ai-service
+        annotations:
+          summary: 'AI service errors detected'
+          description: 'AI service error rate is {{ $value }} errors/second'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/ai-service-errors'
+
+      - alert: LowCacheHitRate
+        expr: ai_cache_hit_rate < 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: ai-service
+        annotations:
+          summary: 'Low cache hit rate detected'
+          description: 'Cache hit rate is {{ $value | humanizePercentage }}'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/low-cache-hit-rate'
+
+      - alert: AIServiceDown
+        expr: rate(ai_requests_total[5m]) == 0
+        for: 5m
+        labels:
+          severity: critical
+          service: ai-service
+        annotations:
+          summary: 'AI service appears to be down'
+          description: 'No AI requests in the last 5 minutes'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/ai-service-down'
+
+  - name: doccraft-ai-security-alerts
+    rules:
+      - alert: SecurityThreatDetected
+        expr: security_threat_level > 0.8
+        for: 0s
+        labels:
+          severity: critical
+          service: security
+        annotations:
+          summary: 'High security threat detected'
+          description: 'Security threat level: {{ $value }}'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/security-threat'
+
+      - alert: SecurityThreatsIncreasing
+        expr: rate(security_threats_total[5m]) > 0.5
+        for: 1m
+        labels:
+          severity: warning
+          service: security
+        annotations:
+          summary: 'Security threats increasing'
+          description: 'Security threat rate is {{ $value }} threats/second'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/security-threats-increasing'
+
+  - name: doccraft-ai-business-alerts
+    rules:
+      - alert: LowUserEngagement
+        expr: rate(user_engagement_total[15m]) < 0.1
+        for: 10m
+        labels:
+          severity: warning
+          service: business
+        annotations:
+          summary: 'Low user engagement detected'
+          description: 'User engagement rate is {{ $value }} events/second'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/low-user-engagement'
+
+      - alert: DocumentProcessingIssues
+        expr: rate(document_operations_total{status="error"}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          service: business
+        annotations:
+          summary: 'Document processing issues detected'
+          description: 'Document error rate is {{ $value }} errors/second'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/document-processing-issues'
+
+      - alert: CharacterAIUnavailable
+        expr: rate(character_interactions_total[5m]) == 0
+        for: 10m
+        labels:
+          severity: warning
+          service: business
+        annotations:
+          summary: 'Character AI service appears unavailable'
+          description: 'No character interactions in the last 10 minutes'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/character-ai-unavailable'
+
+  - name: doccraft-ai-infrastructure-alerts
+    rules:
+      - alert: HighCPUUsage
+        expr: doccraft_cpu_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: 'High CPU usage detected'
+          description: 'CPU usage is {{ $value }}%'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/high-cpu-usage'
+
+      - alert: ConnectionPoolExhausted
+        expr: doccraft_active_connections > 1000
+        for: 2m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: 'Connection pool nearly exhausted'
+          description: 'Active connections: {{ $value }}'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/connection-pool-exhausted'
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: 'Low disk space detected'
+          description: 'Available disk space is {{ $value | humanizePercentage }}'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/low-disk-space'
+
+  - name: doccraft-ai-sla-alerts
+    rules:
+      - alert: SLABreachResponseTime
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 1m
+        labels:
+          severity: critical
+          service: sla
+        annotations:
+          summary: 'SLA breach: Response time too high'
+          description: '99th percentile response time is {{ $value }}s (SLA: <2s)'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/sla-breach-response-time'
+
+      - alert: SLABreachAvailability
+        expr: (up{job="doccraft-ai"} == 0) or (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.005)
+        for: 1m
+        labels:
+          severity: critical
+          service: sla
+        annotations:
+          summary: 'SLA breach: Availability below 99.5%'
+          description: 'Service availability is below SLA threshold'
+          runbook_url: 'https://docs.doccraft.ai/runbooks/sla-breach-availability'

@@ -1,0 +1,32 @@
+name: Deployment Validation
+on:
+  pull_request:
+    paths:
+      - 'deploy/**'
+      - 'k8s/**'
+      - 'env.template'
+      - 'package.json'
+      - 'vite.config.ts'
+  workflow_dispatch: {}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm i -g pnpm
+      - run: pnpm i --frozen-lockfile
+      - name: Env Consistency
+        run: pnpm run deploy:validate:env
+      - name: Docker Build
+        run: pnpm run deploy:validate:docker
+      - name: Orchestrator
+        run: pnpm run deploy:ready
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deploy-artifacts
+          path: .artifacts/**

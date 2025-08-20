@@ -30,62 +30,62 @@ spec:
         version: v3.0.0
     spec:
       containers:
-      - name: doccraft-ai-app
-        image: doccraft-ai:3.0.0
-        ports:
-        - containerPort: 3000
-          name: http
-        - containerPort: 8000
-          name: api
-        env:
-        - name: NODE_ENV
-          value: "production"
-        - name: SUPABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: doccraft-secrets
-              key: supabase-url
-        - name: SUPABASE_SERVICE_ROLE_KEY
-          valueFrom:
-            secretKeyRef:
-              name: doccraft-secrets
-              key: supabase-service-role-key
-        - name: OPENAI_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: ai-secrets
-              key: openai-api-key
-        - name: ANTHROPIC_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: ai-secrets
-              key: anthropic-api-key
-        resources:
-          requests:
-            memory: "1Gi"
-            cpu: "500m"
-          limits:
-            memory: "2Gi"
-            cpu: "1000m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8000
-          initialDelaySeconds: 5
-          periodSeconds: 5
-        volumeMounts:
-        - name: cache-volume
-          mountPath: /app/cache
+        - name: doccraft-ai-app
+          image: doccraft-ai:3.0.0
+          ports:
+            - containerPort: 3000
+              name: http
+            - containerPort: 8000
+              name: api
+          env:
+            - name: NODE_ENV
+              value: 'production'
+            - name: SUPABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: doccraft-secrets
+                  key: supabase-url
+            - name: SUPABASE_SERVICE_ROLE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: doccraft-secrets
+                  key: supabase-service-role-key
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-secrets
+                  key: openai-api-key
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-secrets
+                  key: anthropic-api-key
+          resources:
+            requests:
+              memory: '1Gi'
+              cpu: '500m'
+            limits:
+              memory: '2Gi'
+              cpu: '1000m'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          volumeMounts:
+            - name: cache-volume
+              mountPath: /app/cache
       volumes:
-      - name: cache-volume
-        emptyDir:
-          sizeLimit: 1Gi
+        - name: cache-volume
+          emptyDir:
+            sizeLimit: 1Gi
 ---
 apiVersion: v1
 kind: Service
@@ -96,12 +96,12 @@ spec:
   selector:
     app: doccraft-ai
   ports:
-  - name: http
-    port: 80
-    targetPort: 3000
-  - name: api
-    port: 8080
-    targetPort: 8000
+    - name: http
+      port: 80
+      targetPort: 3000
+    - name: api
+      port: 8080
+      targetPort: 8000
   type: ClusterIP
 ---
 apiVersion: autoscaling/v2
@@ -117,18 +117,18 @@ spec:
   minReplicas: 3
   maxReplicas: 10
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -144,27 +144,27 @@ metadata:
     nginx.ingress.kubernetes.io/rate-limit-window: '1m'
 spec:
   tls:
-  - hosts:
-    - app.your-domain.com
-    secretName: doccraft-ai-tls
+    - hosts:
+        - app.your-domain.com
+      secretName: doccraft-ai-tls
   rules:
-  - host: app.your-domain.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: doccraft-ai-service
-            port:
-              number: 80
-      - path: /api
-        pathType: Prefix
-        backend:
-          service:
-            name: doccraft-ai-service
-            port:
-              number: 8080
+    - host: app.your-domain.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: doccraft-ai-service
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: doccraft-ai-service
+                port:
+                  number: 8080
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -176,32 +176,33 @@ spec:
     matchLabels:
       app: doccraft-ai
   policyTypes:
-  - Ingress
-  - Egress
+    - Ingress
+    - Egress
   ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: monitoring
-    ports:
-    - protocol: TCP
-      port: 8000
-  - from:
-    - namespaceSelector: {}
-    ports:
-    - protocol: TCP
-      port: 3000
-      port: 8000
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8000
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 3000
+        - protocol: TCP
+          port: 8000
   egress:
-  - to:
-    - namespaceSelector:
-        matchLabels:
-          name: monitoring
-    ports:
-    - protocol: TCP
-      port: 9090
-    - protocol: TCP
-      port: 9093
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090
+        - protocol: TCP
+          port: 9093
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget

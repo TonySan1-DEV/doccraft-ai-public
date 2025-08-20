@@ -1,0 +1,17 @@
+{
+  "generatedBy": "generate-docs-coverage.mjs",
+  "metrics": {
+    "totalComponents": 311,
+    "componentsWithPage": 72,
+    "propsTotal": 242,
+    "propsWithDescriptions": 69,
+    "bannerOkCount": 72
+  },
+  "percentages": {
+    "componentCoverage": 0.2315112540192926,
+    "propDescriptionCoverage": 0.28512396694214875,
+    "bannerCoverage": 0.2315112540192926
+  },
+  "topOffenders": [],
+  "generatedAt": "deterministic"
+}

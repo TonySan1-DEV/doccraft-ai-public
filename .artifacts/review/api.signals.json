@@ -1,0 +1,5 @@
+{
+  "health": ["server/collaboration-server.ts"],
+  "ready": [],
+  "metrics": []
+}

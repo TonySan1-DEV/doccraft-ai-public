@@ -4,8 +4,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths-ignore:
-      - "**/*.md"          # allow pure doc edits without rerunning if you want; remove to always run
-      - "docs/**"          # docs-only changes can skip; remove to enforce always
+      - '**/*.md' # allow pure doc edits without rerunning if you want; remove to always run
+      - 'docs/**' # docs-only changes can skip; remove to enforce always
   # Manual trigger if needed:
   workflow_dispatch:
 
@@ -28,8 +28,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "pnpm"
+          node-version: '20'
+          cache: 'pnpm'
 
       - name: Install package manager (Corepack)
         run: corepack enable
@@ -52,6 +52,47 @@ jobs:
           if [ -f package.json ]; then
             if npm run | grep -q "docs:verify"; then pnpm run docs:verify || npm run docs:verify; fi
           fi
+
+      - name: PR annotations (Docs Guard)
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          pnpm run docs:changed || true
+          pnpm run docs:pr-annotate || true
+
+      - name: Generate Docs Status
+        run: |
+          pnpm run docs:status || true
+          echo "### Docs Guard Status" >> $GITHUB_STEP_SUMMARY
+          if [ -f docs/dev/refs/docs-status.json ]; then
+            cat docs/dev/refs/docs-status.json >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Generate Component Docs
+        run: |
+          pnpm run docs:components
+
+      - name: Generate Docs Coverage (frontend)
+        run: |
+          pnpm run docs:coverage
+
+      - name: API Drift Check
+        run: |
+          pnpm run docs:api-drift
+
+      - name: Verify Docs (threshold gates)
+        env:
+          DOCS_GUARD_MIN_COMPONENT_PAGE: "0.85"
+          DOCS_GUARD_MIN_PROP_DESC: "0.50"
+        run: |
+          pnpm run docs:verify
+
+      - name: Lint Frontend Docs (ESLint style)
+        run: |
+          pnpm run lint:docs:frontend
+
+      - name: Test Docs Determinism (Jest)
+        run: |
+          pnpm run test:docs
 
       - name: Upload docs artifact
         if: always()

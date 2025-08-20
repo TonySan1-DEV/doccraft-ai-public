@@ -5,6 +5,9 @@ import { setupWSConnection } from 'y-websocket/bin/utils';
 import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
 import * as Y from 'yjs';
+import monitorRouter from './routes/monitor';
+import { getSupabaseAdmin } from './lib/supabaseAdmin';
+import { initMetrics } from './monitoring/metrics';
 
 // Environment variables
 const PORT = process.env.PORT || 1234;
@@ -18,6 +21,61 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Initialize metrics if enabled
+const metrics = initMetrics();
+if (metrics) {
+  // Request timing middleware
+  app.use(
+    (
+      req: express.Request,
+      res: express.Response,
+      next: express.NextFunction
+    ) => {
+      const end = metrics.httpDuration.startTimer({
+        method: req.method,
+        route: 'pending', // will update on finish if router sets it
+        status: 'pending',
+      });
+
+      res.on('finish', () => {
+        const route =
+          // @ts-ignore populated by express if route matched
+          (req.route?.path as string) ||
+          // Fallback: use originalUrl (high cardinality, but fine if no route)
+          req.baseUrl ||
+          req.originalUrl ||
+          'unknown';
+
+        const status = String(res.statusCode);
+        end({ method: req.method, route, status });
+
+        if (res.statusCode >= 400) {
+          metrics.httpErrors.inc({ method: req.method, route, status });
+        }
+      });
+
+      next();
+    }
+  );
+
+  // /metrics endpoint (token protected)
+  const token = process.env.METRICS_TOKEN ?? '';
+  app.get('/metrics', async (req: express.Request, res: express.Response) => {
+    const auth = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    const q = (req.query.token as string) || '';
+    if (!token || (auth !== token && q !== token)) {
+      return res.status(401).send('unauthorized');
+    }
+    res.set('Content-Type', metrics.registry.contentType);
+    res.send(await metrics.registry.metrics());
+  });
+
+  console.log('📊 Metrics collection enabled');
+}
+
+// Monitor endpoint for error reporting
+app.use('/api/monitor', monitorRouter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -196,6 +254,44 @@ server.listen(PORT, () => {
   console.log(`📡 WebSocket endpoint: ws://localhost:${PORT}`);
   console.log(`🌐 HTTP API endpoint: http://localhost:${PORT}`);
   console.log(`💚 Health check: http://localhost:${PORT}/health`);
+
+  // Streamlined monitor persistence bootstrap
+  if (process.env.MONITORING_PERSIST_ENABLED === 'true') {
+    try {
+      getSupabaseAdmin(); // Verify Supabase availability
+      console.log('📊 Monitor persistence enabled with Supabase');
+
+      // Set up retention cleanup (24h fallback if pg_cron unavailable)
+      const retentionDays = Math.max(
+        1,
+        Number(process.env.MONITORING_RETENTION_DAYS ?? '30')
+      );
+      const dayMs = 24 * 60 * 60 * 1000;
+
+      setInterval(async () => {
+        try {
+          const admin = getSupabaseAdmin();
+          await admin.rpc('purge_old_monitor_events', {
+            retention_days: retentionDays,
+          });
+          console.log(
+            `🧹 Purged monitor events older than ${retentionDays} days`
+          );
+        } catch (err) {
+          console.warn(
+            '⚠️ Monitor purge failed:',
+            err instanceof Error ? err.message : 'Unknown error'
+          );
+        }
+      }, dayMs).unref?.();
+
+      console.log(
+        `🔄 Monitor retention purge scheduled every 24h (${retentionDays} days retention)`
+      );
+    } catch (err) {
+      console.warn('⚠️ Monitor persistence disabled: Supabase not available');
+    }
+  }
 });
 
 // Graceful shutdown

@@ -1,0 +1,160 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: doccraft-staging
+  labels:
+    name: doccraft-staging
+    env: staging
+    managed-by: github-actions
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: doccraft-ai-app
+  namespace: doccraft-staging
+  labels:
+    app: doccraft-ai
+    version: v3.0.0
+    env: staging
+    tier: app
+    managed-by: github-actions
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: doccraft-ai
+      env: staging
+  template:
+    metadata:
+      labels:
+        app: doccraft-ai
+        version: v3.0.0
+        env: staging
+        tier: app
+        managed-by: github-actions
+    spec:
+      containers:
+        - name: doccraft-ai-app
+          image: ghcr.io/org/doccraft-ai:staging
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http
+            - containerPort: 8000
+              name: api
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: doccraft-staging-config
+                  key: NODE_ENV
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: doccraft-staging-config
+                  key: LOG_LEVEL
+            - name: CACHE_TTL
+              valueFrom:
+                configMapKeyRef:
+                  name: doccraft-staging-config
+                  key: CACHE_TTL
+            - name: API_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: doccraft-staging-config
+                  key: API_TIMEOUT
+            - name: SUPABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: doccraft-secrets
+                  key: supabase-url
+            - name: SUPABASE_SERVICE_ROLE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: doccraft-secrets
+                  key: supabase-service-role-key
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-secrets
+                  key: openai-api-key
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-secrets
+                  key: anthropic-api-key
+          resources:
+            requests:
+              memory: '256Mi'
+              cpu: '125m'
+            limits:
+              memory: '512Mi'
+              cpu: '250m'
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          volumeMounts:
+            - name: cache-volume
+              mountPath: /app/cache
+      volumes:
+        - name: cache-volume
+          emptyDir:
+            sizeLimit: 256Mi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: doccraft-staging-config
+  namespace: doccraft-staging
+  labels:
+    app: doccraft-ai
+    env: staging
+    managed-by: github-actions
+data:
+  NODE_ENV: 'staging'
+  LOG_LEVEL: 'info'
+  CACHE_TTL: '300'
+  API_TIMEOUT: '30'
+  VITE_SUPABASE_URL: 'https://your-staging-supabase.supabase.co'
+  VITE_SUPABASE_ANON_KEY: 'your-staging-anon-key'
+  VITE_OPENAI_API_KEY: 'your-staging-openai-key'
+  VITE_MONITORING_ENABLED: 'true'
+  VITE_MONITORING_REPORT: 'true'
+  VITE_MONITORING_SAMPLE: '0.1'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: doccraft-ai-service
+  namespace: doccraft-staging
+  labels:
+    app: doccraft-ai
+    env: staging
+    tier: app
+    managed-by: github-actions
+spec:
+  selector:
+    app: doccraft-ai
+    env: staging
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+    - name: api
+      port: 8080
+      targetPort: 8000
+  type: ClusterIP

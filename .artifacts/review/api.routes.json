@@ -1,0 +1,22 @@
+[
+  {
+    "file": "server/collaboration-server.ts",
+    "method": "get",
+    "path": "/health"
+  },
+  {
+    "file": "server/collaboration-server.ts",
+    "method": "get",
+    "path": "/api/rooms/:roomId/users"
+  },
+  {
+    "file": "server/collaboration-server.ts",
+    "method": "post",
+    "path": "/api/rooms/:roomId/join"
+  },
+  {
+    "file": "server/character-chat-api.ts",
+    "method": "post",
+    "path": "/api/character-chat"
+  }
+]

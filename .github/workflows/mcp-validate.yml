@@ -1,0 +1,23 @@
+name: MCP Validate
+on:
+  pull_request:
+    paths:
+      - 'tools/mcp/**'
+  workflow_dispatch: {}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install ajv
+      - name: Run MCP validation
+        run: node tools/mcp/validate.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mcp-validate
+          path: .artifacts/mcp-validate.json

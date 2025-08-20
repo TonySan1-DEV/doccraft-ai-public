@@ -20,7 +20,7 @@ export { ModeAwareAgentBehavior } from './modeAwareAgents';
 export { EnhancedModeAwareAIService } from './enhancedModeAwareAIService';
 
 // Writing Agents
-export { ResearchAgent, OutlineAgent, WritingAgent } from './writingAgents';
+export { ResearchAgent, OutlineAgent, WritingAgent, CharacterAgent, EmotionAgent, StyleAgent } from './writingAgents';
 
 // Types and Interfaces
 export type {

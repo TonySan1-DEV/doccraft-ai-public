@@ -1,0 +1,13 @@
+{
+  "pinned": "2025-06-18",
+  "latestChecked": "2025-06-18",
+  "versionDrift": false,
+  "filesValidated": 1,
+  "results": [
+    {
+      "file": "tool-call.mcp.json",
+      "valid": true,
+      "errors": []
+    }
+  ]
+}

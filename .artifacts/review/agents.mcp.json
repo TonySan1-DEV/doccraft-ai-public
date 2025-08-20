@@ -1,0 +1,15 @@
+{
+  "contracts": [
+    "mcp/server.ts",
+    "mcp/providers/envContext.ts",
+    "mcp/providers/dbContext.ts",
+    "mcp/providers/ciContext.ts",
+    "mcp/providers/repoContext.ts"
+  ],
+  "examples": [
+    "tools/mcp/validate.mjs",
+    "tools/mcp/version.json",
+    "tools/mcp/examples/tool-call.mcp.json",
+    "tools/mcp/schema/minimal.schema.json"
+  ]
+}

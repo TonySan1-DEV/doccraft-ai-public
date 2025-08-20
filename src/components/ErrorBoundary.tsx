@@ -1,56 +1,78 @@
-import { Component, ErrorInfo, ReactNode } from 'react'
+import React from 'react';
 
-interface Props {
-  children: ReactNode
-}
+type Props = {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  onReset?: () => void;
+  onReportError?: (error: unknown, info: { componentStack: string }) => void;
+};
 
-interface State {
-  hasError: boolean
-  error?: Error
-}
+type State = {
+  hasError: boolean;
+  error: unknown | null;
+  info?: { componentStack: string };
+};
 
-export class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props)
-    this.state = { hasError: false }
+export class ErrorBoundary extends React.Component<Props, State> {
+  state: State = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error: unknown): State {
+    return { hasError: true, error, info: undefined };
   }
 
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error }
+  componentDidCatch(error: unknown, info: React.ErrorInfo) {
+    console.log('ErrorBoundary caught error:', error);
+    console.log('ErrorBoundary component stack:', info.componentStack);
+    this.setState({ info: { componentStack: info.componentStack } });
+    this.props.onReportError?.(error, { componentStack: info.componentStack });
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('❌ ErrorBoundary caught an error:', error, errorInfo)
-  }
+  reset = () => {
+    this.setState({ hasError: false, error: null, info: undefined });
+    this.props.onReset?.();
+  };
 
   render() {
     if (this.state.hasError) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-red-50">
-          <div className="text-center max-w-2xl mx-auto p-8">
-            <h1 className="text-3xl font-bold text-red-600 mb-4">
-              🚨 Application Error
-            </h1>
-            <p className="text-red-500 mb-6">
-              Something went wrong loading the application. Please check the console for more details.
-            </p>
-            <div className="bg-red-100 p-4 rounded-lg text-left">
-              <h2 className="font-semibold text-red-800 mb-2">Error Details:</h2>
-              <pre className="text-sm text-red-700 whitespace-pre-wrap">
-                {this.state.error?.message || 'Unknown error'}
-              </pre>
+      if (this.props.fallback)
+        return (
+          <div
+            role="alert"
+            className="p-4 rounded-2xl bg-gray-900 text-gray-100 border border-gray-800"
+          >
+            {this.props.fallback}
+            <div className="mt-3">
+              <button
+                className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20"
+                onClick={this.reset}
+              >
+                Try again
+              </button>
             </div>
+          </div>
+        );
+
+      // Default fallback
+      return (
+        <div
+          role="alert"
+          className="p-4 rounded-2xl bg-gray-900 text-gray-100 border border-gray-800"
+        >
+          <h2 className="text-lg font-semibold">Something went wrong</h2>
+          <p className="mt-2 opacity-80">
+            The view crashed unexpectedly. You can try again.
+          </p>
+          <div className="mt-3">
             <button
-              onClick={() => window.location.reload()}
-              className="mt-6 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20"
+              onClick={this.reset}
             >
-              Reload Page
+              Try again
             </button>
           </div>
         </div>
-      )
+      );
     }
-
-    return this.props.children
+    return this.props.children;
   }
-} 
+}

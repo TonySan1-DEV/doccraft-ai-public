@@ -1,0 +1,62 @@
+name: Security Scan (Image + SBOM)
+on:
+  pull_request:
+    branches: [main, next]
+    paths:
+      - 'deploy/**'
+      - 'k8s/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'Dockerfile*'
+      - 'deploy/production/Dockerfile.production'
+  workflow_dispatch: {}
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # for SARIF upload
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node (build parity if needed)
+        uses: actions/setup-node@v4
+        with: { node-version: 20 }
+
+      - name: Build image (deterministic tag)
+        run: |
+          SHA=$(git rev-parse --short HEAD)
+          IMAGE="doccraft-ai:${SHA}"
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+          docker build -f deploy/production/Dockerfile.production.scan -t "$IMAGE" .
+
+      - name: Trivy (image) – fail on HIGH/CRITICAL
+        run: |
+          mkdir -p .artifacts/security
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$PWD:/workspace" aquasec/trivy:latest \
+            image --exit-code 1 --severity CRITICAL,HIGH \
+            --ignore-unfixed \
+            --format sarif -o /workspace/.artifacts/security/trivy.sarif \
+            "$IMAGE"
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image --severity CRITICAL,HIGH "$IMAGE" \
+            > .artifacts/security/trivy.table.txt
+
+      - name: Syft SBOM (SPDX)
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$PWD:/workspace" anchore/syft:latest \
+            "$IMAGE" -o spdx-json=/workspace/.artifacts/security/sbom.spdx.json
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-artifacts
+          path: .artifacts/security/**
+
+      - name: Upload SARIF to Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: .artifacts/security/trivy.sarif

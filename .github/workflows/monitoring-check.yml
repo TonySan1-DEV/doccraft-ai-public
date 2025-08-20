@@ -1,0 +1,34 @@
+name: Monitoring Configuration Check
+
+on:
+  pull_request:
+    paths: ['monitoring/**', '.github/workflows/monitoring-check.yml']
+  workflow_dispatch: {}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Prometheus config
+        run: |
+          # Basic YAML syntax check
+          python3 -c "import yaml; yaml.safe_load(open('monitoring/prometheus.yml'))"
+          echo "✅ Prometheus config syntax valid"
+
+      - name: Validate Grafana dashboards
+        run: |
+          # Check if dashboard files exist and are valid JSON
+          for file in monitoring/grafana/dashboards/*.json; do
+            if [ -f "$file" ]; then
+              python3 -c "import json; json.load(open('$file'))"
+              echo "✅ Dashboard $file valid"
+            fi
+          done
+
+      - name: Validate alerts
+        run: |
+          # Basic YAML syntax check for alerts
+          python3 -c "import yaml; yaml.safe_load(open('monitoring/alerts.yml'))"
+          echo "✅ Alerts config syntax valid"

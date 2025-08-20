@@ -1,0 +1,11 @@
+{
+  "missingInOpenAPI": [
+    ["GET", "/health"]
+  ],
+  "missingInCode": [
+    ["POST", "/api/legacy/upload"]
+  ],
+  "methodDrift": [
+    ["/api/users/{id}", ["GET"], ["GET", "PUT"]]
+  ]
+}

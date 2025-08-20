@@ -1,0 +1,36 @@
+{
+  "summary": {
+    "codeRoutes": 12,
+    "specRoutes": 12,
+    "missingInOpenAPI": 0,
+    "missingInCode": 0,
+    "methodDrift": 0,
+    "paramShapeNotes": 3
+  },
+  "details": {
+    "missingInOpenAPI": [],
+    "missingInCode": [],
+    "methodDrift": [],
+    "paramShapeNotes": [
+      [
+        "/api/rooms/{roomId}/join",
+        "complex parameter structure detected"
+      ],
+      [
+        "/api/rooms/{roomId}/leave",
+        "complex parameter structure detected"
+      ],
+      [
+        "/api/rooms/{roomId}/users",
+        "complex parameter structure detected"
+      ]
+    ]
+  },
+  "sources": {
+    "serverGlobs": [
+      "server/**/*.ts",
+      "server/**/*.js"
+    ],
+    "openapi": "docs/dev/refs/openapi.json"
+  }
+}

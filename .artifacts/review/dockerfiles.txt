@@ -1,0 +1,4 @@
+deploy/production/Dockerfile.production
+deploy/production/Dockerfile.production.scan
+deploy/production/Dockerfile.production.simple
+deploy/staging/Dockerfile.staging

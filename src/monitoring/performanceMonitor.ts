@@ -1,7 +1,33 @@
 // Enhanced Performance Monitor for DocCraft-AI
 // Integrated with security system and real-time monitoring
 
-import { EventEmitter } from 'events';
+// Browser-compatible EventEmitter implementation
+class EventEmitter {
+  private events: { [key: string]: Function[] } = {};
+
+  on(event: string, listener: Function): this {
+    if (!this.events[event]) {
+      this.events[event] = [];
+    }
+    this.events[event].push(listener);
+    return this;
+  }
+
+  off(event: string, listener: Function): this {
+    if (this.events[event]) {
+      this.events[event] = this.events[event].filter(l => l !== listener);
+    }
+    return this;
+  }
+
+  emit(event: string, ...args: any[]): boolean {
+    if (this.events[event]) {
+      this.events[event].forEach(listener => listener(...args));
+      return true;
+    }
+    return false;
+  }
+}
 import { SupabaseClient } from '@supabase/supabase-js';
 import {
   AIOperation,
@@ -44,6 +70,8 @@ interface AlertService {
   ): Promise<void>;
 }
 
+import { DashboardUpdater } from './dashboardUpdater';
+
 export class PerformanceMonitor extends EventEmitter {
   private metrics: Map<string, MetricTimeSeries> = new Map();
   private realTimeStreams: Map<string, RealtimeStream> = new Map();
@@ -51,7 +79,7 @@ export class PerformanceMonitor extends EventEmitter {
   private dashboardUpdater: DashboardUpdater;
   private supabase: SupabaseClient;
   private alertService: AlertService;
-  private updateInterval: NodeJS.Timeout | null = null;
+  private updateInterval: number | null = null;
   private alertRules: Map<string, AlertRule> = new Map();
   private cacheHits: Map<string, number> = new Map();
   private cacheMisses: Map<string, number> = new Map();
@@ -401,12 +429,19 @@ export class PerformanceMonitor extends EventEmitter {
         metric.data = metric.data.slice(-1000);
       }
 
-      // Store in database
-      await this.supabase.from('performance_metrics').insert({
-        metric_name: metricName,
-        data: data,
-        timestamp: data.timestamp.toISOString(),
-      });
+      // Store in database if supabase is available
+      if (this.supabase && typeof this.supabase.from === 'function') {
+        await this.supabase.from('performance_metrics').insert({
+          metric_name: metricName,
+          data: data,
+          timestamp: data.timestamp.toISOString(),
+        });
+      } else {
+        // Fallback: log to console if supabase is not available
+        if (import.meta.env?.MODE !== 'production') {
+          console.debug(`[monitor] Metric ${metricName}:`, data);
+        }
+      }
     } catch (error) {
       console.error(`Failed to store metric ${metricName}:`, error);
     }
@@ -517,9 +552,9 @@ export class PerformanceMonitor extends EventEmitter {
     try {
       // Collect system-level metrics
       const systemMetrics = {
-        memoryUsage: process.memoryUsage(),
-        cpuUsage: process.cpuUsage(),
-        uptime: process.uptime(),
+        memoryUsage: this.getBrowserMemoryUsage(),
+        cpuUsage: this.getBrowserCpuUsage(),
+        uptime: this.getBrowserUptime(),
         timestamp: new Date(),
       };
 
@@ -530,6 +565,44 @@ export class PerformanceMonitor extends EventEmitter {
     } catch (error) {
       console.error('Failed to collect system metrics:', error);
     }
+  }
+
+  // Browser-compatible system metrics methods
+  private getBrowserMemoryUsage(): {
+    heapUsed: number;
+    heapTotal: number;
+    external: number;
+  } {
+    if (typeof performance !== 'undefined' && (performance as any).memory) {
+      const mem = (performance as any).memory;
+      return {
+        heapUsed: mem.usedJSHeapSize || 0,
+        heapTotal: mem.totalJSHeapSize || 0,
+        external: mem.jsHeapSizeLimit || 0,
+      };
+    }
+    // Fallback for browsers without performance.memory
+    return {
+      heapUsed: 0,
+      heapTotal: 0,
+      external: 0,
+    };
+  }
+
+  private getBrowserCpuUsage(): { user: number; system: number } {
+    // Browser doesn't have CPU usage, return placeholder
+    return {
+      user: 0,
+      system: 0,
+    };
+  }
+
+  private getBrowserUptime(): number {
+    // Browser doesn't have uptime, return time since page load
+    if (typeof performance !== 'undefined' && performance.now) {
+      return performance.now() / 1000; // Convert to seconds
+    }
+    return 0;
   }
 
   private async checkSystemHealth(metrics: any): Promise<void> {
@@ -860,16 +933,3 @@ export const performanceMonitor = new PerformanceMonitor(
     ) => {},
   } as AlertService
 );
-
-// Dashboard Updater
-class DashboardUpdater {
-  async updateMetrics(performanceData: any): Promise<void> {
-    // Update dashboard with new performance data
-    // This would integrate with your dashboard system
-  }
-
-  async updateSecurityMetrics(securityData: any): Promise<void> {
-    // Update security dashboard with new metrics
-    // This would integrate with your security dashboard
-  }
-}

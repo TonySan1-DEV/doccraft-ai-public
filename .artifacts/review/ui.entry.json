@@ -1,0 +1,4 @@
+{
+  "demo": "src/pages/Demo.tsx",
+  "home": "src/pages/Home.tsx"
+}

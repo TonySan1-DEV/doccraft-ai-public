@@ -1,0 +1,29 @@
+{
+  "workflows": [
+    ".github/workflows/staging-rollout.yml",
+    ".github/workflows/release-candidate.yml",
+    ".github/workflows/ci.yml",
+    ".github/workflows/monitoring-check.yml",
+    ".github/workflows/railway-smoke.yml",
+    ".github/workflows/k8s-overlay-validate.yml",
+    ".github/workflows/agents-prompts.yml",
+    ".github/workflows/mcp-validate.yml",
+    ".github/workflows/security-scan.yml",
+    ".github/workflows/deployment-validation.yml",
+    ".github/workflows/docs-guard.yml",
+    ".github/workflows/performance-testing.yml.disabled",
+    ".github/workflows/test-automation.yml.disabled",
+    ".github/workflows/e2e-testing.yml.disabled",
+    ".github/workflows/lint-type-check.yml.disabled",
+    ".github/workflows/lint-type-test.yml.disabled",
+    ".github/workflows/lint.yml",
+    ".github/workflows/coverage.yml",
+    ".github/workflows/test.yml",
+    ".github/workflows/emotionArc.yml",
+    ".github/workflows/export-audit-logs.yml",
+    ".github/workflows/README.md",
+    ".github/workflows/reingest-audit-logs.yml"
+  ],
+  "cosign": [".github/workflows/staging-rollout.yml"],
+  "kyverno": [".github/workflows/staging-rollout.yml"]
+}

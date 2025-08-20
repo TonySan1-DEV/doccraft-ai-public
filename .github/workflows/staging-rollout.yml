@@ -1,0 +1,240 @@
+name: Staging Rollout (Kind) — Dry-Run, Diff, Deploy, Smoke
+
+on:
+  pull_request:
+    branches: [main, next]
+  workflow_dispatch:
+
+concurrency:
+  group: staging-kind-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  kind-staging:
+    name: Ephemeral Staging (Kind)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    env:
+      NS: doccraft-staging
+      APP_DEPLOYMENT: doccraft-ai-app
+      APP_CONTAINER: doccraft-ai-app
+      APP_SERVICE: doccraft-ai-service
+      IMAGE_NAME: doccraft-ai
+      IMAGE_TAG: ${{ github.sha }}
+      K8S_STAGING_FILE: k8s/staging/doccraft-ai-staging.yml
+      REPO_OWNER: ${{ github.repository_owner }}
+
+      # Secrets expected in GitHub repo/org settings
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.32.2'
+
+      - name: Install Kind
+        uses: helm/kind-action@v1
+        with:
+          version: 'v0.24.0'
+          cluster_name: doccraft-ci
+
+      - name: Build staging image (no push)
+        run: |
+          docker build \
+            -f deploy/staging/Dockerfile.staging \
+            -t ${IMAGE_NAME}:${IMAGE_TAG} \
+            .
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+        with:
+          cosign-release: 'v2.2.4'
+
+      - name: Cosign keyless sign (ephemeral, local registry-less)
+        shell: bash
+        env:
+          COSIGN_EXPERIMENTAL: '1'
+        run: |
+          set -euo pipefail
+          # Cosign needs a registry reference. We'll tag a temporary local name with GHCR-style ref
+          # purely to embed the digest metadata, then keep the original local tag for Kind load.
+          # NOTE: This does NOT push. It signs to Rekor via OIDC transparency log.
+          ORIG="${IMAGE_NAME}:${IMAGE_TAG}"
+          CANON="ghcr.io/${REPO_OWNER,,}/${IMAGE_NAME}:${IMAGE_TAG}"
+          docker tag "${ORIG}" "${CANON}"
+          echo "Signing ${CANON} with keyless OIDC…"
+          cosign sign --yes "${CANON}"
+
+      - name: Generate and attest SBOM (optional if Syft available)
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/security
+          CANON="ghcr.io/${REPO_OWNER,,}/${IMAGE_NAME}:${IMAGE_TAG}"
+          if command -v syft >/dev/null 2>&1; then
+            echo "Syft present; generating SBOM attestation…"
+            syft "${CANON}" -o spdx-json=.artifacts/security/sbom.spdx.json
+          else
+            echo "Syft not present; skipping local SBOM generation."
+          fi
+
+      - name: Load image into Kind
+        run: |
+          kind load docker-image ${IMAGE_NAME}:${IMAGE_TAG} --name doccraft-ci
+
+      - name: Load canonical tag into Kind (ensures pullability)
+        run: |
+          set -euo pipefail
+          CANON="ghcr.io/${REPO_OWNER,,}/${IMAGE_NAME}:${IMAGE_TAG}"
+          docker tag ${IMAGE_NAME}:${IMAGE_TAG} "${CANON}"
+          kind load docker-image "${CANON}" --name doccraft-ci
+
+      - name: Create namespace (idempotent)
+        run: |
+          kubectl get ns "${NS}" >/dev/null 2>&1 || kubectl create ns "${NS}"
+
+      - name: Create required secrets (idempotent)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # doccraft-secrets
+          if ! kubectl -n "${NS}" get secret doccraft-secrets >/dev/null 2>&1; then
+            kubectl -n "${NS}" create secret generic doccraft-secrets \
+              --from-literal=supabase-url="${SUPABASE_URL}" \
+              --from-literal=supabase-service-role-key="${SUPABASE_SERVICE_ROLE_KEY}"
+          fi
+          # ai-secrets
+          if ! kubectl -n "${NS}" get secret ai-secrets >/dev/null 2>&1; then
+            kubectl -n "${NS}" create secret generic ai-secrets \
+              --from-literal=openai-api-key="${OPENAI_API_KEY}" \
+              --from-literal=anthropic-api-key="${ANTHROPIC_API_KEY}"
+          fi
+
+      - name: Server-side dry-run (schema/admission)
+        run: |
+          kubectl apply --server-side --dry-run=server -f "${K8S_STAGING_FILE}" -n "${NS}"
+
+      - name: Server-side diff (no changes yet)
+        run: |
+          # Diff against current cluster state prior to apply (may be empty on first run)
+          kubectl diff --server-side -f "${K8S_STAGING_FILE}" -n "${NS}" || true
+
+      - name: Apply manifests
+        run: |
+          kubectl apply --server-side -f "${K8S_STAGING_FILE}" -n "${NS}"
+
+      - name: Install Kyverno (policy engine)
+        shell: bash
+        run: |
+          set -euo pipefail
+          kubectl create ns kyverno || true
+          kubectl apply -n kyverno -f https://raw.githubusercontent.com/kyverno/kyverno/main/config/release/install.yaml
+          # Wait until Kyverno is ready
+          kubectl -n kyverno rollout status deploy/kyverno --timeout=120s
+
+      - name: Apply verifyImages policy for this repo (scoped to namespace and label)
+        shell: bash
+        env:
+          NS: ${{ env.NS }}
+        run: |
+          set -euo pipefail
+          cat > /tmp/verify-images.yaml <<'YAML'
+          apiVersion: kyverno.io/v1
+          kind: ClusterPolicy
+          metadata:
+            name: verify-doccraft-images
+          spec:
+            validationFailureAction: Enforce
+            webhookTimeoutSeconds: 15
+            rules:
+              - name: verify-cosign-keyless
+                match:
+                  any:
+                    - resources:
+                        kinds: ["Pod"]
+                        namespaces: ["${NS}"]
+                        selector:
+                          matchLabels:
+                            app: doccraft-ai
+                verifyImages:
+                  - imageReferences:
+                      - "ghcr.io/${REPO_OWNER,,}/*"
+                    attestors:
+                      - entries:
+                          - keyless:
+                              issuer: "https://token.actions.githubusercontent.com"
+                              subject: "https://github.com/${REPO_OWNER}/*"
+                    annotations:
+                      # Optional: require Rekor transparency log
+                      cosign.sigstore.dev/message: ".*"
+          YAML
+          # Substitute envs safely
+          sed -i "s/\${NS}/${NS}/g; s/\${REPO_OWNER,,}/${REPO_OWNER,,}/g; s/\${REPO_OWNER}/${REPO_OWNER}/g" /tmp/verify-images.yaml
+          kubectl apply -f /tmp/verify-images.yaml
+
+      - name: Pin image to signed canonical ref
+        shell: bash
+        run: |
+          set -euo pipefail
+          CANON="ghcr.io/${REPO_OWNER,,}/${IMAGE_NAME}:${IMAGE_TAG}"
+          kubectl -n "${NS}" set image deployment/${APP_DEPLOYMENT} ${APP_CONTAINER}=${CANON}
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/${APP_DEPLOYMENT} -n "${NS}" --timeout=180s
+          kubectl get all -n "${NS}"
+
+      - name: Smoke tests (port-forward + curl)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Port-forward Service API port (8080 -> containerPort 8000 via Service)
+          kubectl -n "${NS}" port-forward svc/${APP_SERVICE} 8080:8080 >/tmp/pf.log 2>&1 &
+          PF_PID=$!
+          trap "kill ${PF_PID} || true" EXIT
+          sleep 5
+          echo "-> GET /health"
+          curl -fsS http://127.0.0.1:8080/health >/dev/null
+          echo "-> GET /ready"
+          curl -fsS http://127.0.0.1:8080/ready >/dev/null
+          echo "Smoke tests passed."
+
+      - name: Gather diagnostics on failure
+        if: failure()
+        continue-on-error: true
+        run: |
+          echo "=== Pods ==="
+          kubectl -n "${NS}" get pods -o wide || true
+          echo "=== Describe Deployment ==="
+          kubectl -n "${NS}" describe deploy ${APP_DEPLOYMENT} || true
+          echo "=== Events ==="
+          kubectl -n "${NS}" get events --sort-by=.lastTimestamp | tail -n 100 || true
+          echo "=== Logs (first pod) ==="
+          POD="$(kubectl -n "${NS}" get pods -l app=doccraft-ai -o jsonpath="{.items[0].metadata.name}" 2>/dev/null || true)"
+          if [ -n "${POD}" ]; then kubectl -n "${NS}" logs "${POD}" || true; fi
+
+      - name: Kyverno diagnostics (on failure)
+        if: failure()
+        run: |
+          echo "=== Kyverno Policy Reports ==="
+          kubectl get policyreport,clusterpolicyreport -A -o yaml || true
+
+      - name: Teardown Kind (always)
+        if: always()
+        run: |
+          kind delete cluster --name doccraft-ci || true

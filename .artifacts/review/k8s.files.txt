@@ -1,0 +1,4 @@
+k8s/doccraft-ai.yml
+k8s/staging/
+k8s/production/
+k8s/monitoring/

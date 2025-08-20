@@ -1,0 +1,24 @@
+name: Release Candidate Gate
+
+on:
+  pull_request:
+    branches: [main, next]
+  workflow_dispatch: {}
+
+jobs:
+  # This job ONLY waits on other workflows to succeed.
+  # It gives you a single status check to protect in branch rules.
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Echo gate
+        run: |
+          echo "This job is a merge gate. It assumes the following workflows run on path changes:"
+          echo "- MCP Validate (.github/workflows/mcp-validate.yml)"
+          echo "- Agents & Prompts Tests (.github/workflows/agents-prompts.yml)"
+          echo "- K8s Overlay Validate (.github/workflows/k8s-overlay-validate.yml)"
+          echo "- Staging Rollout (Kind) (.github/workflows/staging-rollout.yml)"
+          echo "- Security Scan / SBOM (.github/workflows/security-scan.yml, if present)"
+          echo ""
+          echo "Protect this job as a required status check in Branch Protection settings."

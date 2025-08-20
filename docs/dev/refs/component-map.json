@@ -1,0 +1,2547 @@
+{
+  "generatedBy": "generate-frontend-map",
+  "components": [
+    {
+      "name": "GenreSelector",
+      "files": [
+        "src/components/GenreSelector.tsx"
+      ],
+      "propsType": null,
+      "usage": 44
+    },
+    {
+      "name": "useMCP",
+      "files": [
+        "src/useMCP.ts"
+      ],
+      "propsType": "string",
+      "usage": 34
+    },
+    {
+      "name": "AgentPreferencesPanel",
+      "files": [
+        "src/components/AgentPreferencesPanel.tsx"
+      ],
+      "propsType": null,
+      "usage": 33
+    },
+    {
+      "name": "useAuth",
+      "files": [
+        "src/contexts/AuthContext.tsx"
+      ],
+      "propsType": null,
+      "usage": 31
+    },
+    {
+      "name": "Settings",
+      "files": [
+        "src/pages/Settings.tsx"
+      ],
+      "propsType": null,
+      "usage": 28
+    },
+    {
+      "name": "SimpleThemeProvider",
+      "files": [
+        "src/contexts/SimpleThemeContext.tsx"
+      ],
+      "propsType": null,
+      "usage": 27
+    },
+    {
+      "name": "ModeController",
+      "files": [
+        "src/components/ModeController.tsx"
+      ],
+      "propsType": null,
+      "usage": 26
+    },
+    {
+      "name": "PresetDropdown",
+      "files": [
+        "src/components/PresetDropdown.tsx"
+      ],
+      "propsType": null,
+      "usage": 22
+    },
+    {
+      "name": "SimpleThemeChanger",
+      "files": [
+        "src/components/SimpleThemeChanger.tsx"
+      ],
+      "propsType": null,
+      "usage": 18
+    },
+    {
+      "name": "AgentPreferencesProvider",
+      "files": [
+        "src/contexts/AgentPreferencesContext.tsx"
+      ],
+      "propsType": "AgentPreferencesProviderProps",
+      "usage": 17
+    },
+    {
+      "name": "ProtectedRoute",
+      "files": [
+        "src/components/ProtectedRoute.tsx"
+      ],
+      "propsType": null,
+      "usage": 17
+    },
+    {
+      "name": "AccessWarning",
+      "files": [
+        "src/components/AccessWarning.tsx"
+      ],
+      "propsType": null,
+      "usage": 16
+    },
+    {
+      "name": "Header",
+      "files": [
+        "src/components/Header.tsx"
+      ],
+      "propsType": null,
+      "usage": 14
+    },
+    {
+      "name": "useAgentPreferences",
+      "files": [
+        "src/contexts/AgentPreferencesContext.tsx"
+      ],
+      "propsType": null,
+      "usage": 14
+    },
+    {
+      "name": "ConfirmNarrationDialog",
+      "files": [
+        "src/components/ConfirmNarrationDialog.tsx"
+      ],
+      "propsType": null,
+      "usage": 13
+    },
+    {
+      "name": "VoiceSelector",
+      "files": [
+        "src/components/VoiceSelector.tsx"
+      ],
+      "propsType": null,
+      "usage": 9
+    },
+    {
+      "name": "App",
+      "files": [
+        "src/App.tsx"
+      ],
+      "propsType": null,
+      "usage": 8
+    },
+    {
+      "name": "DocumentEditor",
+      "files": [
+        "src/components/DocumentEditor.tsx"
+      ],
+      "propsType": null,
+      "usage": 6
+    },
+    {
+      "name": "DocumentUpload",
+      "files": [
+        "src/components/DocumentUpload.tsx"
+      ],
+      "propsType": null,
+      "usage": 6
+    },
+    {
+      "name": "ImageSuggestions",
+      "files": [
+        "src/components/ImageSuggestions.tsx"
+      ],
+      "propsType": "ImageSuggestionsProps",
+      "usage": 6
+    },
+    {
+      "name": "Demo",
+      "files": [
+        "src/pages/Demo.tsx"
+      ],
+      "propsType": null,
+      "usage": 5
+    },
+    {
+      "name": "Home",
+      "files": [
+        "src/pages/Home.tsx"
+      ],
+      "propsType": null,
+      "usage": 5
+    },
+    {
+      "name": "PreferenceSelect",
+      "files": [
+        "src/components/PreferenceSelect.tsx"
+      ],
+      "propsType": "PreferenceSelectProps",
+      "usage": 5
+    },
+    {
+      "name": "EditorPanel",
+      "files": [
+        "src/components/EditorPanel.tsx"
+      ],
+      "propsType": null,
+      "usage": 4
+    },
+    {
+      "name": "EnhancementSettings",
+      "files": [
+        "src/components/EnhancementSettings.tsx"
+      ],
+      "propsType": "EnhancementSettingsProps",
+      "usage": 4
+    },
+    {
+      "name": "FeedbackButtons",
+      "files": [
+        "src/components/FeedbackButtons.tsx"
+      ],
+      "propsType": null,
+      "usage": 4
+    },
+    {
+      "name": "getDiagnostics",
+      "files": [
+        "src/agent/ContextualPromptEngine.ts"
+      ],
+      "propsType": null,
+      "usage": 4
+    },
+    {
+      "name": "PromptPreviewPane",
+      "files": [
+        "src/components/PromptPreviewPane.tsx"
+      ],
+      "propsType": null,
+      "usage": 4
+    },
+    {
+      "name": "ShareableAccessPage",
+      "files": [
+        "src/pages/ShareableAccessPage.tsx"
+      ],
+      "propsType": null,
+      "usage": 4
+    },
+    {
+      "name": "useSimpleTheme",
+      "files": [
+        "src/contexts/SimpleThemeContext.tsx"
+      ],
+      "propsType": null,
+      "usage": 4
+    },
+    {
+      "name": "buildContextualPromptHeader",
+      "files": [
+        "src/agent/ContextualPromptEngine.ts"
+      ],
+      "propsType": "UserPrefs",
+      "usage": 3
+    },
+    {
+      "name": "logFallbackWarning",
+      "files": [
+        "src/agent/ContextualPromptEngine.ts"
+      ],
+      "propsType": "string",
+      "usage": 3
+    },
+    {
+      "name": "PreferenceToggle",
+      "files": [
+        "src/components/PreferenceToggle.tsx"
+      ],
+      "propsType": "PreferenceToggleProps",
+      "usage": 3
+    },
+    {
+      "name": "validatePresetPreferences",
+      "files": [
+        "src/constants/writerPresets.ts",
+        "src/utils/presetValidation.ts"
+      ],
+      "propsType": null,
+      "usage": 3
+    },
+    {
+      "name": "AboutUs",
+      "files": [
+        "src/pages/AboutUs.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "AdvancedCharacterDevelopment",
+      "files": [
+        "src/components/AdvancedCharacterDevelopment.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "AgentBehaviorConsole",
+      "files": [
+        "src/components/AgentBehaviorConsole.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "AIPreviewModal",
+      "files": [
+        "src/components/common/AIPreviewModal.tsx"
+      ],
+      "propsType": "AIPreviewModalProps",
+      "usage": 2
+    },
+    {
+      "name": "Analytics",
+      "files": [
+        "src/pages/Analytics.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "Analyzer",
+      "files": [
+        "src/pages/Analyzer.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "APIKeyManagementPanel",
+      "files": [
+        "src/components/APIKeyManagementPanel.tsx"
+      ],
+      "propsType": "APIKeyManagementPanelProps",
+      "usage": 2
+    },
+    {
+      "name": "AuditLogPanel",
+      "files": [
+        "src/components/audit/AuditLogPanel.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "AuditLogs",
+      "files": [
+        "src/pages/AuditLogs.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "AuthModal",
+      "files": [
+        "src/components/AuthModal.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "AuthProvider",
+      "files": [
+        "src/contexts/AuthContext.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "Billing",
+      "files": [
+        "src/pages/Billing.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "BookOutliner",
+      "files": [
+        "src/pages/BookOutliner.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "Builder",
+      "files": [
+        "src/pages/Builder.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "CharacterArcSwitch",
+      "files": [
+        "src/components/CharacterArcSwitch.tsx"
+      ],
+      "propsType": "CharacterArcSwitchProps",
+      "usage": 2
+    },
+    {
+      "name": "CharacterDevelopment",
+      "files": [
+        "src/pages/CharacterDevelopment.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "CharacterInteractionSystem",
+      "files": [
+        "src/components/CharacterInteractionSystem.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "checkPresetMatch",
+      "files": [
+        "src/utils/presetValidation.ts"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "ContactUs",
+      "files": [
+        "src/pages/ContactUs.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "Dashboard",
+      "files": [
+        "src/pages/Dashboard.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "DemoModeIndicator",
+      "files": [
+        "src/components/DemoModeIndicator.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "DocumentEditorDemo",
+      "files": [
+        "src/pages/DocumentEditorDemo.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "DocumentPreview",
+      "files": [
+        "src/components/DocumentPreview.tsx"
+      ],
+      "propsType": "DocumentPreviewProps",
+      "usage": 2
+    },
+    {
+      "name": "DocumentProcessor",
+      "files": [
+        "src/pages/DocumentProcessor.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "DocumentView",
+      "files": [
+        "src/pages/DocumentView.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "EbookAnalyzer",
+      "files": [
+        "src/pages/EbookAnalyzer.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "EmotionalArcModule",
+      "files": [
+        "src/components/EmotionalArcModule.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "EmotionTimelineChart",
+      "files": [
+        "src/components/EmotionTimelineChart.tsx"
+      ],
+      "propsType": "EmotionTimelineChartProps",
+      "usage": 2
+    },
+    {
+      "name": "EnhancedCharacterChat",
+      "files": [
+        "src/components/EnhancedCharacterChat.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "EnhancementPanel",
+      "files": [
+        "src/components/EnhancementPanel.tsx"
+      ],
+      "propsType": "EnhancementPanelProps",
+      "usage": 2
+    },
+    {
+      "name": "getGenreById",
+      "files": [
+        "src/constants/genreConstants.ts"
+      ],
+      "propsType": "string",
+      "usage": 2
+    },
+    {
+      "name": "Help",
+      "files": [
+        "src/pages/Help.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "ImageRating",
+      "files": [
+        "src/components/ImageRating.tsx"
+      ],
+      "propsType": "ImageRatingProps",
+      "usage": 2
+    },
+    {
+      "name": "ImagingModeProvider",
+      "files": [
+        "src/state/imagingMode.ts"
+      ],
+      "propsType": "ImagingModeProviderProps",
+      "usage": 2
+    },
+    {
+      "name": "ImagingModeSelector",
+      "files": [
+        "src/components/ImagingModeSelector.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "isSystemMode",
+      "files": [
+        "src/types/systemModes.ts"
+      ],
+      "propsType": "any",
+      "usage": 2
+    },
+    {
+      "name": "ManualImageSelector",
+      "files": [
+        "src/components/ManualImageSelector.tsx"
+      ],
+      "propsType": "ManualImageSelectorProps",
+      "usage": 2
+    },
+    {
+      "name": "MarketTrendPanel",
+      "files": [
+        "src/components/MarketTrendPanel.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "mergePreferences",
+      "files": [
+        "src/agent/persistence/preferencesAPI.ts",
+        "src/utils/loadInitialPrefs.ts"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "mergePresetWithCurrent",
+      "files": [
+        "src/constants/writerPresets.ts"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "ModeErrorBoundary",
+      "files": [
+        "src/components/ModeErrorBoundary.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "OptimizationSuggestions",
+      "files": [
+        "src/components/OptimizationSuggestions.tsx"
+      ],
+      "propsType": "OptimizationSuggestionsProps",
+      "usage": 2
+    },
+    {
+      "name": "OutlineBuilder",
+      "files": [
+        "src/pages/OutlineBuilder.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "PaymentForm",
+      "files": [
+        "src/components/PaymentForm.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "PersonalizedSuggestions",
+      "files": [
+        "src/components/PersonalizedSuggestions.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "PreferenceVersionHistory",
+      "files": [
+        "src/components/PreferenceVersionHistory.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "PresetSelector",
+      "files": [
+        "src/components/PresetSelector.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "PrivacyPolicy",
+      "files": [
+        "src/pages/PrivacyPolicy.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "ProcessDocument",
+      "files": [
+        "src/pages/ProcessDocument.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "Profile",
+      "files": [
+        "src/pages/Profile.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "registerUserPromptPatterns",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": "GenrePromptPatterns",
+      "usage": 2
+    },
+    {
+      "name": "ResetPassword",
+      "files": [
+        "src/pages/ResetPassword.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "sanitizePresetInput",
+      "files": [
+        "src/utils/presetValidation.ts"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "SavedOutlines",
+      "files": [
+        "src/components/SavedOutlines.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "SceneScriptEditor",
+      "files": [
+        "src/components/SceneScriptEditor.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "SceneSentimentPanel",
+      "files": [
+        "src/components/SceneSentimentPanel.tsx"
+      ],
+      "propsType": "SceneSentimentPanelProps",
+      "usage": 2
+    },
+    {
+      "name": "SectionAnalyzer",
+      "files": [
+        "src/components/SectionAnalyzer.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "SignUp",
+      "files": [
+        "src/pages/SignUp.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "SimpleThemeDemo",
+      "files": [
+        "src/components/examples/SimpleThemeDemo.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "SuggestionPanel",
+      "files": [
+        "src/components/SuggestionPanel.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "SupabaseTest",
+      "files": [
+        "src/components/SupabaseTest.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "Support",
+      "files": [
+        "src/pages/Support.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "syncPromptBehavior",
+      "files": [
+        "src/agent/runtime/RuntimeControls.ts",
+        "src/services/promptBehaviorSync.ts"
+      ],
+      "propsType": "string",
+      "usage": 2
+    },
+    {
+      "name": "TemplateEditor",
+      "files": [
+        "src/components/TemplateEditor.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "TemplatePreview",
+      "files": [
+        "src/components/TemplatePreview.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "TensionCurveViewer",
+      "files": [
+        "src/components/TensionCurveViewer.tsx"
+      ],
+      "propsType": "TensionCurveViewerProps",
+      "usage": 2
+    },
+    {
+      "name": "TermsOfService",
+      "files": [
+        "src/pages/TermsOfService.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "useWriterProfile",
+      "files": [
+        "src/hooks/useWriterProfile.ts"
+      ],
+      "propsType": "string",
+      "usage": 2
+    },
+    {
+      "name": "validateModeConfiguration",
+      "files": [
+        "src/types/systemModes.ts"
+      ],
+      "propsType": "any",
+      "usage": 2
+    },
+    {
+      "name": "validatePresetName",
+      "files": [
+        "src/utils/presetValidation.ts"
+      ],
+      "propsType": "string",
+      "usage": 2
+    },
+    {
+      "name": "Workspace",
+      "files": [
+        "src/pages/Workspace.tsx"
+      ],
+      "propsType": null,
+      "usage": 2
+    },
+    {
+      "name": "buildMCPPrompt",
+      "files": [
+        "src/mcpRegistry.ts"
+      ],
+      "propsType": "MCPContext",
+      "usage": 1
+    },
+    {
+      "name": "createCustomPolicy",
+      "files": [
+        "src/agent/policies/agentDefaultPolicy.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "disableDebugMode",
+      "files": [
+        "src/agent/runtime/RuntimeControls.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "enableDebugMode",
+      "files": [
+        "src/agent/runtime/RuntimeControls.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "exportCharacterData",
+      "files": [
+        "src/services/characterDevelopmentService.ts"
+      ],
+      "propsType": "CharacterPersona",
+      "usage": 1
+    },
+    {
+      "name": "FeedbackAnalytics",
+      "files": [
+        "src/components/FeedbackAnalytics.tsx"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "generateArcSegments",
+      "files": [
+        "src/services/arcSimulator.ts"
+      ],
+      "propsType": "TensionCurve",
+      "usage": 1
+    },
+    {
+      "name": "generateArcSimulation",
+      "files": [
+        "src/services/arcSimulator.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "generateCharacterPrompts",
+      "files": [
+        "src/services/characterDevelopmentService.ts"
+      ],
+      "propsType": "CharacterPersona",
+      "usage": 1
+    },
+    {
+      "name": "generateOptimizationSuggestions",
+      "files": [
+        "src/services/suggestionEngine.ts"
+      ],
+      "propsType": "EmotionalArc",
+      "usage": 1
+    },
+    {
+      "name": "generatePersonalityInsights",
+      "files": [
+        "src/services/characterDevelopmentService.ts"
+      ],
+      "propsType": "CharacterPersona",
+      "usage": 1
+    },
+    {
+      "name": "generateUserAvatar",
+      "files": [
+        "src/lib/collaboration/presenceColors.ts"
+      ],
+      "propsType": "string",
+      "usage": 1
+    },
+    {
+      "name": "getAvailableArcs",
+      "files": [
+        "src/agent/PromptPatternLibrary.ts",
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "getAvailableGenres",
+      "files": [
+        "src/agent/PromptPatternLibrary.ts",
+        "src/engines/ContextualPromptEngine.ts",
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "getAvailableRoles",
+      "files": [
+        "src/agent/policies/agentDefaultPolicy.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "getAvailableTiers",
+      "files": [
+        "src/agent/policies/agentDefaultPolicy.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "getAvailableTones",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "getCollabProvider",
+      "files": [
+        "src/lib/collaboration/yjsProvider.ts"
+      ],
+      "propsType": "string",
+      "usage": 1
+    },
+    {
+      "name": "getDefaultLandingPage",
+      "files": [
+        "src/utils/userRedirect.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "getDefaultPolicy",
+      "files": [
+        "src/agent/policies/agentDefaultPolicy.ts"
+      ],
+      "propsType": "string",
+      "usage": 1
+    },
+    {
+      "name": "getDefaultPolicyByTier",
+      "files": [
+        "src/agent/policies/agentDefaultPolicy.ts"
+      ],
+      "propsType": "string",
+      "usage": 1
+    },
+    {
+      "name": "getLockedFieldsForRole",
+      "files": [
+        "src/agent/policies/agentDefaultPolicy.ts"
+      ],
+      "propsType": "string",
+      "usage": 1
+    },
+    {
+      "name": "getOnboardingRedirect",
+      "files": [
+        "src/utils/userRedirect.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "getPolicyMap",
+      "files": [
+        "src/agent/policies/agentDefaultPolicy.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "getPopularGenres",
+      "files": [
+        "src/constants/genreConstants.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "getPresetDifference",
+      "files": [
+        "src/utils/presetValidation.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "getPresetRecommendations",
+      "files": [
+        "src/constants/writerPresets.ts"
+      ],
+      "propsType": "AgentPrefs",
+      "usage": 1
+    },
+    {
+      "name": "getPresetsByCategory",
+      "files": [
+        "src/constants/writerPresets.ts"
+      ],
+      "propsType": "keyof",
+      "usage": 1
+    },
+    {
+      "name": "getRoleCapabilities",
+      "files": [
+        "src/agent/policies/agentDefaultPolicy.ts"
+      ],
+      "propsType": "string",
+      "usage": 1
+    },
+    {
+      "name": "getRuntimeStats",
+      "files": [
+        "src/agent/runtime/RuntimeControls.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "getRuntimeStatus",
+      "files": [
+        "src/agent/runtime/RuntimeControls.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "getUserRedirectPath",
+      "files": [
+        "src/utils/userRedirect.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "importCharacterData",
+      "files": [
+        "src/services/characterDevelopmentService.ts"
+      ],
+      "propsType": "string",
+      "usage": 1
+    },
+    {
+      "name": "initializeAgentBehaviorBridge",
+      "files": [
+        "src/agent/runtime/AgentBehaviorBridge.ts"
+      ],
+      "propsType": "AgentPrefs",
+      "usage": 1
+    },
+    {
+      "name": "isFieldLockedForRole",
+      "files": [
+        "src/agent/policies/agentDefaultPolicy.ts"
+      ],
+      "propsType": "keyof",
+      "usage": 1
+    },
+    {
+      "name": "isModeConfiguration",
+      "files": [
+        "src/types/systemModes.ts"
+      ],
+      "propsType": "any",
+      "usage": 1
+    },
+    {
+      "name": "isWritingContext",
+      "files": [
+        "src/types/systemModes.ts"
+      ],
+      "propsType": "any",
+      "usage": 1
+    },
+    {
+      "name": "listAllPatterns",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "mergeWithRoleDefaults",
+      "files": [
+        "src/agent/policies/agentDefaultPolicy.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "searchGenres",
+      "files": [
+        "src/constants/genreConstants.ts"
+      ],
+      "propsType": "string",
+      "usage": 1
+    },
+    {
+      "name": "simulateReaderResponse",
+      "files": [
+        "src/services/arcSimulator.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "syncRuntimeState",
+      "files": [
+        "src/agent/runtime/RuntimeControls.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "toggleCopilot",
+      "files": [
+        "src/agent/runtime/RuntimeControls.ts"
+      ],
+      "propsType": "boolean",
+      "usage": 1
+    },
+    {
+      "name": "toggleMemory",
+      "files": [
+        "src/agent/runtime/RuntimeControls.ts"
+      ],
+      "propsType": "boolean",
+      "usage": 1
+    },
+    {
+      "name": "transformPublishingToMarketTrend",
+      "files": [
+        "src/utils/transformTrendData.ts"
+      ],
+      "propsType": "PublishingTrend",
+      "usage": 1
+    },
+    {
+      "name": "updatePolicyMap",
+      "files": [
+        "src/agent/policies/agentDefaultPolicy.ts"
+      ],
+      "propsType": "string",
+      "usage": 1
+    },
+    {
+      "name": "useAIHelper",
+      "files": [
+        "src/lib/hooks/useAIHelper.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "useCharacterDevelopment",
+      "files": [
+        "src/hooks/useCharacterInteraction.ts"
+      ],
+      "propsType": "CharacterPersona",
+      "usage": 1
+    },
+    {
+      "name": "useCharacterInteraction",
+      "files": [
+        "src/hooks/useCharacterInteraction.ts"
+      ],
+      "propsType": "CharacterPersona",
+      "usage": 1
+    },
+    {
+      "name": "useEngagement",
+      "files": [
+        "src/hooks/useEngagement.ts"
+      ],
+      "propsType": "UseEngagementOptions",
+      "usage": 1
+    },
+    {
+      "name": "useImagingMode",
+      "files": [
+        "src/hooks/useImagingMode.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "useImagingModeContext",
+      "files": [
+        "src/state/imagingMode.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "useLiveSuggestions",
+      "files": [
+        "src/hooks/useLiveSuggestions.ts"
+      ],
+      "propsType": "UseLiveSuggestionsProps",
+      "usage": 1
+    },
+    {
+      "name": "useMarketTrends",
+      "files": [
+        "src/hooks/useMarketTrends.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "useProfileSetup",
+      "files": [
+        "src/hooks/useWriterProfile.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "useSceneConfig",
+      "files": [
+        "src/hooks/useSceneConfig.ts"
+      ],
+      "propsType": "string",
+      "usage": 1
+    },
+    {
+      "name": "useUserTier",
+      "files": [
+        "src/hooks/useUserTier.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "useVoiceManagement",
+      "files": [
+        "src/hooks/useVoiceManagement.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "validateModeCompatibility",
+      "files": [
+        "src/types/systemModes.ts"
+      ],
+      "propsType": "SystemMode",
+      "usage": 1
+    },
+    {
+      "name": "validatePreferences",
+      "files": [
+        "src/types/agentPreferences.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "validatePreferencesForRole",
+      "files": [
+        "src/agent/policies/agentDefaultPolicy.ts"
+      ],
+      "propsType": "AgentPrefs",
+      "usage": 1
+    },
+    {
+      "name": "validatePresetDescription",
+      "files": [
+        "src/utils/presetValidation.ts"
+      ],
+      "propsType": "string",
+      "usage": 1
+    },
+    {
+      "name": "validatePresetObject",
+      "files": [
+        "src/utils/presetValidation.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "validatePresetTags",
+      "files": [
+        "src/utils/presetValidation.ts"
+      ],
+      "propsType": "string",
+      "usage": 1
+    },
+    {
+      "name": "validateRuntimeState",
+      "files": [
+        "src/agent/runtime/RuntimeControls.ts"
+      ],
+      "propsType": null,
+      "usage": 1
+    },
+    {
+      "name": "validateWritingContext",
+      "files": [
+        "src/types/systemModes.ts"
+      ],
+      "propsType": "any",
+      "usage": 1
+    },
+    {
+      "name": "AccountStatusBanner",
+      "files": [
+        "src/components/AccountStatusBanner.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "AdminPromptModerationPanel",
+      "files": [
+        "src/components/AdminPromptModerationPanel.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "AdvancedSettingsView",
+      "files": [
+        "src/components/AdvancedSettingsView.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "AgentShell",
+      "files": [
+        "src/components/AgentShell.tsx"
+      ],
+      "propsType": "AgentShellProps",
+      "usage": 0
+    },
+    {
+      "name": "AICharacterDevelopment",
+      "files": [
+        "src/components/AICharacterDevelopment.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "AltTextEnhancer",
+      "files": [
+        "src/components/AltTextEnhancer.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "AnalyticsDashboard",
+      "files": [
+        "src/pages/AnalyticsDashboard.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "AuditLogViewer",
+      "files": [
+        "src/components/admin/AuditLogViewer.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "AuditSyncDashboard",
+      "files": [
+        "src/components/admin/AuditSyncDashboard.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "canExport",
+      "files": [
+        "src/utils/exportUtils.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "classes",
+      "files": [
+        "src/types/complete-external-modules.d.ts",
+        "src/types/external-modules.d.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "clearHeaderCache",
+      "files": [
+        "src/services/promptBehaviorSync.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "clearPatternCache",
+      "files": [
+        "src/agent/PromptPatternLibrary.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "clearUserPromptPatterns",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "CollabTest",
+      "files": [
+        "src/pages/CollabTest.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "CommentSystem",
+      "files": [
+        "src/components/CommentSystem.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "ConfigurationBanner",
+      "files": [
+        "src/components/ConfigurationBanner.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "content",
+      "files": [
+        "src/types/complete-external-modules.d.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "createDefaultBridge",
+      "files": [
+        "src/agent/runtime/AgentBehaviorBridge.ts"
+      ],
+      "propsType": "AgentPrefs",
+      "usage": 0
+    },
+    {
+      "name": "DebugInfo",
+      "files": [
+        "src/components/DebugInfo.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "debugPromptSync",
+      "files": [
+        "src/services/promptBehaviorSync.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "decideImagePlacement",
+      "files": [
+        "src/utils/imagePlacer.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "disconnectProvider",
+      "files": [
+        "src/lib/collaboration/yjsProvider.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "EmotionalArcTest",
+      "files": [
+        "src/pages/EmotionalArcTest.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "EngagementPanel",
+      "files": [
+        "src/components/EngagementPanel.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "EnhancedEbookCreator",
+      "files": [
+        "src/pages/EnhancedEbookCreator.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "EnterpriseAnalyticsDashboard",
+      "files": [
+        "src/components/admin/EnterpriseAnalyticsDashboard.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "env",
+      "files": [
+        "src/config/env.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "ExportAPI",
+      "files": [
+        "src/api/export.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "ExportEbookModal",
+      "files": [
+        "src/pages/ExportEbookModal.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "FeedbackWrapper",
+      "files": [
+        "src/components/FeedbackButtons.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "FileAnalyzer",
+      "files": [
+        "src/components/FileAnalyzer.tsx"
+      ],
+      "propsType": "FileAnalyzerProps",
+      "usage": 0
+    },
+    {
+      "name": "filterSuggestions",
+      "files": [
+        "src/services/realtimeSuggestor.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "ForgotPasswordModal",
+      "files": [
+        "src/components/ForgotPasswordModal.tsx"
+      ],
+      "propsType": "ForgotPasswordModalProps",
+      "usage": 0
+    },
+    {
+      "name": "formatExport",
+      "files": [
+        "src/components/SceneChatSimulator.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "formatPromptWithHeader",
+      "files": [
+        "src/services/promptBehaviorSync.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "function",
+      "files": [
+        "src/components/AICharacterDevelopment.tsx",
+        "src/components/APIKeyManagementPanel.tsx",
+        "src/components/AdvancedCharacterDevelopment.tsx",
+        "src/components/CharacterArcSwitch.tsx",
+        "src/components/CharacterInteractionSystem.tsx",
+        "src/components/DocumentEditor.tsx",
+        "src/components/DocumentPreview.tsx",
+        "src/components/DocumentUpload.tsx",
+        "src/components/EmotionTimelineChart.tsx",
+        "src/components/EmotionalArcModule.tsx",
+        "src/components/EnhancedCharacterChat.tsx",
+        "src/components/EnhancementPanel.tsx",
+        "src/components/EnhancementSettings.tsx",
+        "src/components/ForgotPasswordModal.tsx",
+        "src/components/Header.tsx",
+        "src/components/ImageRating.tsx",
+        "src/components/LLMChatInterface.tsx",
+        "src/components/ManualImageSelector.tsx",
+        "src/components/OptimizationSuggestions.tsx",
+        "src/components/SceneSentimentPanel.tsx",
+        "src/components/TensionCurveViewer.tsx",
+        "src/components/admin/AuditLogViewer.tsx",
+        "src/components/admin/AuditSyncDashboard.tsx",
+        "src/pages/Analytics.tsx",
+        "src/pages/Analyzer.tsx",
+        "src/pages/AuditLogs.tsx",
+        "src/pages/Builder.tsx",
+        "src/pages/CharacterDevelopment.tsx",
+        "src/pages/CollabTest.tsx",
+        "src/pages/Dashboard.tsx",
+        "src/pages/DocumentEditorDemo.tsx",
+        "src/pages/DocumentProcessor.tsx",
+        "src/pages/DocumentView.tsx",
+        "src/pages/EbookAnalyzer.tsx",
+        "src/pages/EmotionalArcTest.tsx",
+        "src/pages/Home.tsx",
+        "src/pages/Imager.tsx",
+        "src/pages/MinimalTest.tsx",
+        "src/pages/Pricing.tsx",
+        "src/pages/ProcessDocument.tsx",
+        "src/pages/Profile.tsx",
+        "src/pages/Settings.tsx",
+        "src/pages/ShareableAccessPage.tsx",
+        "src/pages/SupabaseTestPage.tsx",
+        "src/pages/TestPage.tsx",
+        "src/pages/Workspace.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "generateContextualPrompts",
+      "files": [
+        "src/engines/ContextualPromptEngine.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "generateMarkdownContent",
+      "files": [
+        "src/utils/exportUtils.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "generateSceneEditRecommendations",
+      "files": [
+        "src/services/suggestionEngine.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "GenreSelectorExample",
+      "files": [
+        "src/components/examples/GenreSelectorExample.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "getActiveProviders",
+      "files": [
+        "src/lib/collaboration/yjsProvider.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "getAnalysisDescription",
+      "files": [
+        "src/services/ebookAnalyzer.ts"
+      ],
+      "propsType": "SectionAnalysis",
+      "usage": 0
+    },
+    {
+      "name": "getAvailableDifficulties",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "getAvailableStyles",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "getAvailableWritingStyles",
+      "files": [
+        "src/engines/ContextualPromptEngine.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "getCacheStats",
+      "files": [
+        "src/agent/PromptPatternLibrary.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "getCurrentBehavior",
+      "files": [
+        "src/components/AgentShell.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "getCurrentHeader",
+      "files": [
+        "src/services/promptBehaviorSync.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "getGenreBySubgenre",
+      "files": [
+        "src/constants/genreConstants.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getGenresByCategory",
+      "files": [
+        "src/constants/genreConstants.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getMCPPrompt",
+      "files": [
+        "src/useMCP.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getModeDescription",
+      "files": [
+        "src/state/imagingMode.ts"
+      ],
+      "propsType": "ImagingMode",
+      "usage": 0
+    },
+    {
+      "name": "getModeLabel",
+      "files": [
+        "src/state/imagingMode.ts"
+      ],
+      "propsType": "ImagingMode",
+      "usage": 0
+    },
+    {
+      "name": "getPattern",
+      "files": [
+        "src/agent/PromptPatternLibrary.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getPatternDescription",
+      "files": [
+        "src/agent/PromptPatternLibrary.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getPatternsByArc",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "getPatternsByDifficulty",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "getPatternsByGenre",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getPatternsByStyle",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getPatternsByTags",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getPatternsByTone",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getPatternsForGenre",
+      "files": [
+        "src/agent/PromptPatternLibrary.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getPlacementExplanation",
+      "files": [
+        "src/utils/imagePlacer.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getPresetByName",
+      "files": [
+        "src/constants/writerPresets.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getPromptFor",
+      "files": [
+        "src/agent/PromptPatternLibrary.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getPromptPatterns",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getStyleSuggestions",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getSuggestionSummary",
+      "files": [
+        "src/services/realtimeSuggestor.ts"
+      ],
+      "propsType": "Suggestion",
+      "usage": 0
+    },
+    {
+      "name": "getSyncStats",
+      "files": [
+        "src/services/promptBehaviorSync.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "getToneSuggestions",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getUpgradeMessage",
+      "files": [
+        "src/utils/exportUtils.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "getUserColor",
+      "files": [
+        "src/lib/collaboration/presenceColors.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "getUserInitials",
+      "files": [
+        "src/lib/collaboration/presenceColors.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "hasPatternFor",
+      "files": [
+        "src/agent/PromptPatternLibrary.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "HeaderWithThemeChanger",
+      "files": [
+        "src/components/examples/HeaderWithThemeChanger.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "Imager",
+      "files": [
+        "src/pages/Imager.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "IntegratedHeaderDemo",
+      "files": [
+        "src/components/examples/IntegratedHeaderDemo.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "isModeTransitionResult",
+      "files": [
+        "src/types/systemModes.ts"
+      ],
+      "propsType": "any",
+      "usage": 0
+    },
+    {
+      "name": "isModeValidationError",
+      "files": [
+        "src/types/systemModes.ts"
+      ],
+      "propsType": "any",
+      "usage": 0
+    },
+    {
+      "name": "isValidCommandView",
+      "files": [
+        "src/types/agentPreferences.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "isValidImagingMode",
+      "files": [
+        "src/state/imagingMode.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "isValidLanguage",
+      "files": [
+        "src/types/agentPreferences.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "isValidTone",
+      "files": [
+        "src/types/agentPreferences.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "LLMChatInterface",
+      "files": [
+        "src/components/LLMChatInterface.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "messageAuth",
+      "files": [
+        "src/types/y-websocket.d.ts"
+      ],
+      "propsType": "any",
+      "usage": 0
+    },
+    {
+      "name": "messageAwareness",
+      "files": [
+        "src/types/y-websocket.d.ts"
+      ],
+      "propsType": "any",
+      "usage": 0
+    },
+    {
+      "name": "messageQueryAwareness",
+      "files": [
+        "src/types/y-websocket.d.ts"
+      ],
+      "propsType": "any",
+      "usage": 0
+    },
+    {
+      "name": "messageSync",
+      "files": [
+        "src/types/y-websocket.d.ts"
+      ],
+      "propsType": "any",
+      "usage": 0
+    },
+    {
+      "name": "migratePreferences",
+      "files": [
+        "src/utils/loadInitialPrefs.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "MinimalTest",
+      "files": [
+        "src/pages/MinimalTest.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "ModeControllerDemo",
+      "files": [
+        "src/pages/ModeControllerDemo.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "ModeCustomization",
+      "files": [
+        "src/components/ModeCustomization.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "needsHeaderUpdate",
+      "files": [
+        "src/services/promptBehaviorSync.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "needsMigration",
+      "files": [
+        "src/utils/loadInitialPrefs.ts"
+      ],
+      "propsType": "AgentPrefs",
+      "usage": 0
+    },
+    {
+      "name": "PaymentService",
+      "files": [
+        "src/services/paymentService.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "PricingPage",
+      "files": [
+        "src/pages/Pricing.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "PromptPatternEditor",
+      "files": [
+        "src/components/PromptPatternEditor.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "PromptPreviewExample",
+      "files": [
+        "src/components/examples/PromptPreviewExample.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "ProUpgradeNudge",
+      "files": [
+        "src/components/ProUpgradeNudge.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "replacePatternPlaceholders",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "resetRuntimeState",
+      "files": [
+        "src/agent/runtime/RuntimeControls.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "runPerformanceTest",
+      "files": [
+        "src/monitoring/examples/integrationExample.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "sanitizePresetName",
+      "files": [
+        "src/utils/presetValidation.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "SceneChatSimulator",
+      "files": [
+        "src/components/SceneChatSimulator.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "searchPresets",
+      "files": [
+        "src/constants/writerPresets.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "setupErrorMonitoring",
+      "files": [
+        "src/monitoring/examples/integrationExample.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "setupWSConnection",
+      "files": [
+        "src/types/complete-external-modules.d.ts",
+        "src/types/external-modules.d.ts",
+        "src/types/y-websocket.d.ts"
+      ],
+      "propsType": "any",
+      "usage": 0
+    },
+    {
+      "name": "SimpleTest",
+      "files": [
+        "src/components/SimpleTest.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "simulateBehaviorWithPrefs",
+      "files": [
+        "src/components/AgentShell.tsx"
+      ],
+      "propsType": "boolean",
+      "usage": 0
+    },
+    {
+      "name": "SupabaseTestPage",
+      "files": [
+        "src/pages/SupabaseTestPage.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "TestPage",
+      "files": [
+        "src/pages/TestPage.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "ThemeChangerDemo",
+      "files": [
+        "src/components/examples/ThemeChangerDemo.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useAnalyticsAlerts",
+      "files": [
+        "src/hooks/useAnalyticsServices.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useAnalyticsConfig",
+      "files": [
+        "src/hooks/useAnalyticsServices.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useAnalyticsServices",
+      "files": [
+        "src/hooks/useAnalyticsServices.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useBusinessIntelligence",
+      "files": [
+        "src/hooks/useAnalyticsServices.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useDocCraftAgent",
+      "files": [
+        "src/contexts/AgentContext.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useFeedback",
+      "files": [
+        "src/components/FeedbackButtons.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useFeedbackAnalytics",
+      "files": [
+        "src/components/FeedbackAnalytics.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useGenreTrendSummary",
+      "files": [
+        "src/hooks/useMarketTrends.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "useIsAutoMode",
+      "files": [
+        "src/hooks/useImagingMode.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useMarketTrendsWithAccess",
+      "files": [
+        "src/hooks/useMarketTrends.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "useModeConfig",
+      "files": [
+        "src/hooks/useImagingMode.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useModulePerformance",
+      "files": [
+        "src/hooks/useAnalyticsServices.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useMonitoring",
+      "files": [
+        "src/monitoring/examples/integrationExample.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "usePerformanceMonitoring",
+      "files": [
+        "src/hooks/useAnalyticsServices.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "usePromptPreview",
+      "files": [
+        "src/components/PromptPreviewPanel.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useRequiresManualInput",
+      "files": [
+        "src/hooks/useImagingMode.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useServerSyncedPreferences",
+      "files": [
+        "src/agent/hooks/useServerSyncedPreferences.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useSimpleServerSync",
+      "files": [
+        "src/agent/hooks/useServerSyncedPreferences.ts"
+      ],
+      "propsType": "AgentPrefs",
+      "usage": 0
+    },
+    {
+      "name": "useSuggestionsWithAccess",
+      "files": [
+        "src/hooks/useLiveSuggestions.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useVoiceInteraction",
+      "files": [
+        "src/hooks/useCharacterInteraction.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "useWriterProfileData",
+      "files": [
+        "src/contexts/WriterProfileContext.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "validateGenre",
+      "files": [
+        "src/constants/genreConstants.ts"
+      ],
+      "propsType": "string",
+      "usage": 0
+    },
+    {
+      "name": "validatePatternInput",
+      "files": [
+        "src/engines/PromptPatternLibrary.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "validatePipelineInput",
+      "files": [
+        "src/types/pipelineTypes.ts"
+      ],
+      "propsType": "PipelineInput",
+      "usage": 0
+    },
+    {
+      "name": "validatePipelineOptions",
+      "files": [
+        "src/types/pipelineTypes.ts"
+      ],
+      "propsType": "PipelineOptions",
+      "usage": 0
+    },
+    {
+      "name": "validatePromptInput",
+      "files": [
+        "src/engines/ContextualPromptEngine.ts"
+      ],
+      "propsType": null,
+      "usage": 0
+    },
+    {
+      "name": "WriterProfileSetup",
+      "files": [
+        "src/components/WriterProfileSetup.tsx"
+      ],
+      "propsType": null,
+      "usage": 0
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+[
+  "modules/agent/mcpRegistry.ts",
+  "modules/agent/agentPerformanceSummary.json",
+  "modules/agent/agentPerformanceSummary.md",
+  "modules/agent/CHANGELOG.md"
+]

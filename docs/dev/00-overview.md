@@ -17,6 +17,7 @@ DocCraft-AI is an advanced AI-powered document creation and storytelling platfor
 ## 📚 Module Architecture
 
 ### Core Modules
+
 - **Agent System**: Multi-agent orchestration with contextual awareness
 - **Emotion Arc**: Psychological analysis and emotional journey mapping
 - **Narrative Dashboard**: Story structure and plot management
@@ -24,6 +25,7 @@ DocCraft-AI is an advanced AI-powered document creation and storytelling platfor
 - **Theme Analysis**: Content theming and genre analysis
 
 ### Supporting Systems
+
 - **Admin Dashboard**: User management and system monitoring
 - **Support System**: Customer support automation
 - **Audit System**: Comprehensive logging and compliance
@@ -64,15 +66,44 @@ npm run build
 ## 🔄 Auto-Generated Documentation
 
 This documentation is automatically maintained through:
+
 - **Git Hooks**: Pre-commit and pre-push validation
 - **CI Checks**: Automated documentation verification
 - **Change Detection**: Smart regeneration based on code changes
 - **Schema Updates**: Automatic database and API documentation
 
+<!-- AUTO-GEN:FRONTEND-START -->
+
+### Frontend Component Summary
+
+**Total Components Detected:** 280
+**Components with Props:** Various
+
+**Sample Components (first 10):**
+
+| Component                      | File                                                    | Type            | Has Props |
+| ------------------------------ | ------------------------------------------------------- | --------------- | --------- |
+| `App`                          | `src/App.tsx`                                           | React Component | ✅        |
+| `AccessWarning`                | `src/components/AccessWarning.tsx`                      | React Component | ✅        |
+| `AccountStatusBanner`          | `src/components/AccountStatusBanner.tsx`                | React Component | ✅        |
+| `AlertManagement`              | `src/components/admin/AlertManagement.tsx`              | React Component | ✅        |
+| `AuditLogViewer`               | `src/components/admin/AuditLogViewer.tsx`               | React Component | ✅        |
+| `AuditSyncDashboard`           | `src/components/admin/AuditSyncDashboard.tsx`           | React Component | ✅        |
+| `EnterpriseAnalyticsDashboard` | `src/components/admin/EnterpriseAnalyticsDashboard.tsx` | React Component | ✅        |
+| `MainMonitoringDashboard`      | `src/components/admin/MainMonitoringDashboard.tsx`      | React Component | ✅        |
+| `MonitoringDashboard`          | `src/components/admin/MonitoringDashboard.tsx`          | React Component | ✅        |
+| `SystemHealth`                 | `src/components/admin/SystemHealth.tsx`                 | React Component | ✅        |
+
+_Run `pnpm run docs:frontend` to regenerate the complete component list._
+
+<!-- AUTO-GEN:FRONTEND-END -->
+
 ## 📝 Changes Since Last Release
 
 <!-- AUTO-GEN:BEGIN section=recent-changes -->
-*No recent changes detected*
+
+_No recent changes detected_
+
 <!-- AUTO-GEN:END section=recent-changes -->
 
 ## 🧪 Development Workflow
@@ -111,4 +142,35 @@ npm run docs:adr
 ---
 
 **Changelog**
+
 - `initial` - 2024-12-01 - Created initial developer guide structure
+
+<!-- AUTO-GEN:STATUS-START -->
+
+### Docs Guard Status (auto-generated)
+
+- Routes detected: **0**
+- Components detected: **2**
+- Prisma models (PG): **2**
+
+**Artifacts:**
+
+- Dependency graph: present
+- OpenAPI: present
+- Prisma (PG): present
+- Prisma (Mongo): missing
+- Route map: present
+- Component map: present
+- Frontend summary: present
+
+<!-- AUTO-GEN:STATUS-END -->
+
+
+<!-- AUTO-GEN:COVERAGE-START -->
+
+### Docs Coverage (auto-generated)
+
+- Components documented: **72/311** (23.15%)
+- Props with descriptions: **69/242** (28.51%)
+
+<!-- AUTO-GEN:COVERAGE-END -->

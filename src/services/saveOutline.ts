@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { instrument } from '../utils/clientMonitoring';
 
 export interface Chapter {
   title: string;
@@ -92,11 +93,13 @@ export async function saveOutlineToSupabase(
     if (Array.isArray(misalignments)) outlineData.misalignments = misalignments;
 
     // Insert into Supabase
-    const { data, error } = await supabase
-      .from('book_outlines')
-      .insert(outlineData)
-      .select()
-      .single();
+    const { data, error } = await instrument('db.save_outline', async () => {
+      return supabase
+        .from('book_outlines')
+        .insert(outlineData)
+        .select()
+        .single();
+    });
 
     if (error) {
       console.error('Supabase error:', error);
