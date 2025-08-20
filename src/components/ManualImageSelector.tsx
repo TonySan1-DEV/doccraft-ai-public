@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { X, Upload, Search, Wand2 } from "lucide-react";
 import { useDropzone } from "react-dropzone";
-import { searchStockImages, generateAIImage, type ImageResult } from "../services/imageService";
+import { searchStockImages, generateAIImage, type ImageResult, suggestImages } from "../services/imageService";
+import { isEnhancedImageryEnabled, isChildrenGenreEnabled } from "../config/flags";
+import { CHILDRENS_GENRE_KEY } from "../constants/genreConstants";
 import toast from "react-hot-toast";
 
 interface ManualImageSelectorProps {
@@ -22,12 +24,14 @@ interface ManualImageSelectorProps {
     relevance_score: number;
     image_url: string;
   }) => void;
+  currentGenre?: string;
 }
 
 export default function ManualImageSelector({
   section,
   onClose,
   onImageSelect,
+  currentGenre,
 }: ManualImageSelectorProps) {
   const [activeTab, setActiveTab] = useState<"search" | "ai" | "upload">(
     "search"
@@ -36,6 +40,8 @@ export default function ManualImageSelector({
   const [searchResults, setSearchResults] = useState<ImageResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
+  const [visualStyle, setVisualStyle] = useState<string>("");
+  const [genreSubtype, setGenreSubtype] = useState<string>("");
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
@@ -46,6 +52,8 @@ export default function ManualImageSelector({
       if (acceptedFiles.length === 0) return;
 
       const file = acceptedFiles[0];
+      if (!file) return;
+      
       // In a real app, you'd upload this to your storage service
       const imageUrl = URL.createObjectURL(file);
 
@@ -113,6 +121,34 @@ export default function ManualImageSelector({
     onImageSelect(selectedImage);
   };
 
+  const handleEnhancedSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    setLoading(true);
+    try {
+      const enhancedResults = await suggestImages({
+        content: searchQuery,
+        visual_style: visualStyle || undefined,
+        genreSubtype: genreSubtype || undefined,
+      });
+      
+      // Convert ImageSuggestion[] to ImageResult[] for compatibility
+      const convertedResults: ImageResult[] = enhancedResults.map(suggestion => ({
+        id: suggestion.id,
+        url: suggestion.url,
+        title: suggestion.caption,
+        description: suggestion.sourceMetadata.prompt || '',
+        tags: [suggestion.source],
+      }));
+      
+      setSearchResults(convertedResults);
+    } catch (error: unknown) {
+      toast.error((error as Error).message || "Enhanced search failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden">
@@ -166,6 +202,54 @@ export default function ManualImageSelector({
 
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[60vh]">
+          {/* Enhanced Imagery Controls */}
+          {isEnhancedImageryEnabled() && (
+            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h3 className="text-sm font-medium text-blue-900 mb-3">Enhanced Image Settings</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Visual Style Selection */}
+                <div>
+                  <label htmlFor="visual-style" className="block text-sm font-medium text-blue-800 mb-1">
+                    Visual Style
+                  </label>
+                  <select
+                    id="visual-style"
+                    value={visualStyle}
+                    onChange={(e) => setVisualStyle(e.target.value)}
+                    className="w-full px-3 py-2 border border-blue-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">None (Default)</option>
+                    <option value="cartoon">Cartoon</option>
+                    <option value="watercolor">Watercolor</option>
+                    <option value="pastel">Pastel</option>
+                    <option value="vector">Vector</option>
+                    <option value="storybook">Storybook</option>
+                  </select>
+                </div>
+
+                {/* Children's Subtype Selection */}
+                {isChildrenGenreEnabled() && currentGenre === CHILDRENS_GENRE_KEY && (
+                  <div>
+                    <label htmlFor="genre-subtype" className="block text-sm font-medium text-blue-800 mb-1">
+                      Age Group
+                    </label>
+                    <select
+                      id="genre-subtype"
+                      value={genreSubtype}
+                      onChange={(e) => setGenreSubtype(e.target.value)}
+                      className="w-full px-3 py-2 border border-blue-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">None (Default)</option>
+                      <option value="children-early">Early (Ages 4-6)</option>
+                      <option value="children-middle">Middle (Ages 7-9)</option>
+                      <option value="children-older">Older (Ages 10-12)</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {activeTab === "search" && (
             <div>
               <div className="flex gap-2 mb-4">
@@ -185,6 +269,19 @@ export default function ManualImageSelector({
                   {loading ? "Searching..." : "Search"}
                 </button>
               </div>
+
+              {/* Enhanced Search with suggestImages */}
+              {isEnhancedImageryEnabled() && (visualStyle || genreSubtype) && (
+                <div className="mb-4">
+                  <button
+                    onClick={handleEnhancedSearch}
+                    disabled={loading}
+                    className="btn btn-secondary w-full"
+                  >
+                    {loading ? "Searching..." : "Enhanced Search with Style & Genre"}
+                  </button>
+                </div>
+              )}
 
               {searchResults.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">

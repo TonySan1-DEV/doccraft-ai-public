@@ -35,6 +35,104 @@ export interface DocumentSection {
   intent: string
 }
 
+export interface ImageSuggestParams {
+  content: string
+  genreSubtype?: string | undefined
+  visual_style?: string | undefined
+  sectionType?: string | undefined
+  targetAudience?: string | undefined
+}
+
+export async function suggestImages(params: ImageSuggestParams): Promise<ImageSuggestion[]> {
+  const {
+    content,
+    genreSubtype,
+    visual_style,
+    sectionType,
+    targetAudience,
+  } = params;
+
+  // Build enhanced keywords based on content and parameters
+  const baseKeywords = extractKeywords(content);
+  const enhancedKeywords = [...baseKeywords];
+
+  // Add genre-specific keywords
+  if (genreSubtype) {
+    enhancedKeywords.push(genreSubtype);
+    
+    // Add age-appropriate keywords for children's content
+    if (genreSubtype.startsWith('children-')) {
+      if (genreSubtype === 'children-early') {
+        enhancedKeywords.push('early-childhood', 'preschool', 'kindergarten', 'ages-4-6');
+      } else if (genreSubtype === 'children-middle') {
+        enhancedKeywords.push('elementary', 'ages-7-9', 'beginner-reader');
+      } else if (genreSubtype === 'children-older') {
+        enhancedKeywords.push('pre-teen', 'ages-10-12', 'intermediate-reader');
+      }
+    }
+  }
+
+  // Add visual style keywords
+  if (visual_style) {
+    enhancedKeywords.push(visual_style);
+    
+    // Map visual styles to additional keywords
+    const styleKeywords: Record<string, string[]> = {
+      'cartoon': ['animated', 'fun', 'colorful', 'playful'],
+      'watercolor': ['artistic', 'soft', 'gentle', 'painterly'],
+      'pastel': ['soft', 'gentle', 'muted', 'delicate'],
+      'vector': ['clean', 'modern', 'geometric', 'minimal'],
+      'storybook': ['illustrated', 'narrative', 'whimsical', 'magical'],
+    };
+    
+    if (styleKeywords[visual_style]) {
+      enhancedKeywords.push(...styleKeywords[visual_style]);
+    }
+  }
+
+  // Add section-specific keywords
+  if (sectionType) {
+    const sectionKeywords: Record<string, string[]> = {
+      'introduction': ['opening', 'beginning', 'overview'],
+      'chapter': ['content', 'main', 'detailed'],
+      'conclusion': ['ending', 'summary', 'closing'],
+      'sidebar': ['additional', 'supplementary', 'extra'],
+    };
+    
+    if (sectionKeywords[sectionType]) {
+      enhancedKeywords.push(...sectionKeywords[sectionType]);
+    }
+  }
+
+  // Add audience-specific keywords
+  if (targetAudience) {
+    enhancedKeywords.push(targetAudience);
+  }
+
+  // Create a mock section for compatibility with existing generateImageSuggestions
+  const mockSection: DocumentSection = {
+    id: 'enhanced-section',
+    content,
+    topicTags: enhancedKeywords,
+    tone: 'friendly',
+    intent: 'illustrate',
+  };
+
+  // Use existing function with enhanced section
+  return generateImageSuggestions(mockSection);
+}
+
+function extractKeywords(content: string): string[] {
+  // Simple keyword extraction - in a real implementation, this would use NLP
+  const words = content.toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .split(/\s+/)
+    .filter(word => word.length > 3)
+    .slice(0, 10);
+  
+  return [...new Set(words)]; // Remove duplicates
+}
+
 export async function generateImageSuggestions(section: DocumentSection): Promise<ImageSuggestion[]> {
   await new Promise(resolve => setTimeout(resolve, 1500))
 

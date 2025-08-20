@@ -19,6 +19,7 @@ import {
 import {
   longFormContentGenerator,
   GeneratedContent,
+  LongFormContentConfig,
 } from "./longFormContentGenerator";
 import {
   contentQualityValidator,
@@ -31,6 +32,20 @@ export interface EbookIntegrationConfig {
   enableTemplateCustomization: boolean;
   enableQualityValidation: boolean;
   enableExportOptimization: boolean;
+}
+
+export interface EbookGenInput {
+  title: string;
+  outline?: string;
+  genre?: string;
+  genreSubtype?: string;
+  targetWordCount?: number;
+  tone?: string;
+  audience?: string;
+  researchSources?: string[];
+  qualityThreshold?: number;
+  enableFactChecking?: boolean;
+  enableHallucinationDetection?: boolean;
 }
 
 export interface IntegratedEbookResult {
@@ -78,7 +93,7 @@ export class EbookIntegrationService {
    * Complete ebook creation workflow with all integrations
    */
   async createIntegratedEbook(
-    config: any,
+    config: EbookGenInput,
     templateId: string,
     customizations?: TemplateCustomization,
     integrationConfig?: Partial<EbookIntegrationConfig>
@@ -93,9 +108,23 @@ export class EbookIntegrationService {
     };
 
     try {
+      // Convert EbookGenInput to LongFormContentConfig
+      const longFormConfig: LongFormContentConfig = {
+        title: config.title,
+        genre: config.genre || 'general',
+        targetWordCount: config.targetWordCount || 8000,
+        tone: config.tone || 'friendly',
+        audience: config.audience || 'general',
+        researchSources: config.researchSources || [],
+        outline: config.outline ? JSON.parse(config.outline) : undefined,
+        qualityThreshold: config.qualityThreshold || 0.7,
+        enableFactChecking: config.enableFactChecking || false,
+        enableHallucinationDetection: config.enableHallucinationDetection || false,
+      };
+
       // Step 1: Generate content
       const content = await longFormContentGenerator.generateLongFormContent(
-        config
+        longFormConfig
       );
 
       // Step 2: Quality validation
@@ -103,11 +132,11 @@ export class EbookIntegrationService {
       if (integrationSettings.enableQualityValidation) {
         qualityResults = await contentQualityValidator.validateContent(
           content.chapters.map((c) => c.content).join("\n\n"),
-          config.genre,
+          longFormConfig.genre,
           {
-            researchSources: config.researchSources,
-            factCheckRequired: config.enableFactChecking,
-            targetAudience: config.audience,
+            researchSources: longFormConfig.researchSources || [],
+            factCheckRequired: longFormConfig.enableFactChecking,
+            targetAudience: longFormConfig.audience,
           }
         );
       } else {
@@ -191,38 +220,91 @@ export class EbookIntegrationService {
    */
   async generateSectionImages(
     content: string,
-    sectionType: "introduction" | "chapter" | "conclusion" | "sidebar"
+    sectionType: "introduction" | "chapter" | "conclusion" | "sidebar",
+    genreSubtype?: string,
+    visualStyle?: string
   ): Promise<ImageMatch[]> {
     try {
       const analysis = await this.imageMatcher.analyzeContent(content);
-      const images = await this.imageMatcher.findMatchingImages(analysis);
+      
+      // Enhance analysis with genre-specific information if available
+      if (genreSubtype || visualStyle) {
+        // Add genre and style context to the analysis
+        const enhancedAnalysis = {
+          ...analysis,
+          genreContext: genreSubtype ? { subtype: genreSubtype } : undefined,
+          visualStyle: visualStyle ? { style: visualStyle } : undefined,
+        };
+        
+        // Pass enhanced analysis to image matching
+        const images = await this.imageMatcher.findMatchingImages(enhancedAnalysis);
+        
+        // Filter and prioritize images based on section type and genre context
+        return images
+          .filter((image) => {
+            const relevance = image.semanticMatch.relevanceScore;
+            const contextMatch = image.semanticMatch.contextMatch;
 
-      // Filter and prioritize images based on section type
-      return images
-        .filter((image) => {
-          const relevance = image.semanticMatch.relevanceScore;
-          const contextMatch = image.semanticMatch.contextMatch;
+            // Apply genre-specific filtering for children's content
+            if (genreSubtype && genreSubtype.startsWith('children-')) {
+              // Ensure images are age-appropriate by checking visual style
+              const visualStyle = image.semanticMatch.visualStyle?.style;
+              const isAgeAppropriate = visualStyle && 
+                                     !['dark', 'scary', 'horror'].includes(visualStyle);
+              if (!isAgeAppropriate) return false;
+            }
 
-          switch (sectionType) {
-            case "introduction":
-              return relevance > 0.7 && contextMatch.tone === "professional";
-            case "chapter":
-              return relevance > 0.6;
-            case "conclusion":
-              return (
-                relevance > 0.7 &&
-                contextMatch.emotions.includes("inspirational")
-              );
-            case "sidebar":
-              return (
-                relevance > 0.5 &&
-                image.semanticMatch.visualStyle.style === "illustrative"
-              );
-            default:
-              return relevance > 0.5;
-          }
-        })
-        .slice(0, 3); // Limit to 3 images per section
+            switch (sectionType) {
+              case "introduction":
+                return relevance > 0.7 && contextMatch.tone === "professional";
+              case "chapter":
+                return relevance > 0.6;
+              case "conclusion":
+                return (
+                  relevance > 0.7 &&
+                  contextMatch.emotions.includes("inspirational")
+                );
+              case "sidebar":
+                return (
+                  relevance > 0.5 &&
+                  image.semanticMatch.visualStyle.style === "illustrative"
+                );
+              default:
+                return relevance > 0.5;
+            }
+          })
+          .slice(0, 3); // Limit to 3 images per section
+      } else {
+        // Original logic without genre enhancements
+        const images = await this.imageMatcher.findMatchingImages(analysis);
+
+        // Filter and prioritize images based on section type
+        return images
+          .filter((image) => {
+            const relevance = image.semanticMatch.relevanceScore;
+            const contextMatch = image.semanticMatch.contextMatch;
+
+            switch (sectionType) {
+              case "introduction":
+                return relevance > 0.7 && contextMatch.tone === "professional";
+              case "chapter":
+                return relevance > 0.6;
+              case "conclusion":
+                return (
+                  relevance > 0.7 &&
+                  contextMatch.emotions.includes("inspirational")
+                );
+              case "sidebar":
+                return (
+                  relevance > 0.5 &&
+                  image.semanticMatch.visualStyle.style === "illustrative"
+                );
+              default:
+                return relevance > 0.5;
+            }
+          })
+          .slice(0, 3); // Limit to 3 images per section
+      }
     } catch (error) {
       console.error("Section image generation error:", error);
       return [];

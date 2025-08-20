@@ -27,7 +27,10 @@ import {
   getPopularGenres,
   searchGenres,
   getGenreById,
+  CHILDRENS_GENRE_KEY,
+  CHILDRENS_SUBTYPES,
 } from '../constants/genreConstants';
+import { isChildrenGenreEnabled } from '../config/flags';
 
 interface GenreSelectorProps {
   className?: string;
@@ -43,6 +46,7 @@ interface GenreSelectorProps {
   placeholder?: string;
   size?: 'sm' | 'md' | 'lg';
   variant?: 'dropdown' | 'cards' | 'list';
+  onSubtypeChange?: (value: string | undefined) => void;
 }
 
 interface GenreCardProps {
@@ -74,6 +78,7 @@ export function GenreSelector({
   placeholder = 'Select a genre...',
   size = 'md',
   variant = 'dropdown',
+  onSubtypeChange,
 }: GenreSelectorProps) {
   // TODO: Consider adding validation for maxSelections > 0 when allowMultiple is true
   // TODO: Consider adding accessibility attributes for screen readers
@@ -84,6 +89,7 @@ export function GenreSelector({
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [selectedGenres, setSelectedGenres] = useState<Genre[]>([]);
   const [recentlyUsed, setRecentlyUsed] = useState<string[]>([]);
+  const [selectedSubtype, setSelectedSubtype] = useState<string>('children-middle');
 
   // Initialize selected genres from props
   useEffect(() => {
@@ -273,6 +279,10 @@ export function GenreSelector({
     lg: 'text-lg px-4 py-3',
   };
 
+  // Ensure size has a valid value
+  const currentSize = size || 'md';
+  const currentSizeClass = sizeClasses[currentSize] || sizeClasses.md;
+
   if (variant === 'cards') {
     return (
       <div className={`genre-selector-cards ${className}`}>
@@ -331,7 +341,7 @@ export function GenreSelector({
               isSelected={selectedGenres.some(g => g.id === genre.id)}
               onSelect={handleGenreSelect}
               showSubgenres={showSubgenres}
-              size={size}
+              size={currentSize}
             />
           ))}
         </div>
@@ -364,7 +374,7 @@ export function GenreSelector({
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`w-full flex items-center justify-between ${sizeClasses[size]} border border-gray-300 rounded-lg bg-white hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed`}
+        className={`w-full flex items-center justify-between ${currentSizeClass} border border-gray-300 rounded-lg bg-white hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed`}
       >
         <span className="flex items-center space-x-2">
           {selectedGenres.length > 0 && (
@@ -489,6 +499,34 @@ export function GenreSelector({
                 No genres found matching &quot;{searchQuery}&quot;
               </div>
             )}
+
+            {/* Children's Subtype Selection */}
+            {isChildrenGenreEnabled() && 
+             selectedGenres.length === 1 && 
+             selectedGenres[0].id === CHILDRENS_GENRE_KEY && (
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <label className="block text-sm font-medium text-blue-900 mb-2">
+                  Age Group
+                </label>
+                <select
+                  value={selectedSubtype}
+                  onChange={(e) => {
+                    const newSubtype = e.target.value;
+                    setSelectedSubtype(newSubtype);
+                    onSubtypeChange?.(newSubtype);
+                  }}
+                  className="w-full px-3 py-2 border border-blue-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {CHILDRENS_SUBTYPES.map(subtype => (
+                    <option key={subtype} value={subtype}>
+                      {subtype === 'children-early' ? 'Early (Ages 4-6)' :
+                       subtype === 'children-middle' ? 'Middle (Ages 7-9)' :
+                       'Older (Ages 10-12)'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -510,10 +548,14 @@ function GenreCard({
     medium: 'p-4', // Add medium as alias for md
   };
 
+  // Ensure size has a valid value
+  const currentSize = size || 'medium';
+  const currentSizeClass = sizeClasses[currentSize] || sizeClasses.medium;
+
   return (
     <button
       onClick={() => onSelect(genre)}
-      className={`w-full text-left border rounded-lg transition-all duration-200 ${sizeClasses[size || 'medium']} ${
+      className={`w-full text-left border rounded-lg transition-all duration-200 ${currentSizeClass} ${
         isSelected
           ? 'border-blue-500 bg-blue-50 shadow-md'
           : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'

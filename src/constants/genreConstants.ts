@@ -31,6 +31,15 @@ export interface GenreCategory {
   genres: Genre[];
 }
 
+// Children's Genre Constants
+export const CHILDRENS_GENRE_KEY = "children";
+export const CHILDRENS_SUBTYPES = [
+  "children-early",   // ages ~4–6, PreK/K-1
+  "children-middle",  // ages ~7–9, A1–A2
+  "children-older",   // ages ~10–12, B1
+] as const;
+export type ChildrensSubtype = typeof CHILDRENS_SUBTYPES[number];
+
 // Fiction Genres
 export const fictionGenres: Genre[] = [
   {
@@ -158,6 +167,18 @@ export const fictionGenres: Genre[] = [
     tags: ['action', 'exploration', 'discovery', 'journey'],
     defaultTone: 'friendly',
     targetAudience: ['young-adult', 'adult'],
+  },
+  {
+    id: CHILDRENS_GENRE_KEY,
+    name: 'Children\'s Book',
+    description: 'Stories designed for young readers with age-appropriate content and themes',
+    icon: '📚',
+    category: 'fiction',
+    subgenres: CHILDRENS_SUBTYPES,
+    tags: ['children', 'educational', 'imaginative', 'age-appropriate'],
+    isPopular: true,
+    defaultTone: 'friendly',
+    targetAudience: ['children-early', 'children-middle', 'children-older'],
   },
 ];
 
