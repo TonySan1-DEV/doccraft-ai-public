@@ -21,12 +21,31 @@ export const Footer: React.FC<FooterProps> = ({
 }) => {
   const currentYear = new Date().getFullYear();
 
+  // Debug function to test if links are clickable
+  const handleLinkClick = (path: string) => {
+    console.log(`Footer link clicked: ${path}`);
+    window.location.href = path; // Force navigation as a test
+  };
+
   return (
     <footer
       role="contentinfo"
-      className={`bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 ${className}`}
+      className={`bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 relative z-10 ${className}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Debug test button */}
+        <div className="py-2 text-center">
+          <button
+            type="button"
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            onClick={() => {
+              console.log('Footer test button clicked!');
+              alert('Footer test button works!');
+            }}
+          >
+            TEST FOOTER BUTTON
+          </button>
+        </div>
         <div className="py-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Company Info */}
@@ -61,12 +80,14 @@ export const Footer: React.FC<FooterProps> = ({
               </h3>
               <ul className="space-y-2">
                 <li>
-                  <Link
-                    to="/dashboard"
-                    className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded"
+                  <button
+                    type="button"
+                    className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded cursor-pointer"
+                    onClick={() => handleLinkClick('/dashboard')}
+                    style={{ position: 'relative', zIndex: 10 }}
                   >
                     Dashboard
-                  </Link>
+                  </button>
                 </li>
                 <li>
                   <Link
@@ -105,6 +126,7 @@ export const Footer: React.FC<FooterProps> = ({
                   <Link
                     to="/terms"
                     className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded"
+                    onClick={() => console.log('Terms link clicked')}
                   >
                     Terms of Service
                   </Link>
