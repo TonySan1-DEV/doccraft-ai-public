@@ -241,7 +241,7 @@ export const Support: React.FC = () => {
               <h1 className="text-3xl font-bold text-blue-800 dark:text-blue-400 mb-2">
                 Customer Support
               </h1>
-              <p className="text-black dark:text-white">
+              <p className="text-black">
                 Get help with DocCraft-AI. We&apos;re here to assist you 24/7.
               </p>
             </div>
@@ -306,7 +306,7 @@ export const Support: React.FC = () => {
                         <h3 className="font-medium text-blue-800 dark:text-blue-400">
                           Create Ticket
                         </h3>
-                        <p className="text-sm text-black dark:text-white">
+                        <p className="text-sm text-black">
                           Submit a new support request
                         </p>
                       </div>
@@ -321,7 +321,7 @@ export const Support: React.FC = () => {
                         <h3 className="font-medium text-blue-800 dark:text-blue-400">
                           Live Chat
                         </h3>
-                        <p className="text-sm text-black dark:text-white">
+                        <p className="text-sm text-black">
                           Chat with support team
                         </p>
                       </div>
@@ -336,7 +336,7 @@ export const Support: React.FC = () => {
                         <h3 className="font-medium text-blue-800 dark:text-blue-400">
                           FAQ
                         </h3>
-                        <p className="text-sm text-black dark:text-white">
+                        <p className="text-sm text-black">
                           Find quick answers
                         </p>
                       </div>
@@ -351,7 +351,7 @@ export const Support: React.FC = () => {
                         <h3 className="font-medium text-blue-800 dark:text-blue-400">
                           My Tickets
                         </h3>
-                        <p className="text-sm text-black dark:text-white">
+                        <p className="text-sm text-black">
                           View all your tickets
                         </p>
                       </div>

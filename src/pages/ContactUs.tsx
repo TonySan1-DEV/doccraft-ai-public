@@ -36,7 +36,7 @@ const ContactUs: React.FC = () => {
         <div>
           <label
             htmlFor="name"
-            className="block text-sm font-medium text-black dark:text-white"
+            className="block text-sm font-medium text-black"
           >
             Name
           </label>
@@ -47,14 +47,14 @@ const ContactUs: React.FC = () => {
             value={formData.name}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white border-gray-300 text-black"
           />
         </div>
 
         <div>
           <label
             htmlFor="email"
-            className="block text-sm font-medium text-black dark:text-white"
+            className="block text-sm font-medium text-black"
           >
             Email
           </label>
@@ -65,14 +65,14 @@ const ContactUs: React.FC = () => {
             value={formData.email}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white border-gray-300 text-black"
           />
         </div>
 
         <div>
           <label
             htmlFor="subject"
-            className="block text-sm font-medium text-black dark:text-white"
+            className="block text-sm font-medium text-black"
           >
             Subject
           </label>
@@ -82,7 +82,7 @@ const ContactUs: React.FC = () => {
             value={formData.subject}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white border-gray-300 text-black"
           >
             <option value="">Select a subject</option>
             <option value="general">General Inquiry</option>
@@ -96,7 +96,7 @@ const ContactUs: React.FC = () => {
         <div>
           <label
             htmlFor="message"
-            className="block text-sm font-medium text-black dark:text-white"
+            className="block text-sm font-medium text-black"
           >
             Message
           </label>
@@ -107,7 +107,7 @@ const ContactUs: React.FC = () => {
             onChange={handleChange}
             required
             rows={6}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white border-gray-300 text-black"
           />
         </div>
 

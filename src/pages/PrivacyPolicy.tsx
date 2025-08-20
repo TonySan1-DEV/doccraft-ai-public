@@ -7,14 +7,14 @@ const PrivacyPolicy: React.FC = () => {
         Privacy Policy
       </h1>
       <div className="prose prose-gray max-w-none dark:prose-invert">
-        <p className="text-black dark:text-white mb-6">
+        <p className="text-black mb-6">
           Last updated: {new Date().toLocaleDateString()}
         </p>
 
         <h2 className="text-2xl font-semibold mb-4 text-blue-800 dark:text-blue-400">
           1. Information We Collect
         </h2>
-        <p className="text-black dark:text-white mb-6">
+        <p className="text-black mb-6">
           We collect information you provide directly to us, such as when you
           create an account, use our services, or contact us.
         </p>
@@ -22,7 +22,7 @@ const PrivacyPolicy: React.FC = () => {
         <h2 className="text-2xl font-semibold mb-4 text-blue-800 dark:text-blue-400">
           2. How We Use Your Information
         </h2>
-        <p className="text-black dark:text-white mb-6">
+        <p className="text-black mb-6">
           We use the information we collect to provide, maintain, and improve
           our services.
         </p>
@@ -30,7 +30,7 @@ const PrivacyPolicy: React.FC = () => {
         <h2 className="text-2xl font-semibold mb-4 text-blue-800 dark:text-blue-400">
           3. Information Sharing
         </h2>
-        <p className="text-black dark:text-white mb-6">
+        <p className="text-black mb-6">
           We do not sell, trade, or otherwise transfer your personal information
           to third parties.
         </p>
@@ -38,7 +38,7 @@ const PrivacyPolicy: React.FC = () => {
         <h2 className="text-2xl font-semibold mb-4 text-blue-800 dark:text-blue-400">
           4. Data Security
         </h2>
-        <p className="text-black dark:text-white mb-6">
+        <p className="text-black mb-6">
           We implement appropriate security measures to protect your personal
           information.
         </p>
@@ -46,7 +46,7 @@ const PrivacyPolicy: React.FC = () => {
         <h2 className="text-2xl font-semibold mb-4 text-blue-800 dark:text-blue-400">
           5. Contact Us
         </h2>
-        <p className="text-black dark:text-white mb-6">
+        <p className="text-black mb-6">
           If you have questions about this Privacy Policy, please contact us at
           privacy@doccraft-ai.com.
         </p>

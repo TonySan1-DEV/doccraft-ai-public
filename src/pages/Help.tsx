@@ -40,7 +40,7 @@ const Help: React.FC = () => {
         <h2 className="text-2xl font-semibold mb-4 text-blue-800 dark:text-blue-400">
           Getting Started
         </h2>
-        <p className="text-black dark:text-white mb-4">
+        <p className="text-black mb-4">
           Welcome to DocCraft-AI! This help center will guide you through using
           our platform effectively.
         </p>
@@ -52,7 +52,7 @@ const Help: React.FC = () => {
             <h3 className="font-semibold text-blue-800 dark:text-blue-400">
               Dashboard Guide
             </h3>
-            <p className="text-sm text-black dark:text-white">
+            <p className="text-sm text-black">
               Learn how to navigate and use the main dashboard
             </p>
           </Link>
@@ -63,7 +63,7 @@ const Help: React.FC = () => {
             <h3 className="font-semibold text-blue-800 dark:text-blue-400">
               Document Processing
             </h3>
-            <p className="text-sm text-black dark:text-white">
+            <p className="text-sm text-black">
               How to process and analyze documents
             </p>
           </Link>
@@ -83,7 +83,7 @@ const Help: React.FC = () => {
               <h3 className="font-semibold text-blue-800 dark:text-blue-400 mb-2">
                 {faq.question}
               </h3>
-              <p className="text-black dark:text-white">{faq.answer}</p>
+              <p className="text-black">{faq.answer}</p>
             </div>
           ))}
         </div>
@@ -93,7 +93,7 @@ const Help: React.FC = () => {
         <h2 className="text-2xl font-semibold mb-4 text-blue-800 dark:text-blue-400">
           Need More Help?
         </h2>
-        <p className="text-black dark:text-white mb-4">
+        <p className="text-black mb-4">
           Can't find what you're looking for? Our support team is here to help!
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
