@@ -28,7 +28,7 @@ const ContactUs: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
+      <h1 className="text-3xl font-bold mb-6 text-blue-800 dark:text-blue-400">
         Contact Us
       </h1>
 
@@ -36,7 +36,7 @@ const ContactUs: React.FC = () => {
         <div>
           <label
             htmlFor="name"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium text-black dark:text-white"
           >
             Name
           </label>
@@ -54,7 +54,7 @@ const ContactUs: React.FC = () => {
         <div>
           <label
             htmlFor="email"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium text-black dark:text-white"
           >
             Email
           </label>
@@ -72,7 +72,7 @@ const ContactUs: React.FC = () => {
         <div>
           <label
             htmlFor="subject"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium text-black dark:text-white"
           >
             Subject
           </label>
@@ -96,7 +96,7 @@ const ContactUs: React.FC = () => {
         <div>
           <label
             htmlFor="message"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium text-black dark:text-white"
           >
             Message
           </label>

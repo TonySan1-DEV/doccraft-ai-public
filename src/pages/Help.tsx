@@ -32,15 +32,15 @@ const Help: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
+      <h1 className="text-3xl font-bold mb-6 text-blue-800 dark:text-blue-400">
         Help Center
       </h1>
 
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+        <h2 className="text-2xl font-semibold mb-4 text-blue-800 dark:text-blue-400">
           Getting Started
         </h2>
-        <p className="text-gray-700 dark:text-gray-300 mb-4">
+        <p className="text-black dark:text-white mb-4">
           Welcome to DocCraft-AI! This help center will guide you through using
           our platform effectively.
         </p>
@@ -49,10 +49,10 @@ const Help: React.FC = () => {
             to="/dashboard"
             className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 transition-colors"
           >
-            <h3 className="font-semibold text-gray-900 dark:text-white">
+            <h3 className="font-semibold text-blue-800 dark:text-blue-400">
               Dashboard Guide
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-black dark:text-white">
               Learn how to navigate and use the main dashboard
             </p>
           </Link>
@@ -60,10 +60,10 @@ const Help: React.FC = () => {
             to="/processor"
             className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 transition-colors"
           >
-            <h3 className="font-semibold text-gray-900 dark:text-white">
+            <h3 className="font-semibold text-blue-800 dark:text-blue-400">
               Document Processing
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-black dark:text-white">
               How to process and analyze documents
             </p>
           </Link>
@@ -71,7 +71,7 @@ const Help: React.FC = () => {
       </div>
 
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+        <h2 className="text-2xl font-semibold mb-4 text-blue-800 dark:text-blue-400">
           Frequently Asked Questions
         </h2>
         <div className="space-y-4">
@@ -80,20 +80,20 @@ const Help: React.FC = () => {
               key={index}
               className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
             >
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className="font-semibold text-blue-800 dark:text-blue-400 mb-2">
                 {faq.question}
               </h3>
-              <p className="text-gray-700 dark:text-gray-300">{faq.answer}</p>
+              <p className="text-black dark:text-white">{faq.answer}</p>
             </div>
           ))}
         </div>
       </div>
 
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+        <h2 className="text-2xl font-semibold mb-4 text-blue-800 dark:text-blue-400">
           Need More Help?
         </h2>
-        <p className="text-gray-700 dark:text-gray-300 mb-4">
+        <p className="text-black dark:text-white mb-4">
           Can't find what you're looking for? Our support team is here to help!
         </p>
         <div className="flex flex-col sm:flex-row gap-4">

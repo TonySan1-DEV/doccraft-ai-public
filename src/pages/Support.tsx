@@ -238,10 +238,10 @@ export const Support: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              <h1 className="text-3xl font-bold text-blue-800 dark:text-blue-400 mb-2">
                 Customer Support
               </h1>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-black dark:text-white">
                 Get help with DocCraft-AI. We&apos;re here to assist you 24/7.
               </p>
             </div>
@@ -293,7 +293,7 @@ export const Support: React.FC = () => {
               {/* Quick Actions */}
               <div className="lg:col-span-2">
                 <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  <h2 className="text-xl font-semibold text-blue-800 dark:text-blue-400 mb-4">
                     Quick Actions
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -303,10 +303,10 @@ export const Support: React.FC = () => {
                     >
                       <Plus className="w-6 h-6 text-blue-600 mr-3" />
                       <div className="text-left">
-                        <h3 className="font-medium text-gray-900 dark:text-white">
+                        <h3 className="font-medium text-blue-800 dark:text-blue-400">
                           Create Ticket
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-black dark:text-white">
                           Submit a new support request
                         </p>
                       </div>
@@ -318,10 +318,10 @@ export const Support: React.FC = () => {
                     >
                       <MessageCircle className="w-6 h-6 text-green-600 mr-3" />
                       <div className="text-left">
-                        <h3 className="font-medium text-gray-900 dark:text-white">
+                        <h3 className="font-medium text-blue-800 dark:text-blue-400">
                           Live Chat
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-black dark:text-white">
                           Chat with support team
                         </p>
                       </div>
@@ -333,10 +333,10 @@ export const Support: React.FC = () => {
                     >
                       <HelpCircle className="w-6 h-6 text-purple-600 mr-3" />
                       <div className="text-left">
-                        <h3 className="font-medium text-gray-900 dark:text-white">
+                        <h3 className="font-medium text-blue-800 dark:text-blue-400">
                           FAQ
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-black dark:text-white">
                           Find quick answers
                         </p>
                       </div>
@@ -348,10 +348,10 @@ export const Support: React.FC = () => {
                     >
                       <FileText className="w-6 h-6 text-orange-600 mr-3" />
                       <div className="text-left">
-                        <h3 className="font-medium text-gray-900 dark:text-white">
+                        <h3 className="font-medium text-blue-800 dark:text-blue-400">
                           My Tickets
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-black dark:text-white">
                           View all your tickets
                         </p>
                       </div>
