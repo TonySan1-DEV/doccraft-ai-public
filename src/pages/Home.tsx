@@ -447,8 +447,6 @@ const EnhancedBackgroundOverlay = () => {
   );
 };
 
-
-
 export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -848,8 +846,6 @@ export default function Home() {
           </div>
         </section>
       </div>
-
-
 
       <Footer />
     </div>
