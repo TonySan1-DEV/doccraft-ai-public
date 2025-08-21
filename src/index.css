@@ -1139,6 +1139,80 @@
   border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
+/* New color variants for additional feature cards */
+.feature-card-teal .feature-card-icon {
+  @apply bg-teal-100 dark:bg-teal-900;
+}
+
+.feature-card-teal:hover .feature-card-icon {
+  @apply bg-teal-200 dark:bg-teal-800;
+  box-shadow: 0 0 35px rgba(20, 184, 166, 0.5);
+}
+
+.feature-card-teal:hover {
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(20, 184, 166, 0.2),
+    0 0 0 4px rgba(20, 184, 166, 0.1),
+    0 0 40px rgba(20, 184, 166, 0.2);
+  border: 1px solid rgba(20, 184, 166, 0.3);
+}
+
+.feature-card-orange .feature-card-icon {
+  @apply bg-orange-100 dark:bg-orange-900;
+}
+
+.feature-card-orange:hover .feature-card-icon {
+  @apply bg-orange-200 dark:bg-orange-800;
+  box-shadow: 0 0 35px rgba(249, 115, 22, 0.5);
+}
+
+.feature-card-orange:hover {
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(249, 115, 22, 0.2),
+    0 0 0 4px rgba(249, 115, 22, 0.1),
+    0 0 40px rgba(249, 115, 22, 0.2);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.feature-card-pink .feature-card-icon {
+  @apply bg-pink-100 dark:bg-pink-900;
+}
+
+.feature-card-pink:hover .feature-card-icon {
+  @apply bg-pink-200 dark:bg-pink-800;
+  box-shadow: 0 0 35px rgba(236, 72, 153, 0.5);
+}
+
+.feature-card-pink:hover {
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(236, 72, 153, 0.2),
+    0 0 0 4px rgba(236, 72, 153, 0.1),
+    0 0 40px rgba(236, 72, 153, 0.2);
+  border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+/* Teal color variant for feature cards */
+.feature-card-teal .feature-card-icon {
+  @apply bg-teal-100 dark:bg-teal-900;
+}
+
+.feature-card-teal:hover .feature-card-icon {
+  @apply bg-teal-200 dark:bg-teal-800;
+  box-shadow: 0 0 35px rgba(20, 184, 166, 0.5);
+}
+
+.feature-card-teal:hover {
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(20, 184, 166, 0.2),
+    0 0 0 4px rgba(20, 184, 166, 0.1),
+    0 0 40px rgba(20, 184, 166, 0.2);
+  border: 1px solid rgba(20, 184, 166, 0.3);
+}
+
 /* Button styles */
 .btn {
   @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;

@@ -23,17 +23,20 @@ import {
   AlertCircle,
   CheckCircle,
   Loader,
+  Volume2,
+  Bot,
+  Star,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import {
-  ResearchAgent,
-  OutlineAgent,
-  WritingAgent,
-  CharacterAgent,
-  EmotionAgent,
-  StyleAgent,
-} from '../services/agenticAI';
+  isAudiobookEnabled,
+  isAgenticsEnabled,
+  isI18nEnabled,
+} from '../config/flags';
+import { subscribeAgentSteps } from '../hooks/useAgentics';
+import { t } from '../i18n';
+// Mock responses used instead of real agent execution for demo stability
 
 // Professional Robot Head Line Icon Component
 const RobotHeadIcon = ({ className = 'w-6 h-6' }) => (
@@ -661,18 +664,7 @@ const AIAgentDemo = ({
   const [response, setResponse] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  // Get the appropriate agent instance
-  const getAgentInstance = useCallback(() => {
-    const agentMap = {
-      research: new ResearchAgent(),
-      outline: new OutlineAgent(),
-      writing: new WritingAgent(),
-      character: new CharacterAgent(),
-      emotion: new EmotionAgent(),
-      style: new StyleAgent(),
-    };
-    return agentMap[agentType as keyof typeof agentMap];
-  }, [agentType]);
+  // Mock responses used instead of real agent instances for demo stability
 
   const executeAgent = async () => {
     if (!isActive) return;
@@ -681,44 +673,206 @@ const AIAgentDemo = ({
     setError(null);
 
     try {
-      const agent = getAgentInstance();
-      const context = {
-        content: 'Detective story opening with mysterious crime scene',
-        characters: [{ id: '1', name: 'Detective Sarah Chen' }],
-        storyStructure: 'linear_progressive',
-        genre: 'detective_noir',
-        complexity: 3,
-        audience: 'adult_readers',
-        scenes: [{ id: '1', content: 'Crime scene investigation' }],
-        plotPoints: ['opening', 'conflict', 'climax', 'resolution'],
-        readerFeedback: 'positive_engagement',
-        storyProgress: 'early_development',
-        sections: ['chapter1', 'chapter2'],
-        chapters: ['chapter1', 'chapter2'],
+      // For demo purposes, use mock responses instead of real agent execution
+      // This prevents errors and provides consistent demo experience
+      const mockResponses = {
+        research: {
+          findings: [
+            {
+              id: '1',
+              content: 'Detective noir conventions',
+              relevance: 0.9,
+              source: 'Genre analysis',
+              category: 'style',
+              timestamp: new Date(),
+              confidence: 0.95,
+            },
+          ],
+          insights: [
+            {
+              id: '1',
+              insight: 'Mystery genre requires careful pacing and red herrings',
+              significance: 0.9,
+              supportingEvidence: [
+                'Classic detective stories',
+                'Reader expectations',
+              ],
+              implications: [
+                'Build suspense gradually',
+                'Include multiple suspects',
+              ],
+              confidence: 0.9,
+            },
+          ],
+          sources: [],
+          recommendedNextSteps: [
+            'Research crime scene investigation procedures',
+            'Study detective character archetypes',
+          ],
+          confidence: 0.9,
+          metadata: {
+            researchTime: 120,
+            sourcesAnalyzed: 5,
+            qualityScore: 0.9,
+            coverage: 0.85,
+          },
+        },
+        outline: {
+          outline: {
+            id: '1',
+            title: 'Detective Story Structure',
+            sections: [
+              {
+                id: '1',
+                title: 'Opening Scene',
+                content: 'Crime scene discovery',
+                wordCount: 800,
+                complexity: 2,
+              },
+              {
+                id: '2',
+                title: 'Investigation',
+                content: 'Detective begins inquiry',
+                wordCount: 1200,
+                complexity: 3,
+              },
+              {
+                id: '3',
+                title: 'Climax',
+                content: 'Revelation and resolution',
+                wordCount: 1000,
+                complexity: 4,
+              },
+            ],
+            metadata: {
+              totalSections: 3,
+              estimatedWordCount: 3000,
+              complexity: 3,
+              flow: 'linear_progressive',
+            },
+          },
+          structure: {
+            overallCoherence: 0.9,
+            pacing: 'optimal',
+            tensionCurve: 'rising',
+          },
+          estimatedWordCounts: [],
+          writingGuidance: [
+            'Start with immediate action',
+            'Build tension through investigation',
+            'End with satisfying resolution',
+          ],
+          qualityMetrics: {
+            predictedEngagement: 0.85,
+            structuralSoundness: 0.9,
+            audienceAppeal: 0.8,
+          },
+        },
+        writing: {
+          content:
+            "The rain-slicked pavement reflected the flashing lights of emergency vehicles as Detective Sarah Chen approached the crime scene. Her sharp eyes took in every detail - the broken window, the scattered papers, the telltale signs of a struggle. This wasn't just another burglary; something more sinister had happened here.",
+          qualityMetrics: {
+            readability: 0.9,
+            engagement: 0.85,
+            consistency: 0.9,
+          },
+          suggestions: [
+            'Add more sensory details',
+            'Include internal monologue',
+            'Strengthen opening hook',
+          ],
+        },
+        character: {
+          characterProfiles: [
+            {
+              id: '1',
+              name: 'Detective Sarah Chen',
+              personality: 'Analytical and determined',
+              motivations: ['Justice', 'Professional pride'],
+              conflicts: ['Work-life balance', 'Past trauma'],
+            },
+          ],
+          consistencyChecks: {
+            overallConsistency: 0.9,
+            dialogueConsistency: 0.85,
+            behaviorConsistency: 0.95,
+          },
+          developmentSuggestions: [
+            'Explore backstory gradually',
+            'Show vulnerability moments',
+            'Build relationships with supporting characters',
+          ],
+        },
+        emotion: {
+          tensionCurves: {
+            overallTension: 0.8,
+            openingTension: 0.6,
+            climaxTension: 0.9,
+            resolutionTension: 0.4,
+          },
+          optimizationSuggestions: [
+            'Increase opening tension',
+            'Maintain suspense through middle',
+            'Provide emotional release at end',
+          ],
+          emotionalBeats: ['Curiosity', 'Suspense', 'Satisfaction'],
+        },
+        style: {
+          consistencyScore: {
+            overallConsistency: 0.9,
+            toneConsistency: 0.85,
+            voiceConsistency: 0.95,
+          },
+          improvementSuggestions: [
+            'Maintain noir atmosphere throughout',
+            'Vary sentence structure for rhythm',
+            'Use active voice consistently',
+          ],
+          styleAnalysis:
+            'Strong detective noir voice with consistent atmospheric elements',
+        },
       };
 
-      const result = await agent.execute(context, mode);
+      // Simulate processing delay for realistic demo experience
+      await new Promise(resolve =>
+        setTimeout(resolve, 1000 + Math.random() * 1000)
+      );
+
+      const result = mockResponses[agentType as keyof typeof mockResponses];
 
       // Format the response based on agent type
       let formattedResponse = '';
       switch (agentType) {
         case 'research':
-          formattedResponse = `Found ${result.findings?.length || 0} relevant insights. ${result.insights?.[0]?.insight || 'Research analysis complete.'}`;
+          const findingsCount = result?.findings?.length || 0;
+          const firstInsight = result?.insights?.[0]?.insight;
+          formattedResponse = `Found ${findingsCount} relevant insights. ${firstInsight || 'Research analysis complete.'}`;
           break;
         case 'outline':
-          formattedResponse = `Generated ${result.outline?.sections?.length || 0}-point story structure. ${result.writingGuidance?.[0] || 'Structure analysis complete.'}`;
+          const sectionsCount = result?.outline?.sections?.length || 0;
+          const firstGuidance = result?.writingGuidance?.[0];
+          formattedResponse = `Generated ${sectionsCount}-point story structure. ${firstGuidance || 'Structure analysis complete.'}`;
           break;
         case 'writing':
-          formattedResponse = result.content || 'Writing enhancement complete.';
+          formattedResponse =
+            result?.content || 'Writing enhancement complete.';
           break;
         case 'character':
-          formattedResponse = `Character analysis: ${result.characterProfiles?.[0]?.personality || 'Profile'} personality with ${result.consistencyChecks?.overallConsistency || 0.8} consistency.`;
+          const firstProfile = result?.characterProfiles?.[0]?.personality;
+          const consistency =
+            result?.consistencyChecks?.overallConsistency || 0.8;
+          formattedResponse = `Character analysis: ${firstProfile || 'Profile'} personality with ${consistency} consistency.`;
           break;
         case 'emotion':
-          formattedResponse = `Emotional arc: ${result.tensionCurves?.overallTension || 0.8} tension with ${result.optimizationSuggestions?.[0] || 'optimal pacing'}.`;
+          const tension = result?.tensionCurves?.overallTension || 0.8;
+          const firstSuggestion = result?.optimizationSuggestions?.[0];
+          formattedResponse = `Emotional arc: ${tension} tension with ${firstSuggestion || 'optimal pacing'}.`;
           break;
         case 'style':
-          formattedResponse = `Style consistency: ${result.consistencyScore?.overallConsistency || 0.9} score. ${result.improvementSuggestions?.[0] || 'Style analysis complete.'}`;
+          const consistencyScore =
+            result?.consistencyScore?.overallConsistency || 0.9;
+          const firstImprovement = result?.improvementSuggestions?.[0];
+          formattedResponse = `Style consistency: ${consistencyScore} score. ${firstImprovement || 'Style analysis complete.'}`;
           break;
         default:
           formattedResponse = 'AI analysis complete.';
@@ -742,11 +896,7 @@ const AIAgentDemo = ({
     }
   }, [isActive, mode, agentType, executeAgent]);
 
-  useEffect(() => {
-    if (isActive && mode === 'FULLY_AUTO') {
-      simulateResponse();
-    }
-  }, [isActive, mode]);
+  // Removed simulateResponse call as it's not defined
 
   const agentConfig = {
     research: {
@@ -918,6 +1068,36 @@ const Demo = () => {
   const [isStartingDemo, setIsStartingDemo] = useState(false);
   const [demoError, setDemoError] = useState<string | null>(null);
 
+  // New feature demo state
+  const [audiobookText, setAudiobookText] = useState('');
+  const [audiobookVoice, setAudiobookVoice] = useState<
+    'narrator_m' | 'narrator_f' | 'warm_f' | 'bright_m' | 'neutral_f'
+  >('narrator_f');
+  const [audiobookFormat, setAudiobookFormat] = useState<
+    'mp3' | 'wav' | 'ogg' | 'm4a'
+  >('mp3');
+  const [audiobookUrl, setAudiobookUrl] = useState<string | null>(null);
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const [audiobookError, setAudiobookError] = useState<string | null>(null);
+
+  const [agenticsGoal, setAgenticsGoal] = useState('');
+  const [agenticsRunId, setAgenticsRunId] = useState<string | null>(null);
+  const [agenticsEvents, setAgenticsEvents] = useState<
+    Array<{ timestamp: string; type: string; message: string }>
+  >([]);
+  const [isRunningAgentics, setIsRunningAgentics] = useState(false);
+  const [agenticsError, setAgenticsError] = useState<string | null>(null);
+
+  const [ebookTitle, setEbookTitle] = useState('');
+  const [ebookSynopsis, setEbookSynopsis] = useState('');
+  const [isChildrensContent, setIsChildrensContent] = useState(false);
+  const [ebookOutline, setEbookOutline] = useState<Array<{
+    title: string;
+    summary: string;
+  }> | null>(null);
+  const [isGeneratingEbook, setIsGeneratingEbook] = useState(false);
+  const [ebookError, setEbookError] = useState<string | null>(null);
+
   const modes = [
     {
       value: 'MANUAL',
@@ -988,6 +1168,164 @@ const Demo = () => {
   const handleFeatureClick = featureType => {
     if (window.demoAssistantHandleClick) {
       window.demoAssistantHandleClick('feature', featureType);
+    }
+  };
+
+  // New feature demo functions
+  const generateAudiobook = async () => {
+    if (!audiobookText.trim()) return;
+
+    setIsGeneratingAudio(true);
+    setAudiobookError(null);
+
+    try {
+      const response = await fetch('/api/export/audio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': 'demo-user',
+        },
+        body: JSON.stringify({
+          text: audiobookText,
+          voice: audiobookVoice,
+          format: audiobookFormat,
+          provider: 'openai',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Audio generation failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      setAudiobookUrl(result.url || result.signedUrl);
+      toast.success('Audiobook generated successfully!');
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to generate audiobook';
+      setAudiobookError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsGeneratingAudio(false);
+    }
+  };
+
+  const runAgentics = async () => {
+    if (!agenticsGoal.trim()) return;
+
+    setIsRunningAgentics(true);
+    setAgenticsError(null);
+    setAgenticsEvents([]);
+
+    try {
+      const response = await fetch('/api/agentics/run', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': 'demo-user',
+        },
+        body: JSON.stringify({
+          goal: agenticsGoal,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Agentics run failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      const runId = result.runId;
+      setAgenticsRunId(runId);
+
+      // Try to connect to SSE stream
+      try {
+        const eventSource = subscribeAgentSteps(runId);
+
+        eventSource.onmessage = event => {
+          const data = JSON.parse(event.data);
+          setAgenticsEvents(prev => [
+            ...prev,
+            {
+              timestamp: new Date().toLocaleTimeString(),
+              type: data.type || 'event',
+              message: data.message || JSON.stringify(data),
+            },
+          ]);
+
+          if (data.type === 'done' || data.type === 'error') {
+            eventSource.close();
+          }
+        };
+
+        eventSource.onerror = () => {
+          eventSource.close();
+        };
+
+        // Auto-close after 30 seconds
+        setTimeout(() => {
+          eventSource.close();
+        }, 30000);
+
+        toast.success('Agentics run started successfully!');
+      } catch (streamError) {
+        console.warn('SSE streaming not available:', streamError);
+        // Still show success for the run
+        toast.success(
+          'Agentics run started successfully! (Streaming not available)'
+        );
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to start agentics run';
+      setAgenticsError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsRunningAgentics(false);
+    }
+  };
+
+  const generateEbookOutline = async () => {
+    if (!ebookTitle.trim() || !ebookSynopsis.trim()) return;
+
+    setIsGeneratingEbook(true);
+    setEbookError(null);
+
+    try {
+      // Mock ebook outline generation for demo
+      // In production, this would call the actual ebook service
+      const mockOutline = [
+        {
+          title: 'Introduction',
+          summary: 'Setting the stage and introducing the main concept',
+        },
+        {
+          title: 'Core Content',
+          summary: 'Main chapters covering the primary topics and themes',
+        },
+        {
+          title: 'Advanced Topics',
+          summary: 'Deeper exploration of complex subjects',
+        },
+        {
+          title: 'Conclusion',
+          summary: 'Wrapping up and providing next steps',
+        },
+      ];
+
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      setEbookOutline(mockOutline);
+      toast.success('Ebook outline generated successfully!');
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to generate ebook outline';
+      setEbookError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsGeneratingEbook(false);
     }
   };
 
@@ -1253,6 +1591,352 @@ const Demo = () => {
               )}
             </div>
           ))}
+        </div>
+
+        {/* New Feature Demo Blocks */}
+        <div className="mt-16 space-y-8">
+          {/* Audiobook Demo Block */}
+          {isAudiobookEnabled() && (
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                  <Volume2 className="w-5 h-5 text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    {isI18nEnabled()
+                      ? t('demo.audiobook.title')
+                      : 'Audiobook Creator'}
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    {isI18nEnabled()
+                      ? t('demo.audiobook.description')
+                      : 'Generate audio samples from your text'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Text
+                  </label>
+                  <textarea
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    rows={3}
+                    placeholder="Enter text to convert to audio..."
+                    value={audiobookText}
+                    onChange={e => setAudiobookText(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Voice
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    value={audiobookVoice}
+                    onChange={e => setAudiobookVoice(e.target.value)}
+                  >
+                    <option value="narrator_f">Narrator (F)</option>
+                    <option value="narrator_m">Narrator (M)</option>
+                    <option value="warm_f">Warm (F)</option>
+                    <option value="bright_m">Bright (M)</option>
+                    <option value="neutral_f">Neutral (F)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Format
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    value={audiobookFormat}
+                    onChange={e => setAudiobookFormat(e.target.value)}
+                  >
+                    <option value="mp3">MP3</option>
+                    <option value="wav">WAV</option>
+                    <option value="ogg">OGG</option>
+                    <option value="m4a">M4A</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={generateAudiobook}
+                  disabled={!audiobookText.trim() || isGeneratingAudio}
+                  className="px-6 py-2 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                >
+                  {isGeneratingAudio ? (
+                    <>
+                      <Loader className="w-4 h-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4" />
+                      Generate Sample (10s)
+                    </>
+                  )}
+                </button>
+
+                {audiobookUrl && (
+                  <div className="flex items-center gap-2">
+                    <audio controls className="h-10">
+                      <source src={audiobookUrl} type="audio/mpeg" />
+                      Your browser does not support the audio element.
+                    </audio>
+                    <a
+                      href={audiobookUrl}
+                      download="audiobook-sample.mp3"
+                      className="px-3 py-2 text-sm text-orange-600 hover:text-orange-700 font-medium"
+                    >
+                      Download
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {audiobookError && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <div className="flex items-center gap-2 text-red-700">
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="text-sm">{audiobookError}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Agentics Demo Block */}
+          {isAgenticsEnabled() && (
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+                  <Bot className="w-5 h-5 text-teal-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    {isI18nEnabled()
+                      ? t('demo.agentics.title')
+                      : 'AI Writing Agents'}
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    {isI18nEnabled()
+                      ? t('demo.agentics.description')
+                      : 'Run collaborative AI agents with real-time streaming'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Goal
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    placeholder="e.g., Create a mystery novel outline"
+                    value={agenticsGoal}
+                    onChange={e => setAgenticsGoal(e.target.value)}
+                  />
+                </div>
+
+                <div className="flex items-end">
+                  <button
+                    onClick={runAgentics}
+                    disabled={!agenticsGoal.trim() || isRunningAgentics}
+                    className="w-full px-6 py-2 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                  >
+                    {isRunningAgentics ? (
+                      <>
+                        <Loader className="w-4 h-4 animate-spin" />
+                        Running...
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4" />
+                        Run Plan
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {agenticsRunId && (
+                <div className="mb-4 p-3 bg-teal-50 border border-teal-200 rounded-md">
+                  <div className="flex items-center gap-2 text-teal-700">
+                    <CheckCircle className="w-4 h-4" />
+                    <span className="text-sm font-medium">
+                      Run ID: {agenticsRunId}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {agenticsEvents.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    Live Events:
+                  </h4>
+                  <div className="bg-gray-50 rounded-md p-3 max-h-40 overflow-y-auto">
+                    {agenticsEvents.map((event, index) => (
+                      <div key={index} className="text-xs text-gray-600 mb-1">
+                        <span className="font-mono text-teal-600">
+                          [{event.timestamp}]
+                        </span>{' '}
+                        {event.type}: {event.message}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {agenticsError && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <div className="flex items-center gap-2 text-red-700">
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="text-sm">{agenticsError}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Enhanced eBook Demo Block */}
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-pink-600" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">
+                  {isI18nEnabled()
+                    ? t('demo.ebook.title')
+                    : 'Enhanced eBook Creation'}
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  {isI18nEnabled()
+                    ? t('demo.ebook.description')
+                    : 'Generate ebook outlines with AI assistance'}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  placeholder="e.g., The Mystery of the Lost City"
+                  value={ebookTitle}
+                  onChange={e => setEbookTitle(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Children's Content
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="childrens-toggle"
+                    className="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
+                    checked={isChildrensContent}
+                    onChange={e => setIsChildrensContent(e.target.checked)}
+                  />
+                  <label
+                    htmlFor="childrens-toggle"
+                    className="text-sm text-gray-700"
+                  >
+                    Enable children's genre features
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Synopsis
+              </label>
+              <textarea
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                rows={3}
+                placeholder="Brief description of your ebook..."
+                value={ebookSynopsis}
+                onChange={e => setEbookSynopsis(e.target.value)}
+              />
+            </div>
+
+            <div className="flex items-center gap-4">
+              <button
+                onClick={generateEbookOutline}
+                disabled={
+                  !ebookTitle.trim() ||
+                  !ebookSynopsis.trim() ||
+                  isGeneratingEbook
+                }
+                className="px-6 py-2 bg-pink-600 text-white font-medium rounded-lg hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              >
+                {isGeneratingEbook ? (
+                  <>
+                    <Loader className="w-4 h-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <BookOpen className="w-4 h-4" />
+                    Draft Outline
+                  </>
+                )}
+              </button>
+
+              {isChildrensContent && (
+                <div className="px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <div className="flex items-center gap-2 text-yellow-700">
+                    <Star className="w-4 h-4" />
+                    <span className="text-sm">Children's features enabled</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {ebookOutline && (
+              <div className="mt-4 p-4 bg-pink-50 border border-pink-200 rounded-md">
+                <h4 className="text-sm font-medium text-pink-700 mb-2">
+                  Generated Outline:
+                </h4>
+                <div className="space-y-2">
+                  {ebookOutline.map((chapter, index) => (
+                    <div key={index} className="text-sm text-pink-800">
+                      <span className="font-medium">Chapter {index + 1}:</span>{' '}
+                      {chapter.title}
+                      <p className="text-xs text-pink-600 mt-1">
+                        {chapter.summary}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {ebookError && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <div className="flex items-center gap-2 text-red-700">
+                  <AlertCircle className="w-4 h-4" />
+                  <span className="text-sm">{ebookError}</span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* CTA Section */}

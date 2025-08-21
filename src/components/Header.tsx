@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useMCP } from '../useMCP';
 import { AuthModal } from './AuthModal';
 import { SimpleThemeChanger } from './SimpleThemeChanger';
+import { LanguageSwitch } from './LanguageSwitch';
 
 export default function Header() {
   const ctx = useMCP('Header.tsx');
@@ -172,6 +173,9 @@ export default function Header() {
             </button>
 
             <nav className="flex items-center gap-4 sm:gap-6 lg:gap-8">
+              {/* Language Switch */}
+              <LanguageSwitch />
+
               {/* Theme Selector */}
               <SimpleThemeChanger />
 

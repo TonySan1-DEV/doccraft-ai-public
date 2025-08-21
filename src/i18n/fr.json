@@ -1,0 +1,15 @@
+{
+  "nav.home": "Accueil",
+  "nav.builder": "Générateur",
+  "nav.documents": "Documents",
+  "builder.generate": "Générer",
+  "builder.export": "Exporter",
+  "builder.welcome": "Bienvenue, {name} !",
+  "builder.items_count": "{count} éléments",
+  "demo.audiobook.title": "Créateur de Livres Audio",
+  "demo.audiobook.description": "Générez des échantillons audio à partir de votre texte",
+  "demo.agentics.title": "Agents d'Écriture IA",
+  "demo.agentics.description": "Exécutez des agents IA collaboratifs avec diffusion en temps réel",
+  "demo.ebook.title": "Création Améliorée d'eBooks",
+  "demo.ebook.description": "Générez des plans d'eBooks avec l'assistance de l'IA"
+}

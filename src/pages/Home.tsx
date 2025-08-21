@@ -4,6 +4,7 @@ import { LandingHero } from '../components/LandingHero';
 import { Footer } from '../components/Footer';
 import Header from '../components/Header';
 import { useState, useEffect, useRef } from 'react';
+import { isAgenticsEnabled, isAudiobookEnabled } from '../config/flags';
 import {
   Check,
   User,
@@ -20,6 +21,8 @@ import {
   Cpu,
   Network,
   Layers,
+  Volume2,
+  BookOpen,
 } from 'lucide-react';
 
 // Enhanced Animated Background Component
@@ -804,6 +807,113 @@ export default function Home() {
                 </ul>
                 <div className="mt-4 text-indigo-600 dark:text-indigo-400 font-semibold group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors">
                   Track Progress →
+                </div>
+              </div>
+
+              {/* AI Writing Agents */}
+              {isAgenticsEnabled() && (
+                <div
+                  className="feature-card feature-card-teal group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  onClick={() => handleFeatureCardClick('/demo#agentics')}
+                >
+                  <div className="feature-card-icon">
+                    <Bot className="w-8 h-8 text-teal-600 dark:text-teal-400" />
+                  </div>
+                  <h3 className="feature-card-title text-gray-900 dark:text-white">
+                    AI Writing Agents
+                  </h3>
+                  <p className="feature-card-description">
+                    Collaborative AI agents that work together to enhance your
+                    writing process with research, structure, and style
+                    optimization.
+                  </p>
+                  <ul className="feature-card-list">
+                    <li className="flex items-center text-gray-600 dark:text-gray-300">
+                      <Check className="feature-card-check" />
+                      Multi-agent collaboration
+                    </li>
+                    <li className="flex items-center text-gray-600 dark:text-gray-300">
+                      <Check className="feature-card-check" />
+                      Real-time streaming
+                    </li>
+                    <li className="flex items-center text-gray-600 dark:text-gray-300">
+                      <Check className="feature-card-check" />
+                      Intelligent workflow
+                    </li>
+                  </ul>
+                  <div className="mt-4 text-teal-600 dark:text-teal-400 font-semibold group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors">
+                    Try Agents →
+                  </div>
+                </div>
+              )}
+
+              {/* Audiobook Creator */}
+              {isAudiobookEnabled() && (
+                <div
+                  className="feature-card feature-card-orange group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  onClick={() => handleFeatureCardClick('/demo#audiobook')}
+                >
+                  <div className="feature-card-icon">
+                    <Volume2 className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <h3 className="feature-card-title text-gray-900 dark:text-white">
+                    Audiobook Creator
+                  </h3>
+                  <p className="feature-card-description">
+                    Transform your written content into professional audiobooks
+                    with AI-powered voice synthesis and natural narration.
+                  </p>
+                  <ul className="feature-card-list">
+                    <li className="flex items-center text-gray-600 dark:text-gray-300">
+                      <Check className="feature-card-check" />
+                      Multiple voice options
+                    </li>
+                    <li className="flex items-center text-gray-600 dark:text-gray-300">
+                      <Check className="feature-card-check" />
+                      High-quality audio
+                    </li>
+                    <li className="flex items-center text-gray-600 dark:text-gray-300">
+                      <Check className="feature-card-check" />
+                      Export formats
+                    </li>
+                  </ul>
+                  <div className="mt-4 text-orange-600 dark:text-orange-400 font-semibold group-hover:text-orange-700 dark:group-hover:text-orange-300 transition-colors">
+                    Create Audio →
+                  </div>
+                </div>
+              )}
+
+              {/* Enhanced eBook Creation */}
+              <div
+                className="feature-card feature-card-pink group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                onClick={() => handleFeatureCardClick('/demo#ebook')}
+              >
+                <div className="feature-card-icon">
+                  <BookOpen className="w-8 h-8 text-pink-600 dark:text-pink-400" />
+                </div>
+                <h3 className="feature-card-title text-gray-900 dark:text-white">
+                  Enhanced eBook Creation
+                </h3>
+                <p className="feature-card-description">
+                  Advanced ebook creation with AI-powered content generation,
+                  image integration, and professional formatting.
+                </p>
+                <ul className="feature-card-list">
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    AI content generation
+                  </li>
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Smart image placement
+                  </li>
+                  <li className="flex items-center text-gray-600 dark:text-gray-300">
+                    <Check className="feature-card-check" />
+                    Professional templates
+                  </li>
+                </ul>
+                <div className="mt-4 text-pink-600 dark:text-pink-400 font-semibold group-hover:text-pink-700 dark:group-hover:text-pink-300 transition-colors">
+                  Build eBook →
                 </div>
               </div>
             </div>

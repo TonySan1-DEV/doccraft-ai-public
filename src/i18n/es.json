@@ -1,0 +1,15 @@
+{
+  "nav.home": "Inicio",
+  "nav.builder": "Constructor",
+  "nav.documents": "Documentos",
+  "builder.generate": "Generar",
+  "builder.export": "Exportar",
+  "builder.welcome": "¡Bienvenido, {name}!",
+  "builder.items_count": "{count} elementos",
+  "demo.audiobook.title": "Creador de Audiolibros",
+  "demo.audiobook.description": "Genera muestras de audio a partir de tu texto",
+  "demo.agentics.title": "Agentes de Escritura IA",
+  "demo.agentics.description": "Ejecuta agentes de IA colaborativos con transmisión en tiempo real",
+  "demo.ebook.title": "Creación Mejorada de eBooks",
+  "demo.ebook.description": "Genera esquemas de eBooks con asistencia de IA"
+}

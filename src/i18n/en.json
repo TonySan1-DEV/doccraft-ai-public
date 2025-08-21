@@ -1,0 +1,15 @@
+{
+  "nav.home": "Home",
+  "nav.builder": "Builder",
+  "nav.documents": "Documents",
+  "builder.generate": "Generate",
+  "builder.export": "Export",
+  "builder.welcome": "Welcome, {name}!",
+  "builder.items_count": "{count} items",
+  "demo.audiobook.title": "Audiobook Creator",
+  "demo.audiobook.description": "Generate audio samples from your text",
+  "demo.agentics.title": "AI Writing Agents",
+  "demo.agentics.description": "Run collaborative AI agents with real-time streaming",
+  "demo.ebook.title": "Enhanced eBook Creation",
+  "demo.ebook.description": "Generate ebook outlines with AI assistance"
+}

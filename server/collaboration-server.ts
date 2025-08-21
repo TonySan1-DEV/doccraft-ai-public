@@ -5,7 +5,9 @@ import { setupWSConnection } from 'y-websocket/bin/utils';
 import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
 import * as Y from 'yjs';
+import crypto from 'crypto';
 import monitorRouter from './routes/monitor';
+import i18nTranslateRouter from './routes/i18n.translate';
 import { getSupabaseAdmin } from './lib/supabaseAdmin';
 import { initMetrics } from './monitoring/metrics';
 
@@ -14,13 +16,36 @@ const PORT = process.env.PORT || 1234;
 const SUPABASE_URL = process.env.SUPABASE_URL || '';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
-// Initialize Supabase
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+// Initialize Supabase (only if URL is provided)
+let supabase: any = null;
+if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
+  try {
+    supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+  } catch (error) {
+    console.warn('⚠️ Supabase initialization failed:', error);
+  }
+}
 
 // Express app for health checks and API endpoints
 const app = express();
-app.use(cors());
-app.use(express.json());
+
+// Security hardening: JSON body limit + request ID middleware
+app.use(express.json({ limit: '512kb' })); // 防 abuse; harmless with flags OFF
+
+app.use((req, _res, next) => {
+  const hdr = req.header('x-request-id');
+  (req as any).rid = hdr && hdr.length <= 128 ? hdr : crypto.randomUUID();
+  next();
+});
+
+// CORS with origin normalization (only if FRONTEND_ORIGIN is set)
+const origin = process.env.FRONTEND_ORIGIN;
+app.use(
+  cors({
+    origin: origin ? [origin] : false, // no wildcard; keep disabled if not set
+    credentials: false,
+  })
+);
 
 // Initialize metrics if enabled
 const metrics = initMetrics();
@@ -77,9 +102,21 @@ if (metrics) {
 // Monitor endpoint for error reporting
 app.use('/api/monitor', monitorRouter);
 
+// i18n translation endpoint
+app.use(i18nTranslateRouter);
+
+// Audio export routes (flag-gated)
+import audioExportRouter from './routes/export.audio';
+app.use('/api/export', audioExportRouter);
+
+// Agentics (flag-gated)
+import { makeAgenticsRunRouter } from './routes/agentics.run';
+app.use('/api/agentics', makeAgenticsRunRouter());
+
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  const rid = (req as any).rid || 'unknown';
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), rid });
 });
 
 // Collaboration session management
@@ -144,15 +181,21 @@ app.post('/api/rooms/:roomId/join', async (req, res) => {
       });
     }
 
-    // Save to database
-    await supabase.from('collaboration_sessions').upsert({
-      room_id: roomId,
-      user_id: userId,
-      user_name: userName,
-      user_color: userColor,
-      is_active: true,
-      joined_at: new Date().toISOString(),
-    });
+    // Save to database (only if Supabase is available)
+    if (supabase) {
+      try {
+        await supabase.from('collaboration_sessions').upsert({
+          room_id: roomId,
+          user_id: userId,
+          user_name: userName,
+          user_color: userColor,
+          is_active: true,
+          joined_at: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.warn('⚠️ Database save failed:', error);
+      }
+    }
 
     res.json({ success: true });
   } catch (error) {
@@ -175,12 +218,18 @@ app.post('/api/rooms/:roomId/leave', async (req, res) => {
       }
     }
 
-    // Update database
-    await supabase
-      .from('collaboration_sessions')
-      .update({ is_active: false })
-      .eq('room_id', roomId)
-      .eq('user_id', userId);
+    // Update database (only if Supabase is available)
+    if (supabase) {
+      try {
+        await supabase
+          .from('collaboration_sessions')
+          .update({ is_active: false })
+          .eq('room_id', roomId)
+          .eq('user_id', userId);
+      } catch (error) {
+        console.warn('⚠️ Database update failed:', error);
+      }
+    }
 
     res.json({ success: true });
   } catch (error) {
