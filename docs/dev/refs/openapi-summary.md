@@ -5,7 +5,7 @@
 
 # API Summary
 
-Paths detected: 12
+Paths detected: 20
 
 ## Sample (first 20)
 
@@ -14,15 +14,23 @@ Paths detected: 12
 | `POST` | `/ai/request` |  |
 | `POST` | `/api/character-chat` |  |
 | `GET` | `/api/health` |  |
+| `POST` | `/api/i18n/translate` |  |
 | `POST` | `/api/openai/chat` |  |
 | `POST` | `/api/rooms/{roomId}/join` |  |
 | `POST` | `/api/rooms/{roomId}/leave` |  |
 | `GET` | `/api/rooms/{roomId}/users` |  |
+| `POST` | `/audio` |  |
 | `POST` | `/character/decrypt` |  |
 | `POST` | `/character/protect` |  |
+| `POST` | `/error` |  |
 | `GET` | `/health` |  |
+| `POST` | `/maintenance/ttl` |  |
+| `GET` | `/metrics` |  |
+| `POST` | `/run` |  |
+| `GET` | `/runs` |  |
 | `GET` | `/security/audit` |  |
 | `GET` | `/security/metrics` |  |
+| `GET` | `/status/{runId}/stream` |  |
 
 ## Source Files (first 20)
 
@@ -30,11 +38,19 @@ Paths detected: 12
 |---|---|---|
 | server/character-chat-api.ts | `POST` | `/api/character-chat` |
 | server/character-chat-api.ts | `GET` | `/api/health` |
+| server/collaboration-server.ts | `GET` | `/metrics` |
 | server/collaboration-server.ts | `GET` | `/health` |
 | server/collaboration-server.ts | `GET` | `/api/rooms/{roomId}/users` |
 | server/collaboration-server.ts | `POST` | `/api/rooms/{roomId}/join` |
 | server/collaboration-server.ts | `POST` | `/api/rooms/{roomId}/leave` |
 | server/openai-proxy.js | `POST` | `/api/openai/chat` |
+| server/routes/agentics.run.ts | `POST` | `/run` |
+| server/routes/agentics.run.ts | `GET` | `/runs` |
+| server/routes/agentics.run.ts | `POST` | `/maintenance/ttl` |
+| server/routes/agentics.run.ts | `GET` | `/status/{runId}/stream` |
+| server/routes/export.audio.ts | `POST` | `/audio` |
+| server/routes/i18n.translate.ts | `POST` | `/api/i18n/translate` |
+| server/routes/monitor.ts | `POST` | `/error` |
 | server/security/aiGateway.js | `POST` | `/ai/request` |
 | server/security/aiGateway.js | `GET` | `/security/metrics` |
 | server/security/aiGateway.js | `GET` | `/security/audit` |

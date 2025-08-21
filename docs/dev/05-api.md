@@ -11,7 +11,7 @@ This page summarizes the Express API detected by static scanning. Improve accura
 
 ### Overview
 
-- Paths detected: **12**
+- Paths detected: **20**
 
 ### Example
 

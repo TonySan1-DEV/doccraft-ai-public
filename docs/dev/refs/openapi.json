@@ -30,6 +30,18 @@
         }
       }
     },
+    "/metrics": {
+      "get": {
+        "summary": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "",
@@ -79,6 +91,90 @@
       }
     },
     "/api/openai/chat": {
+      "post": {
+        "summary": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/run": {
+      "post": {
+        "summary": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/runs": {
+      "get": {
+        "summary": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/maintenance/ttl": {
+      "post": {
+        "summary": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/status/{runId}/stream": {
+      "get": {
+        "summary": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/audio": {
+      "post": {
+        "summary": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/i18n/translate": {
+      "post": {
+        "summary": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/error": {
       "post": {
         "summary": "",
         "tags": [],

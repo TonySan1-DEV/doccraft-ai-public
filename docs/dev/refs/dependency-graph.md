@@ -15,6 +15,11 @@ graph LR
   "examples/UnifiedModeSystemExample.tsx" --> "src/services/modeAwareAIService.ts"
   "examples/UnifiedModeSystemExample.tsx" --> "src/services/moduleCoordinator.ts"
   "examples/UnifiedModeSystemExample.tsx" --> "src/types/systemModes.ts"
+  "examples/chatgpt-integration-example.tsx" --> "src/hooks/useMCP.ts"
+  "examples/chatgpt-integration-example.tsx" --> "src/utils/chatgpt-client.ts"
+  "mcp/providers/chatgpt-integration.ts" --> "mcp/mcpRegistry.ts"
+  "mcp/server.ts" --> "mcp/mcpRegistry.ts"
+  "mcp/server.ts" --> "mcp/providers/chatgpt-integration.ts"
   "modules/admin/components/AdminUsageDashboard.tsx" --> "src/useMCP.ts"
   "modules/admin/components/__tests__/AdminUsageDashboard.spec.tsx" --> "modules/admin/components/AdminUsageDashboard.tsx"
   "modules/admin/index.ts" --> "modules/admin/components/AdminUsageDashboard.tsx"
@@ -196,10 +201,5 @@ graph LR
   "modules/narrativeDashboard/components/ExportNarrativeInsights.tsx" --> "modules/themeAnalysis/initThemeEngine.ts"
   "modules/narrativeDashboard/components/RevisionHistoryPanel.tsx" --> "modules/narrativeDashboard/services/revisionEngine.ts"
   "modules/narrativeDashboard/components/SceneInspectorPanel.tsx" --> "modules/emotionArc/utils/scaling.ts"
-  "modules/narrativeDashboard/components/SmartRevisionEngine.tsx" --> "modules/emotionArc/types/emotionTypes.ts"
-  "modules/narrativeDashboard/components/SmartRevisionEngine.tsx" --> "modules/narrativeDashboard/components/RevisionHistoryPanel.tsx"
-  "modules/narrativeDashboard/components/SmartRevisionEngine.tsx" --> "modules/narrativeDashboard/services/revisionEngine.ts"
-  "modules/narrativeDashboard/components/SmartRevisionEngine.tsx" --> "modules/narrativeDashboard/utils/diffHighlighter.ts"
-  "modules/narrativeDashboard/services/revisionEngine.ts" --> "modules/emotionArc/types/emotionTypes.ts"
   %% truncated...
 ```

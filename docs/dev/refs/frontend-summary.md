@@ -7,7 +7,7 @@
 
 This document provides a comprehensive summary of all React components in the DocCraft-AI frontend codebase.
 
-**Total Components Detected:** 280
+**Total Components Detected:** 301
 
 ## Component Details
 
@@ -81,6 +81,7 @@ This document provides a comprehensive summary of all React components in the Do
 | `ImageSuggestions` | `components/ImageSuggestions.tsx` | React Component | Component detected |
 | `ImagingModeSelector` | `components/ImagingModeSelector.tsx` | React Component | Component detected |
 | `LandingHero` | `components/LandingHero.tsx` | React Component | Component detected |
+| `LanguageSwitch` | `components/LanguageSwitch.tsx` | React Component | Component detected |
 | `LLMChatInterface` | `components/LLMChatInterface.tsx` | React Component | Component detected |
 | `LoginModal` | `components/LoginModal.tsx` | React Component | Component detected |
 | `ManualImageSelector` | `components/ManualImageSelector.tsx` | React Component | Component detected |
@@ -88,6 +89,7 @@ This document provides a comprehensive summary of all React components in the Do
 | `ModeController` | `components/ModeController.tsx` | React Component | Component detected |
 | `ModeCustomization` | `components/ModeCustomization.tsx` | React Component | Component detected |
 | `ModeErrorBoundary` | `components/ModeErrorBoundary.tsx` | React Component | Component detected |
+| `MonitoringBoundary` | `components/MonitoringBoundary.tsx` | React Component | Component detected |
 | `OptimizationSuggestions` | `components/OptimizationSuggestions.tsx` | React Component | Component detected |
 | `PaymentForm` | `components/PaymentForm.tsx` | React Component | Component detected |
 | `PersonalizedSuggestions` | `components/PersonalizedSuggestions.tsx` | React Component | Component detected |
@@ -126,8 +128,9 @@ This document provides a comprehensive summary of all React components in the Do
 | `VoiceSelector` | `components/VoiceSelector.tsx` | React Component | Component detected |
 | `WriterProfileSetup` | `components/WriterProfileSetup.tsx` | React Component | Component detected |
 | `env` | `config/env.ts` | React Component | Component detected |
+| `Flags` | `config/flags.ts` | React Component | Component detected |
 | `simpleThemes` | `configs/simpleThemes.ts` | React Component | Component detected |
-| `fictionGenres` | `constants/genreConstants.ts` | React Component | Component detected |
+| `CHILDRENS_GENRE_KEY` | `constants/genreConstants.ts` | React Component | Component detected |
 | `AGENT_PREFERENCES_HELP` | `constants/helpText.ts` | React Component | Component detected |
 | `writerPresets` | `constants/writerPresets.ts` | React Component | Component detected |
 | `DocCraftAgentProvider` | `contexts/AgentContext.tsx` | React Component | Component detected |
@@ -137,16 +140,20 @@ This document provides a comprehensive summary of all React components in the Do
 | `WriterProfileProvider` | `contexts/WriterProfileContext.tsx` | React Component | Component detected |
 | `generateContextualPrompts` | `engines/ContextualPromptEngine.ts` | React Component | Component detected |
 | `promptLibrary` | `engines/PromptPatternLibrary.ts` | React Component | Component detected |
+| `useAgentics` | `hooks/useAgentics.ts` | React Component | Component detected |
 | `useAnalyticsServices` | `hooks/useAnalyticsServices.ts` | React Component | Component detected |
 | `useCharacterInteraction` | `hooks/useCharacterInteraction.ts` | React Component | Component detected |
 | `useEngagement` | `hooks/useEngagement.ts` | React Component | Component detected |
 | `useImagingMode` | `hooks/useImagingMode.ts` | React Component | Component detected |
 | `useLiveSuggestions` | `hooks/useLiveSuggestions.ts` | React Component | Component detected |
 | `useMarketTrends` | `hooks/useMarketTrends.ts` | React Component | Component detected |
+| `useMCP` | `hooks/useMCP.ts` | React Component | Component detected |
 | `useSceneConfig` | `hooks/useSceneConfig.ts` | React Component | Component detected |
 | `useUserTier` | `hooks/useUserTier.ts` | React Component | Component detected |
 | `useVoiceManagement` | `hooks/useVoiceManagement.ts` | React Component | Component detected |
 | `useWriterProfile` | `hooks/useWriterProfile.ts` | React Component | Component detected |
+| `format` | `i18n/format.ts` | React Component | Component detected |
+| `setLocale` | `i18n/index.ts` | React Component | Component detected |
 | `jobs\syncMarketTrends` | `jobs/syncMarketTrends.ts` | React Component | Component detected |
 | `AuditLogger` | `lib/audit/auditLogger.ts` | React Component | Component detected |
 | `UserService` | `lib/auth/userService.ts` | React Component | Component detected |
@@ -154,13 +161,17 @@ This document provides a comprehensive summary of all React components in the Do
 | `getCollabProvider` | `lib/collaboration/yjsProvider.ts` | React Component | Component detected |
 | `config` | `lib/config.ts` | React Component | Component detected |
 | `DocumentService` | `lib/documents/documentService.ts` | React Component | Component detected |
+| `env` | `lib/env.ts` | React Component | Component detected |
 | `useAIHelper` | `lib/hooks/useAIHelper.ts` | React Component | Component detected |
 | `logger` | `lib/logger.ts` | React Component | Component detected |
 | `logging\patternAuditLogger` | `logging/patternAuditLogger.ts` | React Component | Component detected |
 | `main` | `main.tsx` | React Component | Component detected |
 | `roleMeta` | `mcpRegistry.ts` | React Component | Component detected |
 | `EnterpriseAlertSystem` | `monitoring/alertSystem.ts` | React Component | Component detected |
+| `monitoring\bootPerformanceMonitor` | `monitoring/bootPerformanceMonitor.ts` | React Component | Component detected |
 | `CharacterAnalysisMonitor` | `monitoring/characterAnalysisMonitor.ts` | React Component | Component detected |
+| `monitoring\error\safeError` | `monitoring/error/safeError.ts` | React Component | Component detected |
+| `monitoring\error\stackSanitizer` | `monitoring/error/stackSanitizer.ts` | React Component | Component detected |
 | `MonitoredAIService` | `monitoring/examples/integrationExample.ts` | React Component | Component detected |
 | `monitoring\index` | `monitoring/index.ts` | React Component | Component detected |
 | `MonitoringIntegration` | `monitoring/monitoringIntegration.ts` | React Component | Component detected |
@@ -265,6 +276,12 @@ This document provides a comprehensive summary of all React components in the Do
 | `generateOptimizationSuggestions` | `services/suggestionEngine.ts` | React Component | Component detected |
 | `createTicket` | `services/supportService.ts` | React Component | Component detected |
 | `services\trendAdvisor` | `services/trendAdvisor.ts` | React Component | Component detected |
+| `shared\schemas\audioExport.d` | `shared/schemas/audioExport.d.ts` | React Component | Component detected |
+| `shared\schemas\audioExport` | `shared/schemas/audioExport.js` | React Component | Component detected |
+| `TTSAudioFormat` | `shared/schemas/audioExport.ts` | React Component | Component detected |
+| `shared\schemas\i18n.d` | `shared/schemas/i18n.d.ts` | React Component | Component detected |
+| `shared\schemas\i18n` | `shared/schemas/i18n.js` | React Component | Component detected |
+| `Locale` | `shared/schemas/i18n.ts` | React Component | Component detected |
 | `ImagingModeProvider` | `state/imagingMode.ts` | React Component | Component detected |
 | `VALID_TONES` | `types/agentPreferences.ts` | React Component | Component detected |
 | `types\common` | `types/common.ts` | React Component | Component detected |
@@ -276,14 +293,18 @@ This document provides a comprehensive summary of all React components in the Do
 | `WebsocketProvider` | `types/y-websocket.d.ts` | React Component | Component detected |
 | `useMCP` | `useMCP.ts` | React Component | Component detected |
 | `AdvancedImagePlacer` | `utils/advancedImagePlacer.ts` | React Component | Component detected |
+| `ChatGPTClient` | `utils/chatgpt-client.ts` | React Component | Component detected |
+| `utils\clientMonitoring` | `utils/clientMonitoring.ts` | React Component | Component detected |
 | `generateMarkdownContent` | `utils/exportUtils.ts` | React Component | Component detected |
 | `decideImagePlacement` | `utils/imagePlacer.ts` | React Component | Component detected |
 | `mergePreferences` | `utils/loadInitialPrefs.ts` | React Component | Component detected |
 | `VALID_PRESET_KEYS` | `utils/presetValidation.ts` | React Component | Component detected |
+| `utils\reportClientError` | `utils/reportClientError.ts` | React Component | Component detected |
 | `utils\telemetryLogger` | `utils/telemetryLogger.ts` | React Component | Component detected |
 | `transformPublishingToMarketTrend` | `utils/transformTrendData.ts` | React Component | Component detected |
 | `getUserRedirectPath` | `utils/userRedirect.ts` | React Component | Component detected |
 | `validateVoiceId` | `utils/voiceValidation.ts` | React Component | Component detected |
+| `mockAgentServices` | `__mocks__/agentServices.mock.ts` | React Component | Component detected |
 | `copilotEngine` | `__mocks__/CopilotEngine.mock.ts` | React Component | Component detected |
 | `fetchImage` | `__mocks__/imageFetcher.mock.ts` | React Component | Component detected |
 | `supabase` | `__mocks__/supabase.mock.ts` | React Component | Component detected |
