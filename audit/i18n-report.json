@@ -6,7 +6,17 @@
       "es",
       "fr"
     ],
-    "namespaces": [],
+    "namespaces": [
+      "0",
+      "Arc",
+      "Character",
+      "common",
+      "Current Theme",
+      "Genre",
+      "Primary Color",
+      "Scene",
+      "Voice"
+    ],
     "defaultBranchHint": "main"
   },
   "packages": {
